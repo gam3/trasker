@@ -1,0 +1,85 @@
+#!/usr/bin/perl
+use strict;
+
+use File::Find;
+
+use Gaim::Log::Parser;
+use Date::Calc::Object;
+use Date::Calc::MySQL;
+
+use lib qw(perl/blib/lib);
+use TTDB::Note;
+use TTDB::User;
+
+use Data::Dumper;
+
+Date::Calc->date_format(0);
+
+use TTDB::DBI qw (dbi_setup);
+
+my $hash;
+
+use YAML qw(LoadFile);
+
+my $configure = LoadFile($ENV{HOME} . "/.tasker/gaim");
+
+my $xhash = {};
+
+our ($opt_db_database, $opt_db_user, $opt_db_password);
+
+dbi_setup(
+    database => $opt_db_database || 'tasker',
+    user => $opt_db_user || 'gam3',
+    password => $opt_db_password || 'awnmwad',
+);
+
+for my $i (keys %$configure) {
+    next if $i eq '_exclude';
+    for my $j (keys %{$configure->{$i}}) {
+        push(@{$xhash->{$j}}, TTDB::Project->get(name => $i));
+    }
+}
+
+my $min_date = Date::Calc->new(2006, 1, 1);
+
+my $user = TTDB::User->get(user => 'gam3');
+
+sub wanted
+{
+   if (-f) {
+       my $name = (split('/', $File::Find::dir))[-1];
+       next unless $xhash->{$name};
+       if ($File::Find::name) {
+           my ($y, $m, $d) = (/(\d+)-(\d+)-(\d+)/);
+           my $d = Date::Calc->new(/(\d+)-(\d+)-(\d+)/);
+	   next if $d < $min_date;
+	   my $parser = Gaim::Log::Parser->new(file => $File::Find::name);
+	   while (my $msg = $parser->next_message()) {
+	       $hash->{$name}{$msg->{date}} = $msg;
+	       for my $p (@{$xhash->{$name}}) {
+		   my $time = Date::Calc::MySQL->time2date($msg->{date});
+		   my $up = $user->project(project => $p);
+                   my $note = TTDB::Note->new(time => $time, project => $p, user => $user, type => 99, note => $msg->as_string);
+		   eval {
+		       $note->create();
+		   }; if ($@) {
+warn $@;
+		   }
+print " - $up\n";
+	       }
+	   }
+       }
+   }
+}
+
+find(\&wanted, '/home/gam3/.gaim/logs/');
+
+print Data::Dumper::Dumper($hash);
+
+__END__
+
+   print Date::Calc->time2date($msg->date()), " ";
+   print $msg->to(), " - ";
+   print $msg->from(), " - ";
+   print "[", $msg->content(), "]\n";
+}
