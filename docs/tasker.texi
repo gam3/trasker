@@ -1,0 +1,264 @@
+\input texinfo @c -*-mode:texinfo; compile-command: "makeinfo tasker.texi"-*-
+
+@setfilename tasker.info
+@settitle The Tasker Task Managment System
+@documentlanguage en
+@documentencoding iso-8859-1
+@include version.texi
+@syncodeindex pg cp
+
+@copying
+This manual is for Tasker (version @value{VERSION}, @value{UPDATED}),
+a system to manage tasks for human beings.
+
+Copyright @copyright{} 2006 G. Allen Morris III
+
+@quotation
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.1 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections.  A copy of the license is
+included in the section entitled ``GNU Free Documentation License.''
+
+@end quotation
+@end copying
+
+@dircategory Tasker task management system
+@direntry
+* Tasker: (tasker). Documentation of the tasker task management system.
+@end direntry
+
+@titlepage
+@title Tasker Manual
+@subtitle Version @value{VERSION}, @value{UPDATED}
+@author G. Allen Morris III <@email{gam3@@gam3.com}>
+@page
+@vskip 0pt plus 1filll
+@insertcopying
+@end titlepage
+
+@contents
+
+@page
+
+@ifnottex
+@node Top, Distribution, (dir), (dir)
+@top Tasker - Task Managment System
+@insertcopying
+
+Tasker is a collection of programs that help a human being track what they
+do.
+
+@end ifnottex
+
+@menu
+* Distribution::            Where to find tasker: source, packages etc.
+* Copying::                 The GNU General Public License says how you can
+                            copy and share tasker
+* Introduction::            Important concepts you need to know as a user
+* Invoking::                How to invoke tasker
+* Protocol::                The Tasker client/server protocol
+* Environment Variables::   Environment variables which affect tasker
+* Errors and omissions::    Known problems
+* History::                 History of Tasker
+* Copying this manual::     The GNU Free Documentation License
+@end menu
+
+@node Distribution, Copying, Top, Top
+@unnumbered Distribution
+
+Tasker is @dfn{free software}; this means that everyone
+is free to use it and free to redistribute it on certain conditions.
+The precise conditions are found in the GNU General Public License that
+comes with this program and also follows this section.
+
+@noindent
+You can obtain Tasker from a friend or from the Internet:
+
+@table @asis
+
+@item Home page
+@uref{http://csua.berkeley.edu/~gam3/tasker}
+@end table
+
+@node Copying, Introduction, Distribution, Top
+@include gpl.texi
+
+@node Introduction, Invoking, Copying, Top
+@chapter Introduction
+
+Tasker is a system to track the tasks that human beings are doing, or
+have done.
+
+It is built on a client server model. It is designed to support multiple
+users on multiple computers and platforms.
+
+@node Invoking, Protocol, Introduction, Top
+@chapter Invoking
+
+The server must be running on a know computer for proper operation.
+
+@section Server
+
+The tasker server is normally run on a single computer. All of the
+client software then attaches to the server. Thera are some
+administration programs that my by pass the server.
+
+The server make available 2 ports to connect too. One is clear text and
+the other uses SSL. It is up to the clients to use the correct port if
+data security is important.
+
+@section Clients
+
+@subsection tlist
+
+@subsection email
+
+@subsection Focus Tracking
+
+The focus tracking program is an interface to the local computer system.
+This program will be different for computer and even for different interfaces.
+
+Currently there is only a focus tracker for the X window system.
+
+@noindent
+The focus tracking software does 3 functions:
+
+@itemize
+
+@item it determines whether a terminal is active.
+
+@item it tracks the what windows are active and informs the server.
+
+@item it sends other hints to the server to help detirmine what project is active.
+This include monitoring which page is active, and watching for several key properties and 
+sending apropiate signals to the server.
+
+@end itemize
+
+@subsubsection X windows
+
+The focus tracking program is normally started automatically in you .xinit file.
+
+@example
+focus
+@end example
+
+And then killed when X is closed with something like
+
+@example
+focus -k
+@end example
+
+@subsubsection Microsoft Windows
+
+@node Protocol, Environment Variables, Invoking, Top
+@chapter Protocol
+
+When the tasker server is first connected to it returns a string that give
+version of TTCP that the server is using.
+
+@emph{TTCP 0.01} for example.
+
+@unnumberedsec Client Commands
+
+@table @code
+
+@item user @emph{user}
+
+The user command when run for the first time from a client will return
+the list of projects for that user.  This is normally the first command
+given by the client after authentication.
+
+The server normally responds by sending a list of projects to the client.
+
+@item idle @emph{host} @emph{user} @emph{time}
+
+The idle command informs the server that the user is ``likely'' not at the
+console of that host any longer.
+
+@item active @emph{host} @emph{user} @emph{time}
+
+The active command informs the server that a user is likely at working on
+a given host.
+
+@item change @emph{user} @emph{project}
+
+@item push @emph{user} @emph{project_id}
+
+@item pop @emph{user}
+
+@item project add @emph{title} @emph{parent_id}
+
+If parent id is 0 then the project will become a root project.
+
+@item project delete @emph{id}
+
+Delete the project with the given id. This will only work if the
+project has never been used (you can use merge to remove a project that
+has been used).
+
+@item project move @emph{n} @emph{m}
+
+where @emph{n} is the project id and @emph{m} is the the id of the new
+parent.  This can fail if name already exists under the parent.
+This simply reatatched the project to a new parent.
+
+@item project rename @emph{n} @emph{name}
+
+where @emph{n} is the id of the project and @emph{name} in the new name
+of the project.
+
+@end table
+
+@unnumberedsec Server Commands
+
+@table @code
+
+@item entry @emph{user} @emph{name} @emph{id} @emph{time for day}
+
+@end table
+
+@node Environment Variables, Errors and omissions, Protocol, Top
+@chapter Environment Variables
+
+Tasker uses the following environment variables:
+
+@table @code
+
+@item VISUAL
+
+Some Tasker applications use this variable to determine what program to use
+to edit text.
+
+@end table
+
+@section design
+@subsection merging
+
+It is possible to merge one project into another.  All of the unreconsiled
+time from the original project will be moved to the new project.
+
+
+@node Errors and omissions, History, Environment Variables, Top
+@chapter Errors and Omissions
+
+There are no errors.
+
+@node History, Copying this manual, Errors and omissions, Top
+@appendix History of Tasker
+
+@itemize @bullet
+@item
+The initial system was designed and written by G. Allen Morris III.
+@end itemize
+
+@node Copying this manual
+@appendix Copying this manual
+@menu
+* GNU Free Documentation License::  How you can copy and share this manual.
+@end menu
+
+@include fdl.texi
+
+@bye

@@ -1,0 +1,3 @@
+
+grant all PRIVILEGES ON `test_tasker`.* TO 'tasker'@'localhost' IDENTIFIED BY 'seviceforward';
+

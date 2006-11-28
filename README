@@ -1,0 +1,3 @@
+
+  xprop -f tkr_PROJECT 8t -set tkr_PROJECT {project}
+
