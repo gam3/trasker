@@ -1,0 +1,32 @@
+#                                               -*- Autoconf -*-
+# Process this file with autoconf to produce a configure script.
+
+AC_INIT([tasker-X11],[0.0.1],[tasker-bugs@gam3.net])
+AC_PREREQ(2.59)
+AC_COPYRIGHT([Copyright (c) 2006 G. Allen Morris III])
+AC_CANONICAL_TARGET
+
+AM_INIT_AUTOMAKE
+
+# Checks for programs.
+AC_PROG_CC
+AC_PROG_CXX
+
+
+AC_CHECK_LIB([X11], [XOpenDisplay])
+AC_CHECK_LIB(Xss, XScreenSaverQueryInfo)
+
+# Checks for header files.
+AC_CHECK_HEADERS(fcntl.h locale.h sys/ioctl.h X11/Xlib.h X11/X.h X11/Intrinsic.h X11/Xmu/WinUtil.h,
+		 ,
+		 AC_MSG_ERROR(Missing headers)
+		)
+
+AC_CHECK_HEADERS([X11/extensions/scrnsaver.h], [], [], [ # include <X11/Xlib.h> ])
+
+AC_CONFIG_SUBDIRS( focus_tracker )
+
+AC_CONFIG_FILES([Makefile])
+
+AC_OUTPUT
+

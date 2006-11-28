@@ -1,0 +1,36 @@
+.\" -*- nroff -*-
+.TH focus-tracker 1 "October 2006" "tasker version 0.01"
+.SH NAME
+focus-tracker \- track an X user for the tasker system
+.SH SYNOPSIS
+.B focus-tracker
+[
+.B \-s {server}
+]
+.SH DESCRIPTION
+track the actions of and X user for the tasker system
+.B focus-tracker
+a daemon that helps track the actions of a user.
+.SH OPTIONS
+.TP
+.B \-s {server}
+The host IP address running the tasker server.
+.TP
+.B \-V
+Display the program version.
+.TP
+.B \-D
+Debug -- do not run in background.
+.SH AUTHOR
+.B focus-tracker
+was written by G. Allen Morris III <gam3@gam3.com>. 
+.SH BUGS
+The server switch does not accept host names.  However the line below solves this problem.
+ focus --server `host google.com | grep address | head -1 | awk '{print $4 }'`
+.SH AVAILABILITY
+.B focus-tracker
+is part of the tasker task tracking system and is available from
+http://tasker.sourceforge.net.
+.SH SEE ALSO
+.BR tasker (1)
+
