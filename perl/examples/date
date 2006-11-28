@@ -1,0 +1,45 @@
+#!/usr/bin/perl
+
+use TTDB::UserProject;
+use TTDB::User;
+use TTDB::Project;
+
+use Date::Calc::MySQL;
+
+use Data::Dumper;
+
+use TTDB::DBI qw (dbi_setup);
+
+dbi_setup(
+    user => 'gam3',
+    password => 'awnmwad',
+    host => 'localhost',
+    database => 'tasker',
+);
+
+my $project = TTDB::Project->get(id => 1);
+
+my $up = TTDB::UserProject->new(user => TTDB::User->get(id => 1), project => $project);
+
+my $p = $up->project;
+my $u = $up->user;
+
+my $end_date = Date::Calc::MySQL->new(2006, 11, 4);
+my $date = Date::Calc::MySQL->new(2006, 10, 29);
+
+my @ids = (1);
+
+push @ids, map({ $_->id } $p->children);
+
+while ($date < $end_date) {
+    print $date->strftime("%Y %B %d"), "\n";
+
+    for my $time ($u->day(date => $date, pids => \@ids)) {
+        print $time->{data}->{project_id}, ": ";
+        print $time->{data}->{time}, "\n";
+    }
+
+    $date++;
+}
+print "\n";
+

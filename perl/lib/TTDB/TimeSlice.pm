@@ -1,0 +1,280 @@
+use strict;
+package TTDB::TimeSlice;
+
+use Params::Validate qw( validate validate_pos SCALAR BOOLEAN HASHREF OBJECT );
+
+use TTDB::DBI qw (get_dbh);
+
+sub new
+{
+    my $class = shift;
+    my %p = validate(@_, {
+	start_time => {
+	    isa => 'Date::Calc',
+	},
+	end_time => {
+	    isa => 'Date::Calc',
+	},
+	user => {
+	    isa => 'TTDB::User',
+	},
+	project => {
+	    isa => 'TTDB::Project',
+	}
+    });
+    my $self = bless({ %p }, $class);
+
+    return $self;
+}
+
+sub get
+{
+    my $class = shift;
+    my $dbh = get_dbh();
+
+    my %p = validate(@_, {
+	start_time => {
+	    isa => 'Date::Calc',
+	},
+	end_time => {
+	    isa => 'Date::Calc',
+	},
+	user => {
+	    isa => 'TTDB::User',
+	}
+    });
+    my $self = bless({ %p }, $class);
+}
+
+sub _get
+{
+    my $self = shift;
+    my $dbh = get_dbh();
+
+    my $sth = $dbh->prepare(<<SQL);
+select *
+  from timeslice
+ where (end_time > ? or end_time is null)
+   and start_time <= ?
+   and user_id = ?
+SQL
+
+    my $start = $self->start_time->mysql;
+    my $end = $self->end_time->mysql;
+    my $user_id = $self->user->id;
+
+    $sth->execute( $start, $end, $user_id );
+
+    my $data = $sth->fetchall_arrayref({});
+
+    $self->{data} = $data;
+
+    return $self;
+}
+
+sub ids
+{
+    my $self = shift;
+    
+    $self->{id};
+}
+
+sub start_time
+{
+    my $self = shift;
+
+    $self->{start_time}
+}
+
+sub end_time
+{
+    my $self = shift;
+
+    $self->{end_time}
+}
+
+sub duration
+{
+    my $self = shift;
+
+    'fixme';
+}
+
+sub user
+{
+    shift->{user};
+}
+
+sub project
+{
+    my $self = shift;
+    $self->{project};
+}
+
+sub elapsed
+{
+    my $self = shift;
+
+    $self->end_time - $self->start_time;
+}
+
+sub count
+{
+    my $self = shift;
+
+    @{$self->{data}};
+}
+
+sub create
+{
+    my $self = shift;
+    my $dbh = get_dbh('write');
+
+    $self->_get();
+
+    return "Can't create" if $self->count();
+    
+    my $st = $dbh->prepare(<<SQL);
+insert into timeslice
+       (user_id, project_id, start_time, end_time, elapsed)
+values (?, ?, ?, ?, ?)
+SQL
+
+    $st->execute(
+        $self->user->id,
+        $self->project->id,
+        $self->start_time->mysql,
+        $self->end_time->mysql,
+        $self->elapsed->mysql,
+    );
+}
+
+sub update
+{
+    my $self = shift;
+    my $dbh = get_dbh('write');
+
+    $self->_get();
+
+    my $user_id = $self->user->id;
+    my $start = $self->start_time->mysql;
+    my $end = $self->end_time->mysql;
+
+    my $st = $dbh->prepare(<<SQL);
+select id,
+       start_time,
+       end_time,
+       user_id,
+       project_id,
+       'eof'
+  from timeslice
+ where (end_time > ? or end_time is null)
+   and start_time < ?
+   and user_id = ?
+   for update
+SQL
+
+#    $st->execute($start, $start, $user_id);
+#    my @s_id = $st->fetchrow();
+#
+#    $st->execute($end, $end, $user_id);
+#    my @e_id = $st->fetchrow();
+
+    $st->execute($start, $end, $user_id);
+
+    my @ids = map({ { %$_, start_time => Date::Calc::MySQL->new($_->{start_time}), end_time => Date::Calc::MySQL->new($_->{end_time}), } } @{$st->fetchall_arrayref({})});
+
+    my $ins = 0;
+    for my $ts (@ids) {
+        if ( $self->start_time eq $ts->{start_time} &&
+	    $self->end_time eq $ts->{end_time}) {
+	} elsif ( $self->start_time ge $ts->{start_time} &&
+#new time inside old time
+	    $self->end_time le $ts->{end_time}) {
+            if ( $self->start_time gt $ts->{start_time} ) {
+		my $sta = $dbh->prepare(<<SQL);
+update timeslice set end_time = ?, elapsed = ? where id = ?
+SQL
+		my $el = ($self->end_time - $ts->{start_time});
+		$sta->execute($self->start_time->mysql, ($self->start_time - $ts->{start_time})->mysql, $ts->{id});
+            } else {
+warn "start eq";
+	    }
+            if ( $self->end_time lt $ts->{end_time} ) {
+		my $sti = $dbh->prepare(<<SQL) or die;
+insert into timeslice
+       (user_id, project_id, start_time, end_time, elapsed)
+values (?, ?, ?, ?, ?)
+SQL
+		$sti->execute(
+		    $ts->{user_id},
+		    $ts->{project_id},
+		    $self->end_time->mysql,
+		    $ts->{end_time}->mysql,
+		    ($ts->{end_time} - $self->end_time)->mysql
+		) or die;
+	    } else {
+warn "end eq";
+	    }
+	    my $sta = $dbh->prepare(<<SQL);
+insert into timeslice
+       (user_id, project_id, start_time, end_time, elapsed)
+values (?, ?, ?, ?, ?)
+SQL
+	    $sta->execute(
+		$self->user->id,
+		$self->project->id,
+		$self->start_time->mysql,
+		$self->end_time->mysql,
+		$self->elapsed->mysql,
+	    );
+        } elsif (
+	    $self->start_time gt $ts->{start_time} &&
+	    $self->start_time lt $ts->{end_time}
+	) {
+# set the end time of the first block
+	    my $sta = $dbh->prepare(<<SQL);
+update timeslice set end_time = ?, elapsed = ? where id = ?
+SQL
+	    $sta->execute($self->start_time->mysql, ($self->start_time - $ts->{start_time})->mysql, $ts->{id});
+	    $ins++;
+        } elsif (
+	    $self->end_time gt $ts->{start_time} &&
+	    $self->end_time lt $ts->{end_time}
+	) {
+# set the end time of the first block
+	    my $sta = $dbh->prepare(<<SQL);
+update timeslice set start_time = ?, elapsed = ? where id = ?
+SQL
+	    $sta->execute($self->end_time->mysql, ($ts->{end_time} - $self->end_time)->mysql, $ts->{id});
+	    $ins++;
+        } else {
+	    my $sta = $dbh->prepare(<<SQL);
+delete from timeslice where id = ?
+SQL
+	    $sta->execute($ts->{id});
+	    $ins++;
+        }
+    }
+    if ($ins) {
+#        $self->create;
+	my $st = $dbh->prepare(<<SQL);
+insert into timeslice
+       (user_id, project_id, start_time, end_time, elapsed)
+values (?, ?, ?, ?, ?)
+SQL
+
+	$st->execute(
+	    $self->user->id,
+	    $self->project->id,
+	    $self->start_time->mysql,
+	    $self->end_time->mysql,
+	    $self->elapsed->mysql,
+	);
+    }
+    $dbh->commit;
+#    $st->commit;
+}
+
+1;
+__END__

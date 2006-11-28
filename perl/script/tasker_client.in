@@ -1,0 +1,184 @@
+#!/usr/bin/perl
+
+use strict;
+use POSIX ;
+use Socket;
+use IO::Socket;
+use IO::Socket::SSL;
+use IO::Select;
+use Fcntl qw(F_GETFL F_SETFL O_NONBLOCK O_NDELAY);
+
+use Net::TCPwrappers qw(RQ_DAEMON RQ_FILE request_init fromhost hosts_access);
+
+use Getopt::Long;            # support options+arguments
+use Pod::Usage;              # avoid redundant &Usage()
+
+my $done=0;
+my $select;
+my $server;
+my $sslserver;
+my $connections=0;
+
+our $progname = 'tskrsrvr';
+
+sub print_log {
+    print strftime("%b %e %T", localtime)." ";
+    print @_;
+    print "\n";
+}
+
+sub nonblock {
+    my $socket = shift;
+    my $flags;
+
+    return unless $socket;
+
+    $flags = fcntl($socket, F_GETFL, 0)
+        or print_log "Can't get flags for socket: $!\n";
+    fcntl($socket, F_SETFL, $flags | O_NONBLOCK)
+        or print_log "Can't make socket nonblocking: $!\n";
+}
+
+################################################################################
+
+our $hash = {};
+our $user_hash = {};
+our $datahash = {};
+
+our $time_count;
+
+our $opt_debug;
+our $opt_help;
+our $opt_man;
+our $opt_versions;
+
+our $server = 'localhost';
+our $port   = '8001';
+
+use Fcntl qw(F_GETFL F_SETFL O_NONBLOCK O_NDELAY);
+
+sub main
+{
+    my $client;
+
+    $client = IO::Socket::SSL->new(
+	PeerAddr => $server,
+	PeerPort => $port,
+	Proto    => 'tcp',
+
+        SSL_use_cert => 1,
+        SSL_cert_file => '/etc/tasker/cert.pem',
+        SSL_key_file => '/etc/tasker/key.pem',
+
+	SSL_verify_mode => 0x01, 
+        SSL_ca_file => '/etc/tasker/cacert.pem',
+    );
+
+    nonblock($client);
+    nonblock(\*STDIN);
+
+    if ($client) {
+	$select = IO::Select->new();
+	$select->add($client);
+	$select->add(\*STDIN);
+        while (1) {
+	    foreach my $reader ($select->can_read(1)) {
+	        if ($client == $reader) {
+		    my $data;
+		    my $rv = $client->read($data, POSIX::BUFSIZ, 0);
+		    unless (defined($rv) && length $data) {
+			printf("close\n");
+			exit(0);
+		    }
+		    print $data;
+		} else {
+		    my @bob = <$reader>;
+		    print $client @bob;
+		}
+	    }
+        }
+	print("bob\n");
+    } else {
+	warn "I encountered a problem: ", IO::Socket::SSL::errstr();
+    }
+    print("bill\n");
+}
+
+GetOptions(
+    'server=s'  => \$server,
+    'port=i'    => \$port,
+    'debug=i'   => \$opt_debug,
+    'help!'     => \$opt_help,
+    'man!'      => \$opt_man,
+    'versions!' => \$opt_versions,
+) or pod2usage(-verbose => 1) && exit;
+
+#pod2usage(-verbose => 1) && exit if ($opt_debug !~ /^[01]$/);
+pod2usage(-verbose => 1) && exit if defined $opt_help;
+pod2usage(-verbose => 2) && exit if defined $opt_man;
+
+main;
+
+__END__
+=head1 NAME
+
+ tasker_client.pl
+
+=head1 SYNOPSIS
+
+ tasker_client.pl
+
+=head1 DESCRIPTION
+
+ asdf
+
+ eg:
+   tskserver.pl
+   tskserver --server=tskserver
+
+=head1 OPTIONS
+
+ --versions   print Modules, Perl, OS, Program info
+ --debug 0    don't print debugging information (default)
+ --debug 1    print debugging information
+
+ --help      print Options and Arguments instead
+ --man       print complete man page
+
+=head1 API
+
+The first step is that the server sends a version number;
+
+The client should then authorize the user.
+
+
+=head1 AUTHOR
+
+G. Allen Morris III <gam3@gam3.net>
+
+=head1 CREDITS
+
+Gnotime convinced me to work on this project.
+
+=head1 TESTED
+
+ Pod::Usage            1.14
+ Getopt::Long          2.2602
+ Perl    5.00503
+ Debian  2.2r5
+
+=head1 BUGS
+
+None that I know of.
+
+=head1 TODO
+
+  This is currently a very long list. 
+
+=head1 UPDATES
+
+ 2006-04-07   12:05 EST
+   Initial code
+
+=cut
+

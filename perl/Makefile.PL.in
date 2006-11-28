@@ -1,0 +1,8 @@
+use ExtUtils::MakeMaker;
+
+WriteMakefile ( NAME => 'MyMod',
+		DEFINE => qq[@DEFS@],
+		INC => qq[address@bogus.example.com@/src/lib @CPPFLAGS],
+		LIBS => qq[address@bogus.example.com@/src/lib -lMyAPI_PIC ],
+		INSTALLDIRS => 'perl' );
+
