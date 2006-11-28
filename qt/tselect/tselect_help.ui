@@ -1,0 +1,87 @@
+<!DOCTYPE UI><UI version="3.3" stdsetdef="1">
+<class>HelpAutoSet</class>
+<widget class="QDialog">
+    <property name="name">
+        <cstring>HelpAutoSet</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>600</width>
+            <height>480</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>Form1</string>
+    </property>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>textLabel1</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>240</x>
+                <y>10</y>
+                <width>70</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;p align="center"&gt;Help&lt;/p&gt;</string>
+        </property>
+    </widget>
+    <widget class="QPushButton">
+        <property name="name">
+            <cstring>Done</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>250</x>
+                <y>440</y>
+                <width>82</width>
+                <height>27</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>Done</string>
+        </property>
+    </widget>
+    <widget class="QTextEdit">
+        <property name="name">
+            <cstring>textEdit2</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>10</x>
+                <y>30</y>
+                <width>580</width>
+                <height>390</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>&lt;html&gt;&lt;head&gt;&lt;meta name="qrichtext" content="1" /&gt;&lt;/head&gt;&lt;body style="font-size:8pt;font-family:Bitstream Charter"&gt;
+&lt;p&gt;This dialog allow you to tell the Tasker System what project should be selected given the information for a window.&lt;/p&gt;
+&lt;p&gt;If all the check boxes are selected then the project would be come the default project&lt;/p&gt;
+&lt;p&gt;If all checkboxes are selected except the desktop box then this project will become the default project for that desktop. There is a priority system, so the more discriptive selection will be used over the more general.&lt;/p&gt;
+&lt;/body&gt;&lt;/html&gt;
+</string>
+        </property>
+        <property name="wordWrap">
+            <enum>WidgetWidth</enum>
+        </property>
+    </widget>
+</widget>
+<connections>
+    <connection>
+        <sender>Done</sender>
+        <signal>clicked()</signal>
+        <receiver>HelpAutoSet</receiver>
+        <slot>close()</slot>
+    </connection>
+</connections>
+<includes>
+    <include location="local" impldecl="in implementation">tselect_help.ui.h</include>
+</includes>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>
