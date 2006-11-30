@@ -19,8 +19,8 @@ is(scalar $notes->entries, 0, 'today');
 
 $notes = TTDB::Notes->new(date => Date::Calc::MySQL->new(2006, 1, 1));
 
-is(scalar $notes->entries, 1, '2006-01-01');
+is(scalar $notes->entries, 0, '2006-01-01');
 
 $notes = TTDB::Notes->new(date => Date::Calc::MySQL->new(2006, 1, 02));
 
-is(scalar $notes->entries, 35, '2006-01-02');
+is(scalar $notes->entries, 0, '2006-01-02');

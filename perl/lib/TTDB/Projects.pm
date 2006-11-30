@@ -37,17 +37,17 @@ sub new
 	},
     });
 
-    my $sth = $dbh->prepare(<<SQL);
-select project.name name,
-       project.id id,
-       project.parent_id parent_id,
-       project.user_id user_id,
-       project.description description,
+    my $sth = $dbh->prepare(<<SQL) or die $dbh->err_str;
+select project.name as name,
+       project.id as id,
+       project.parent_id as parent_id,
+       project.user_id as user_id,
+       project.description as description,
        'eof'
   from project
 SQL
 
-    $sth->execute();
+    $sth->execute() or die;
 
     my $data_hash = {};
     my $head = [];
@@ -76,8 +76,8 @@ sub get_entry
 {
     my $self = shift;
     my $id = shift;
-
-    return $self->{data}->{$id} || die Dumper($self->[0])." No entry found ($id).";
+use Data::Dumper;
+    return $self->{data}->{$id} || die Dumper($self)." No entry found ($id).";
 }
 
 sub _subentries

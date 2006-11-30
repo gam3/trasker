@@ -14,6 +14,7 @@ sub new
 
     my %p = validate(@_, {
         name => 1,
+        description => 0,
 	parent => {
 	   optional => 1,
 	   isa => [ qw(  TTDB::Project ) ],
@@ -83,11 +84,24 @@ sub create
     my $hidden = $self->hidden;
     my $description = $self->description;
 
-    my $st_id = $dbh->prepare('select LAST_INSERT_ID()');
+    my $st_id;
+    my $sth;
 
-    my $sth = $dbh->prepare(<<EOP);
+    if (0) {
+        $st_id = $dbh->prepare('select LAST_INSERT_ID()');
+    } else {
+        $st_id = $dbh->prepare("select currval('project_id_seq')");
+    }
+
+    if (0) {
+	$sth = $dbh->prepare(<<EOP) or die $dbh->err_str;
 insert into project (parent_id, name, user_id, hide, description) values (?, ?, ?, ?, ?);
 EOP
+    } else {
+	$sth = $dbh->prepare(<<EOP) or die $dbh->err_str;
+insert into project (parent_id, name, user_id, hide, description) values (?, ?, ?, ?, ?);
+EOP
+    }
     $sth->execute($pid, $name, $user_id, $hidden, $description);
 
     $st_id->execute();
@@ -95,6 +109,8 @@ EOP
     $self->{id} = $id;
     
     TTDB::Projects::flush();
+
+    $dbh->commit;
 
     $self;
 }
@@ -242,10 +258,13 @@ sub get_time
     if (time - $get_time->{time} < 1) {
 	return $get_time->{data}->{$id} || Date::Calc::Object->new([1], 0, 0, 0, 0,0,0);
     }
+    $get_time->{data} = {};
 
     my $dbh = get_dbh();
 
-    my $sth = $dbh->prepare(<<SQL);
+    my $sth;
+    if (0) {
+	$sth = $dbh->prepare(<<SQL) or die 'bob';
 select project_id,
   SEC_TO_TIME(
    SUM(
@@ -258,11 +277,28 @@ select project_id,
  where addtime(start_time, timediff(ifnull(end_time, now()), start_time)) >= date(now())
  group by project_id
 SQL
+    } else {
+	$sth = $dbh->prepare(<<SQL) or die 'bob';
+select project_id,
+       sum(
+         case when end_time is null then
+           now() - case when date(start_time) = 'today' then start_time else 'today' end
+         else
+           end_time - case when date(start_time) = 'today' then start_time else 'today' end
+         end
+       ) as time
+  from timeslice
+  where date(end_time) = date(now()) or end_time is null
+ group by project_id
+SQL
+    }
 
     $sth->execute();
 
     while (my $row = $sth->fetchrow_arrayref) {
 	my $time = $row->[1];
+use Data::Dumper;
+print Dumper $row;
 	my $ntime = Date::Calc::Object->new([1], 0, 0, 0, split(':', $time));
 	$get_time->{data}->{$row->[0]} = $ntime;
     }
@@ -332,6 +368,9 @@ sub alltime
     my $self = shift;
 
     my $time = $self->_alltime();
+
+use Data::Dumper;
+print Dumper [ $self, $time ];
 
     sprintf("%2d:%02d:%02d", $time->normalize()->time());
 }

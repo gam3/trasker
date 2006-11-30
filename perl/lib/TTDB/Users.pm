@@ -19,24 +19,24 @@ sub new
 
     my $sth;
     if (my $pid = $p{project_id}) {
-	$sth = $dbh->prepare(<<SQL);
-select user.name user_name,
-       user.fullname user_fullname,
-       user.id user_id,
-       'eof'
-  from user, user_project
+	$sth = $dbh->prepare(<<SQL) or die;
+select users.name as user_name,
+       users.fullname as user_fullname,
+       users.id as user_id,
+       'eof' as eof
+  from users, user_project
  where user_project.user_id = user.id
    and user_project.project_id = ?
 SQL
 
 	$sth->execute($pid);
     } else {
-	$sth = $dbh->prepare(<<SQL);
-select user.name user_name,
-       user.fullname user_fullname,
-       user.id user_id,
-       'eof'
-  from user
+	$sth = $dbh->prepare(<<SQL) or die;
+select users.name as user_name,
+       users.fullname as user_fullname,
+       users.id as user_id,
+       'eof' as eof
+  from users
 SQL
 
 	$sth->execute();

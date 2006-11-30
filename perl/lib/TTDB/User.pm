@@ -29,15 +29,22 @@ sub create
 
     my $dbh = get_dbh;
 
-    my $sth_id = $dbh->prepare('select LAST_INSERT_ID()');
+    my $sth_id;
+    if (0) {
+	$sth_id = $dbh->prepare('select LAST_INSERT_ID()');
+    } else {
+	$sth_id = $dbh->prepare("select currval('users_id_seq')");
+    }
     my $sth = $dbh->prepare(<<SQL);
-insert into user (name, fullname) values (?, ?)
+insert into users (name, fullname) values (?, ?)
 SQL
 
     $sth->execute($self->{name}, $self->{fullname});
     $sth_id->execute();
     my $id = $sth_id->fetchrow_array();
     $self->{id} = $id;
+
+    $dbh->commit();
 
     $self;
 }
@@ -59,24 +66,24 @@ sub get
 
     if (my $user = $p{user}) {
 	$sth = $dbh->prepare(<<SQL);
-select user.name name,
-       user.fullname fullname,
-       user.id id,
-       'eof'
-  from user
- where user.name = ?
+select name,
+       fullname,
+       id,
+       'eof' as eof
+  from users
+ where name = ?
 SQL
 
 	$sth->execute($user);
     } else {
 	my $id = $p{id};
 	$sth = $dbh->prepare(<<SQL);
-select user.name name,
-       user.fullname fullname,
-       user.id id,
+select name,
+       fullname,
+       id,
        'eof'
-  from user
- where user.id = ?
+  from users
+ where id = ?
 SQL
 
 	$sth->execute($id);
@@ -220,6 +227,7 @@ warn("Not updating $id == $project_id");
       ($type eq $p{temporary} && defined $old_rid) ? $old_rid : $rid,
       $p{host},
     ) || die $dbh->errstr;
+
     $dbh->commit;
 
     $self;

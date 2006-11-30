@@ -14,11 +14,11 @@ for my $project ($projects->entries()) {
     $count++;
 }
 
-ok($count == 11, 'count');
+is($count, 3, 'count');
 
 ok($projects->get_entry(1), 'get_entry');
 
-is($projects->get_entry(11)->longname, 'Test:bill:bob', 'longname');
+is($projects->get_entry(2)->longname, 'First:1.1', 'longname');
 
 $projects->flush();
 
