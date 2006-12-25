@@ -154,6 +154,8 @@ sub update
     my $self = shift;
     my $dbh = get_dbh('write');
 
+die;
+
     $self->_get();
 
     my $user_id = $self->user->id;
@@ -173,12 +175,6 @@ select id,
    and user_id = ?
    for update
 SQL
-
-#    $st->execute($start, $start, $user_id);
-#    my @s_id = $st->fetchrow();
-#
-#    $st->execute($end, $end, $user_id);
-#    my @e_id = $st->fetchrow();
 
     $st->execute($start, $end, $user_id);
 
@@ -273,7 +269,6 @@ SQL
 	);
     }
     $dbh->commit;
-#    $st->commit;
 }
 
 1;

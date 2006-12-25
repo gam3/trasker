@@ -6,6 +6,19 @@ BEGIN {
     use_ok('TTDB::Project');
 };
 
+use TTDB::DBI qw (get_dbh);
+
+our $dbh = get_dbh;
+
+$dbh->do('delete from notes');
+$dbh->do(qq/SELECT setval('notes_id_seq', 1, false)/);
+$dbh->do('delete from timeslice');
+$dbh->do(qq/SELECT setval('timeslice_id_seq', 1, false)/);
+$dbh->do('delete from project');
+$dbh->do(qq/SELECT setval('project_id_seq', 1, false)/);
+$dbh->do(qq/delete from user_project/) or die;
+$dbh->commit;
+
 eval {
     TTDB::Project->new();
 };

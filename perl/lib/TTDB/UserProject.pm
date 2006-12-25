@@ -63,12 +63,12 @@ sub user
 sub active
 {
     my $self = shift;
-    my $dbh = get_dbh();
+    my $dbh = get_dbh('select');
     my $user_id = $self->user->id;
     my $project_id = $self->project->id;
 
-    if (defined $self->{project}{data}{user_id} 
-        && $self->{project}{data}{user_id} == $self->{user}->id()
+    if (defined $self->project->user_id
+        && $self->project->user_id == $self->{user}->id()
        )
     {
         return 1;
@@ -211,17 +211,13 @@ sub get_time
 
     my $dbh = get_dbh();
 
-    my $sth = $dbh->prepare(<<SQL);
+    my $sth = $dbh->prepare(<<SQL) or die $dbh->err_str();
 select project_id,
-  SEC_TO_TIME(
-   SUM(
-    TIME_TO_SEC(
-     timediff(ifnull(end_time, now()), if(start_time >= date(now()), start_time, concat(date(now()), ' 00:00:00')))
-    )
-   )
+  SUM(
+     coalesce(end_time, now()) - case when start_time >= 'today' then start_time else 'today' end
   )
   from timeslice
- where addtime(start_time, timediff(ifnull(end_time, now()), start_time)) >= date(now())
+ where date(coalesce(end_time, 'today')) = 'today'
    and user_id = ?
  group by project_id
 SQL
@@ -288,7 +284,15 @@ sub add_note
     });
     my $st = $dbh->prepare("insert into notes (type, time, user_id, project_id, note) values (1, now(), ?, ?, ?)");
 
-    $st->execute($self->user->id(), $self->project->id(), $p{note}) or die $dbh->err_str();
+    eval {
+	$st->execute($self->user->id(), $self->project->id(), $p{note}) or die $dbh->errstr();
+    }; if ($@) {
+	$dbh->rollback;
+	die $@;
+    } else {
+warn "Added note";
+	$dbh->commit or die $dbh->errstr();
+    }
 
     $self;
 }
@@ -301,13 +305,22 @@ sub add_task
         name => 1,
         description => 1,
     });
-    my $st_id = $dbh->prepare('select LAST_INSERT_ID()');
-    my $st = $dbh->prepare("insert into project ( user_id, parent_id, name, description) values (?, ?, ?, ?)");
+    my $st_id = $dbh->prepare(qq/select nextval('project_id_seq')/);
+    my $st = $dbh->prepare("insert into project (id, user_id, parent_id, name, description) values (?, ?, ?, ?, ?)");
 
-    $st->execute($self->user->id(), $self->project->id(), $p{name}, $p{description}) or die $dbh->err_str();
+    my $id;
+    eval {
+	$st_id->execute();
+	$id = $st_id->fetchrow();
 
-    $st_id->execute();
-    my $id = $st_id->fetchrow();
+	$st->execute($id, $self->user->id(), $self->project->id(), $p{name}, $p{description}) or die $dbh->errstr();
+    };
+    if ($@) {
+        $dbh->rollback;
+	die $@;
+    } else {
+        $dbh->commit;
+    }
     
     TTDB::Projects::flush();
 

@@ -172,65 +172,90 @@ sub set_current_project
 	},
     });
 
-    $p{host} = 'bob';
+    $p{host} ||= '_unknown_';
 
     $p{temporary} ||= 'normal';
 
     $p{auto_id} ||= 0;
 
-    my $id = defined $p{project} ? $p{project}->id() : $p{project_id};
+    my $project_id = defined $p{project} ? $p{project}->id() : $p{project_id};
 
     my $dbh = get_dbh('commit');
 
-    my $sth = $dbh->prepare(<<SQL);
-select project_id from timeslice where elapsed is NULL and user_id = ? for update;
+    my $sths = $dbh->prepare(<<SQL) or die chomp $dbh->err_str();
+select id, project_id, temporary, revert_to
+  from timeslice
+ where end_time is NULL
+   and user_id = ? for update;
 SQL
-    my $stha = $dbh->prepare(<<'SQL');
+
+    my $sthu;
+    if (0) {
+	$sthu = $dbh->prepare(<<'SQL') or die $dbh->err_str();
 update timeslice 
    set elapsed = timediff(NOW(), start_time),
    end_time = NOW(),
-   id = (@temp := id),
-   temporary = (@btype := temporary),
-   revert_to = (@rid := revert_to)
- where elapsed is null and user_id = ?
+ where id = ?
 SQL
-    my $sthc = $dbh->prepare('select @temp, @btype, @rid');
-    my $sthb = $dbh->prepare(<<SQL);
-insert into timeslice (user_id, project_id, temporary, start_time, auto_id, revert_to, host) values (?, ?, ?, NOW(), ?, ?, ?);
+    } else {
+	$sthu = $dbh->prepare(<<'SQL') or die $dbh->err_str();
+update timeslice 
+   set elapsed = now() - start_time,
+   end_time = now()
+ where id = ?
+SQL
+    }
+
+    my $sthi = $dbh->prepare(<<SQL) or die $dbh->err_str();
+insert into timeslice 
+       (user_id, project_id, temporary, start_time, auto_id, revert_to, host)
+values (      ?,          ?,         ?,      now(),       ?,         ?,    ?)
 SQL
 
-    $sth->execute($user_id);
-    if ($sth->rows) {
-        my ($project_id) = ($sth->fetchrow_array);
-	if ($project_id == $id) {
-warn("Not updating $id == $project_id");
-	    $dbh->rollback;
-	    return $self;
+    eval {
+	$sths->execute($user_id);	# get current project
+
+	my ($id, $current_project_id, $type, $old_rid) = (undef, 0, undef, 0);
+
+        my $rows = $sths->rows;
+
+	if ($rows == 1) {
+	    ($id, $current_project_id, $type, $old_rid) = ($sths->fetchrow_array);
+	    if ($project_id == $id) {
+		warn("Not updating $id == $project_id");
+		$dbh->rollback;
+		return 0;
+	    }
+	    $sthu->execute($id);   # end current timeslice
+            die 'No update' unless $sthu->rows == 1;
+	} elsif ($rows == 0) {
+	    warn "new";
+	} else {
+	    die "bad entries: ", $rows;
 	}
+
+	my $new_rid;
+	if ($p{temporary} ne 'normal') {
+	   $new_rid = $old_rid || $id;
+	}
+
+	$sthi->execute(
+	  $user_id,
+	  $project_id,
+	  $p{temporary},
+	  $p{auto_id},
+	  $new_rid,
+	  $p{host},
+	) || die $sthi->{Statement} . ' ' . $dbh->errstr ;
+    };
+    if ($@) {
+warn $@;
+	$dbh->rollback;
+    } else {
+	$dbh->commit;
     }
-    $stha->execute($user_id);
-    my ($rid, $type, $old_rid) = (undef, undef, undef);
 
-    $type = '';
-    $rid = '';
-
-    if ($p{auto_id}) {
-        $sthc->execute();
-        ($rid, $type, $old_rid) = ($sthc->fetchrow_array);
-    }
-
-    $sthb->execute(
-      $user_id,
-      $id,
-      $p{temporary},
-      $p{auto_id},
-      ($type eq $p{temporary} && defined $old_rid) ? $old_rid : $rid,
-      $p{host},
-    ) || die $dbh->errstr;
-
-    $dbh->commit;
-
-    $self;
+    return 1;
 }
 
 sub revert
@@ -243,40 +268,57 @@ sub revert
         host => 0,
     });
 
-    $p{type} ||= 'normal';
+    $p{type} ||= 'xnormal';
 
     my $dbh = get_dbh('commit');
+
     my $sth = $dbh->prepare(<<SQL);
-select temporary, revert_to, project_id, host from timeslice where revert_to is not NULL and elapsed is NULL and user_id = ? for update;
+select id,
+       temporary,
+       revert_to,
+       project_id,
+       host
+  from timeslice
+ where revert_to is not NULL
+   and elapsed is NULL
+   and user_id = ? for update;
 SQL
+
     my $stha = $dbh->prepare(<<SQL) or die;
 update timeslice
-   set elapsed = timediff(NOW(), start_time), end_time = NOW()
- where elapsed is null and user_id = ?;
-SQL
-    my $sthb = $dbh->prepare(<<SQL) or die;
-insert into timeslice (user_id, project_id, temporary, auto_id, revert_to, start_time, host)
-select user_id, project_id, temporary, auto_id, revert_to, now(), host from timeslice
+   set elapsed = now() - start_time, end_time = now()
  where id = ?
 SQL
+    my $sthi = $dbh->prepare(<<SQL) or die $dbh->err_str();
+insert into timeslice (user_id, project_id, temporary, auto_id, start_time, host)
+               SELECT user_id, project_id, 'revert', auto_id, now(), host FROM timeslice where id = ?
+SQL
 
-    $sth->execute($user_id);
+    eval {
+	$sth->execute($user_id);
 
-    if ($sth->rows) {
-	my ($flag, $rid, $pid, $host) = $sth->fetchrow_array;
+        my $rows = $sth->rows;
 
-	if ($flag eq $p{type} and defined $rid) {
-	    eval {
-	      $stha->execute($user_id) or die $dbh->err_str;
-	      $sthb->execute($rid) or die $dbh->err_str;
-	    }; if ($@) {
-		$dbh->rollback;
+	if ($rows == 1) {
+	    my ($id, $flag, $rid, $pid, $host) = $sth->fetchrow_array;
+
+	    if ($flag eq $p{type} and defined $rid and $rid > 0) {
+		$stha->execute($id) or die $dbh->errstr;
+		$sthi->execute($rid) or die $dbh->errstr;
 	    } else {
-		$dbh->commit;
+warn "Rollback";
+		$dbh->rollback;
 	    }
+	} elsif ($rows == 0) {
+	    die "Nothing to revert too.";
 	} else {
-	    $dbh->rollback;
+	    die "Fatal Error: ", $rows;
 	}
+    };
+    if ($@) {
+	$dbh->rollback;
+    } else {
+	$dbh->commit;
     }
 }
 
@@ -344,27 +386,19 @@ sub auto_set_project
 	desktop => 1,
     });
     
-    my $st = $dbh->prepare(<<SQL);
-select id, project_id, presidence from auto
- where ? like host
-   and user_id = ?
-   and ? like desktop
-   and ? like class
-   and ? like title
-   and ? like name
- order by presidence desc
- limit 1
-SQL
+    require TTDB::Auto;
 
-    $st->execute($p{host}, $self->id, $p{desktop}, $p{class}, $p{title}, $p{name});
-    $p{user} = $self->id;
+    my $auto = TTDB::Auto->get(
+        user => $self,
+        role => '',
+        %p,
+    );
 
-    my ($id, $project_id, $p) = $st->fetchrow_array;
-
-    if ($st->rows) {
-	$self->set_current_project(project_id => $project_id, temporary => 'window', auto_id => $id, host => $p{host});
+    if (defined $auto) {
+	return $self->set_current_project(project_id => $auto->project_id, temporary => 'window', auto_id => $auto->id, host => $p{host});
     } else {
-	$self->revert(type => 'window');
+	$self->revert(type => 'window', host => $p{host});
+	return -1;
     }
 }
 
@@ -422,13 +456,35 @@ SQL
 sub add_task
 {
     my $self = shift;
-    my $dbh = get_dbh;
-    my $id = $self->id() || die;
+
+    my $dbh = get_dbh('commit');
+
+    my $uid = $self->id() || die;
     my %p = validate(@_, {
-	project => {
-	   isa => [ qw(  TTDB::Project ) ],
-	},
+        name => 1,
+        description => 1,
     });
+
+    my $st_id = $dbh->prepare(qq/select nextval('project_id_seq')/);
+    my $st = $dbh->prepare("insert into project (id, user_id, parent_id, name, description) values (?, ?, NULL, ?, ?)");
+
+    my $id;
+    eval {
+	$st_id->execute();
+	$id = $st_id->fetchrow();
+
+	$st->execute($id, $self->id(), $p{name}, $p{description}) or die $dbh->errstr();
+    };
+    if ($@) {
+        $dbh->rollback;
+	die $@;
+    } else {
+        $dbh->commit;
+    }
+    
+    TTDB::Projects::flush();
+
+    TTDB::UserProject->new(user => $self, project_id => $id);
 }
 
 sub add_note
