@@ -51,7 +51,7 @@ sub get
 
     my $id = $p{id};
 
-    my $projects = TTDB::Projects::get((user => $p{user}) x!! $p{user});
+    my $projects = TTDB::Projects->get((user => $p{user}) x!! $p{user});
 
     if (my $name = $p{name}) {
         for my $k (keys %{$projects->{data}}) {

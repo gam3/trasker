@@ -222,14 +222,14 @@ SQL
 	if ($rows == 1) {
 	    ($id, $current_project_id, $type, $old_rid) = ($sths->fetchrow_array);
 	    if ($project_id == $id) {
-		warn("Not updating $id == $project_id");
+#		warn("Not updating $id == $project_id");
 		$dbh->rollback;
 		return 0;
 	    }
 	    $sthu->execute($id);   # end current timeslice
             die 'No update' unless $sthu->rows == 1;
 	} elsif ($rows == 0) {
-	    warn "new";
+#	    warn "new";
 	} else {
 	    die "bad entries: ", $rows;
 	}
@@ -547,32 +547,23 @@ sub day
     my $project_id_clause = "and project_id in (1, 2, 3, 4)";
 
     my $sth = $dbh->prepare(<<SQL);
-select id, 
-       project_id,
-       timeslice.user_id,
-       start_time,
-       end_time,
-       sec_to_time(
-        sum(
-	 time_to_sec(
-	  timediff(
-	   if(date(end_time) = cast(? as date), end_time, cast(? as datetime)),
-           if(date(start_time) = cast(? as date), start_time, cast(? as datetime))
-	  )
-	 )
-        )
-       ) 'time',
+select project_id,
+       user_id,
+       sum(elapsed) as time,
        'eof'
   from timeslice
-  where date(start_time) <= cast(? as date)
-    and date(end_time) >= cast(? as date)
+  where start_time < ?
+    and end_time >= ?
     and user_id = ?
     $project_id_clause
     group by user_id, project_id
 SQL
+
+
+print join(' : ', $start->mysql, $end->mysql);
+
     $sth->execute(
-	$day->mysql, $end->mysql, $day->mysql, $start->mysql,
-	$day->mysql, $day->mysql,
+	$end->mysql, $start->mysql,
 	$self->id
     );
 

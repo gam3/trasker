@@ -8,6 +8,8 @@ use TTDB::DBI qw (get_dbh);
 
 use Params::Validate qw( validate validate_pos SCALAR BOOLEAN HASHREF OBJECT );
 
+use Carp qw (croak);
+
 our $dir = "/home/gam3/.tasker/";
 
 our $data;
@@ -19,8 +21,9 @@ sub flush
 
 sub get
 {
-    __PACKAGE__->new(@_);
-#    $data ||= __PACKAGE__->new(@_);
+    my $class = shift || croak "Need Class";
+
+    my $data = $class->new(@_);
 
     $data;
 }
