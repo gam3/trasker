@@ -10,6 +10,7 @@ use TTDB::UserProject;
 use TTDB::User;
 use TTDB::Project;
 use TTDB::Notes;
+use TTDB::Time;
 
 use Date::Calc::MySQL;
 
@@ -30,8 +31,7 @@ sub main
     $date--;
     my $end_date = Date::Calc::MySQL->new( Date::Calc::Monday_of_Week($week, $year) );
     $end_date--;
-print $date, "\n";
-print $end_date, "\n";
+
     GetOptions(
       'debug=i'   => \$opt_debug,
       'help!'     => \$opt_help,
@@ -66,14 +66,14 @@ print $end_date, "\n";
     push @ids, map({ $_->id } $p->children);
 
     while ($date < $end_date) {
-	print $date->strftime("%Y %B %d %A"), "\n";
+	print "Date ", $date->strftime("%Y %B %d %A"), "\n";
 
 	for my $time ($u->day(date => $date, pids => \@ids)) {
-	    print $time->{data}->{project_id}, ": ";
-	    print $time->{data}->{time}, "\n";
+	    print $time->elapsed, "\n";
 	}
 	for my $note (TTDB::Notes->new(date => $date)->entries) {
 	    print "# Note " . substr($note->text, 0, 150), "\n";
+	    print "# Note " . $note->time, "\n";
 	}
 
 	$date++;
@@ -85,17 +85,23 @@ use Date::Parse;
 
 my ($week, $year) = Date::Calc::Week_of_Year( Date::Calc::Today() );
 my $date = str2time(join(' ', @ARGV));
-print "date: $date\n";
 
 if ($date) {
     print "$date @ARGV\n";
     ($week, $year) = Date::Calc::Week_of_Year( (Date::Calc::Gmtime($date))[0..2] );
     $week--;
     print "$week $year\n";
+} else {
+    if (@ARGV < 3) {
+print "@ARGV\n";
+    }
 }
-print " $week $year\n";
-exit;
+
+print STDERR "invoice for week $week $year\n";
+
 main($year, $week);
+
+print "\n";
 
 END {
     if (defined $opt_versions) {
