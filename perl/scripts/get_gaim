@@ -1,0 +1,234 @@
+#!/usr/bin/perl
+use strict;
+
+use Time::HiRes qw (time);
+
+use Getopt::Long;
+use Pod::Usage;
+
+our $VERSION = "0.0.1";
+
+use TTDB::Notes;
+use TTDB::Time;
+
+use Date::Calc::MySQL;
+
+use TTDB::DBI qw (dbi_setup);
+
+our ( $opt_help, $opt_man, $opt_versions, $opt_user);
+our ( $opt_debug, $opt_help, $opt_man, $opt_versions );
+
+our $site = 'http://www.gam3.com/tasker';
+
+use File::Find::Object;
+use File::Basename;
+
+use Data::Dumper;
+
+use YAML qw (LoadFile);
+
+sub main
+{
+    my $date = shift || Date::Calc::MySQL->today - 1;
+    my $user = shift || die;
+    my $path = shift || die;
+    my $cntrl = shift || die;
+    my $ff = File::Find::Object->new({}, $path);
+    my $errors = 0;
+
+    require Gaim::Log::Parser;
+    while (my $fullname = $ff->next()) {
+	next if -d $fullname;
+	my $file = fileparse($fullname, '.txt');
+	my @d = ($file =~ /^(\d{4})-(\d{2})-(\d{2})/);
+	my $filedate = Date::Calc::MySQL->new(@d);
+	next if ($date != $filedate);
+        my $parser = Gaim::Log::Parser->new(file => $fullname);
+        while (my $msg = $parser->next_message()) {
+	    if (my $x = $cntrl->{$msg->to}) {
+		unless ($x =~ /^_/) {
+		    my $project = $user->project(name => $x);
+		    $project->add_note(
+		       time => Date::Calc::MySQL->time2date($msg->date),
+		       type => 99,
+		       note => $msg->as_string,
+		   );
+	        } else {
+		    warn "exclude $x " . $msg->to if ($opt_debug);
+	        }
+	    } else {
+print "Did not know what to do with message from (", $msg->to, ")\n";
+                 $errors++;
+	    }
+	}
+    }
+}
+
+my $conf_file = $ENV{HOME} . '/.tasker/gaim';
+
+my $cntrl_hash = LoadFile($conf_file);
+my $cntrl;
+
+for my $key (keys %$cntrl_hash) {
+    for my $email (keys %{$cntrl_hash->{$key}}) {
+        $cntrl->{$email} = $key;
+    }
+}
+
+my $config_file;
+my ( $opt_start, $opt_end );
+
+GetOptions(
+    'debug'     => \$opt_debug,
+    'help!'     => \$opt_help,
+    'man!'      => \$opt_man,
+    'versions!' => \$opt_versions,
+    'start=s'   => \$opt_start,
+    'end=s'     => \$opt_end,
+    'configure=s'  => \$config_file,
+) or pod2usage(-verbose => 1) && exit;
+
+#pod2usage(-verbose => 1) && exit if ($opt_debug !~ /^[01]$/);
+pod2usage(-verbose => 1) && exit if defined $opt_help;
+pod2usage(-verbose => 2) && exit if defined $opt_man;
+
+$conf_file ||= $ENV{HOME} . '/.tasker/conf';
+my $cntrl_hash = LoadFile($conf_file);
+my $path = $ENV{HOME} . '/.gaim/logs/';
+
+use TTDB::User;
+
+dbi_setup(
+    database => $cntrl_hash->{database}{name} || 'tasker',
+    user => $cntrl_hash->{database}{user} || 'tasker',
+    password => $cntrl_hash->{database}{password} || '',
+);
+
+my $user_name = $ENV{USER};
+
+
+print $opt_start, $opt_end, "\n";
+
+my $user = TTDB::User->get(user => $user_name);
+
+if ($opt_start) {
+    require Date::Parse;
+    my $start = Date::Calc::MySQL->time2date( Date::Parse::str2time($opt_start, 'UTC') );
+    my $end;
+    if ($opt_end) {
+	$end = Date::Calc::MySQL->time2date( Date::Parse::str2time($opt_end, 'UTC') );
+    } else {
+	$end = $Date::Calc::MySQL->today - 1;
+    }
+    while ($start < $end) {
+	print  $start->string(2), ' ', $end->string(2), "\n";
+	main($start, $user);
+        $start++;
+    }
+    print  $start->string(2), ' ', $end->string(2), "\n";
+} else {
+    main(Date::Calc::MySQL->today - 1, $user);
+}
+
+END {
+    if (defined $opt_versions) {
+	print
+	  "\nModules, Perl, OS, Program info:\n",
+	  "  TTDB::User            $TTDB::VERSION\n",
+	  "  Date::Parse           $Date::Parse::VERSION\n",
+	  "  Pod::Usage            $Pod::Usage::VERSION\n",
+	  "  Getopt::Long          $Getopt::Long::VERSION\n",
+	  "  strict                $strict::VERSION\n",
+	  "  Perl                  $]\n",
+	  "  OS                    $^O\n",
+	  "  $0\t\t$VERSION\n",
+	  "\n",
+	  "  $site\n",
+	  "\n\n";
+    }
+}
+
+__END__
+
+=head1 NAME
+
+Get_gaim - Read gaim log files and store messages in the tasker notes database.
+
+=head1 SYNOPSIS
+
+B<get_gaim> [I<options>]
+
+=head1 DESCRIPTION
+
+B<get_gaim> is a utility that reads gaim logfiles and stores the messages into the tasker notes database.
+Normally this utility is run once a day by cron with an entry simular to the one below.
+
+  50 0  * * * /usr/local/bin/get_gaim
+
+As get_gaim defaults to the previous date, this will get the previous days messages.
+
+=head1 OPTIONS
+
+=over 5
+
+=item B<--start> I<date>
+
+When given, Gaim logfiles starting on this date will be put into the database. This defaults to the previous day.
+
+=item B<--end> I<date>
+
+When given, Gaim logfiles after this date will be ignored. This defaults to the previous day.
+Many date formats can be used.
+
+=item B<--user> I<userid>
+
+This is the tasker user that will receive the notes.
+
+=item B<--config>=I<DIR>
+
+Use I<DIR> as the directory for config files instead of I<~/.tasker>.
+
+=item B<--help>
+
+Print help text and exit.
+
+=item B<--version>
+
+Display version information.
+
+=back
+
+=head1 FILES
+
+I<~/.tasker/conf>: information needed to connect to the database.
+
+I<~/.tasker/gaim>: this selects the projects that each massage will be placed in.
+
+=head1 SEE ALSO
+
+I<http://tasker.gam3.net/>
+
+L<Date::Parse>
+
+=head1 AUTHOR
+
+G. Allen Morris III <tasker@gam3.net>
+
+=head1 BUGS
+
+None that I know of.
+
+=head1 TODO
+
+The data in I<~/.tasker/gaim> in the database.
+
+=head1 UPDATES
+
+ 2007-01-28   06:22 EST
+  Clean up
+
+ 2006-10-08   06:22 EST
+   Initial working code
+
+=cut
+
