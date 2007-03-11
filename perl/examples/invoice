@@ -27,9 +27,9 @@ sub main
 
     my $opt_debug   = 0;
 
-    my $date = Date::Calc::MySQL->new( Date::Calc::Monday_of_Week($week-1, $year) );
+    my $date = Date::Calc::MySQL->new( Date::Calc::Monday_of_Week($week, $year) );
     $date--;
-    my $end_date = Date::Calc::MySQL->new( Date::Calc::Monday_of_Week($week, $year) );
+    my $end_date = Date::Calc::MySQL->new( Date::Calc::Monday_of_Week($week+1, $year) );
     $end_date--;
 
     GetOptions(
@@ -52,13 +52,14 @@ sub main
 	database => 'tasker',
     );
 
-    my $project = TTDB::Project->get(id => 1);
-
-    my $up = TTDB::UserProject->new(user => TTDB::User->get(id => 1), project => $project);
+    my $up = TTDB::UserProject->new(user => TTDB::User->get(id => 1), project => TTDB::Project->get(id => 1));
 
     my $p = $up->project;
     my $u = $up->user;
 
+    my $file = sprintf("%s-%04d-w%02d", $p->name, $year, $week);
+die "File already exists." if -f $file;
+    open(OUT, '> ' . $file);
     printf "Week #%d\n", Date::Calc::Week_of_Year($date->date);
 
     my @ids = (1);
@@ -66,25 +67,35 @@ sub main
     push @ids, map({ $_->id } $p->children);
 
     while ($date < $end_date) {
-	print "Date ", $date->strftime("%Y %B %d %A"), "\n";
+	print OUT "Date ", $date->strftime("%Y %B %d %A"), "\n";
 
 	for my $time ($u->day(date => $date, pids => \@ids)) {
-	    print $time->elapsed, "\n";
+	    print OUT "\n";
+	    print OUT $time->elapsed, "\n";
 	}
-	for my $note (TTDB::Notes->new(date => $date)->entries) {
-	    print "# Note " . substr($note->text, 0, 150), "\n";
-	    print "# Note " . $note->time, "\n";
+use Data::Dumper;
+	for my $note ( TTDB::Notes->new( date => $date, project_ids => [ $p->all_ids ], )->entries ) {
+	    my $name = '';
+	    if (my $x = $note->project) {
+		$name = $x->name;
+	    }
+	    print OUT "# Note " . $note->time . " - [$name] - " . substr($note->text, 0, 140), "\n";
 	}
 
 	$date++;
     }
-    print "\n";
+    print OUT "\n";
 }
 
 use Date::Parse;
 
 my ($week, $year) = Date::Calc::Week_of_Year( Date::Calc::Today() );
-my $date = str2time(join(' ', @ARGV));
+
+my $date;
+
+if (@ARGV) {
+    $date = str2time(join(' ', @ARGV));
+}
 
 if ($date) {
     print "$date @ARGV\n";
@@ -97,9 +108,76 @@ print "@ARGV\n";
     }
 }
 
-print STDERR "invoice for week $week $year\n";
+use Date::Calc::Object qw (Monday_of_Week Week_of_Year Add_Delta_Days Time_to_Date Day_of_Week);
 
-main($year, $week);
+our @dates;
+
+{
+package Date::Calc::Object;
+sub as_iso_week
+{
+    my $date = shift;
+    my ($week, $year) = Week_of_Year($date->date), "\n";
+    my $dow = Day_of_Week($date->date) - 1;
+    $date = $date - $dow;
+   
+    sprintf("%04d-W%02d-%d\n", $year, $week, $dow);
+}
+sub bow
+{
+    my $date = shift;
+    my ($week, $year) = Week_of_Year($date->date), "\n";
+    my $dow = Day_of_Week($date->date) - 1;
+    $date = $date - $dow;
+    
+    Date::Calc::Object->new(($date->date)[0..2]);
+}
+}
+
+
+if (@ARGV) {
+    for (@ARGV) {
+	if (my $time = str2time($_)) {
+	    my $date = Date::Calc::Object->time2date($time);
+	    print $date->as_iso_week;
+	    push @dates, $date->bow;
+	} elsif (my ($y, $ws, $we) = (/(\d{4})-[Ww](\d+)-[Ww](\d+)$/)) {
+	    my $date = Date::Calc::Object->new(Monday_of_Week($ws, $y));
+	    my $c = $we - $ws + 1;
+	    while ($c--) {
+		push @dates, $date;
+		$date += 7;
+	    }
+	} elsif (my ($y, $ws, $c) = (/(\d{4})-[Ww](\d+)-(\d+)$/)) {
+	    my $date = Date::Calc::Object->new(Monday_of_Week($ws, $y));
+	    while ($c--) {
+		push @dates, $date;
+		$date += 7;
+	    }
+	} elsif (my ($y, $w) = (/(\d{4})-[Ww](\d+)$/)) {
+	    my $date = Date::Calc::Object->new(Monday_of_Week($w, $y));
+	    push @dates, $date;
+	} else {
+	    die "Did not recognize $_";
+	}
+    }
+} else {
+    my $date = Date::Calc->now();
+    my $dow;
+    $date -= 7;
+    my ($week, $year) = Week_of_Year($date->date), "\n";
+    $dow = Day_of_Week($date->date) - 1;
+    $date = $date - $dow;
+    printf("%04d-W%02d-%d\n", $year, $week, $dow);
+    push @dates, Date::Calc::Object->new(($date->date)[0..2]);
+}
+
+for my $date (@dates) {
+    my ($week, $year) = Week_of_Year($date->date), "\n";
+    print STDERR "invoice for week $week $year\n";
+
+    main($year, $week);
+}
 
 print "\n";
 
@@ -127,17 +205,17 @@ __END__
 
 =head1 SYNOPSIS
 
-  invoice [--week {date} | --start {date} --end {date}] {project, project, ...}
+  invoice --project project [date [date ...]]
 
 =head1 DESCRIPTION
 
- Run tasker remotely with email messages.
+  generate an invoice for a week
 
 =head1 ARGUMENTS
 
   arguments are a list of projects.
 
-  an invoice will be created for each project.
+  an invoice will be created for each date
 
 =head1 OPTIONS
 
@@ -147,17 +225,11 @@ __END__
 
 Control tasker for this tasker userid.
 
+=item B<--project> I<project name>
+
 =item B<--versions>
 
-print Modules, Perl, OS, Program info
-
-=item B<--debug> I<0>
-
-don't print debugging information (default)
-
-=item B<--debug> I<1>
-
-print debugging information
+print program version
 
 =back
 
