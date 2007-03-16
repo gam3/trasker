@@ -179,13 +179,29 @@ sub addtask
     warn "$data";
 
     my $userobj = get_user($user, $client);
-    my $userproj = $userobj->project(project_id => $parent_id);
+
+    my $userproj;
+
+    if ($parent_id) {
+	$userproj = $userobj->project(id => $parent_id);
+    } else {
+	$userproj = $userobj;
+    }
 
     if (my $up = $userproj->add_task(
 	name => $name,
-        description => $description)
+	description => $description)
        ) {
 	printf($client "accept_task\tOK\n");
+
+	printf($client "entry\t%s\t%s\t%d\t%d\t%s\t%s\t%s\n",
+	       $user,
+	       $up->name,
+	       $up->project->id,
+	       $up->project->parent_id,
+	       '0:00:00', '0:00:00',
+	       $up->active
+	);
     } else {
 	printf($client "error\tCould not add project.\n");
     }
@@ -216,7 +232,7 @@ sub gettime
 	return '';
     }
 
-    printf("update_time\t%s\t%d\t%s\t%s\n", $user_id, $id, $time, $atime);
+#    printf("update_time\t%s\t%d\t%s\t%s\n", $user_id, $id, $time, $atime);
 
     printf($client "update_time\t%s\t%d\t%s\t%s\n", $user_id, $id, $time, $atime);
     undef;
@@ -328,11 +344,9 @@ sub tracker
     my $client = shift;
     my $data = shift; # data
     my $userid = shift;
-    my ($host1, $idle, $desktop, $window, $host, $class, $title, $dummy, $name) = @_;
+    my ($host1, $idle, $desktop, $window, $host, $class, $title, $role, $name) = @_;
 
     my $user = get_user($userid, $client);
-
-print "Tracker $desktop [$idle] $host, $class, $title ($dummy) $name\n";
 
     if ($idle) {
 	if (my $pid = $user->auto_revert_project(
@@ -341,9 +355,12 @@ print "Tracker $desktop [$idle] $host, $class, $title ($dummy) $name\n";
 					         class => $class,
 					         title => $title,
 					         name => $name,
+					         role => $role,
 					        )
 	   ) {
 	    update_user($user);
+	} else {
+print "idle NOK\n";
 	}
     } else {
 	if (my $pid = $user->auto_set_project(host => $host,
@@ -351,9 +368,12 @@ print "Tracker $desktop [$idle] $host, $class, $title ($dummy) $name\n";
 					      class => $class,
 					      title => $title,
 					      name => $name,
+					      role => $role,
 					     )
 	   ) {
 	    update_user($user);
+	} else {
+print "set NOK\n";
 	}
     }
 
