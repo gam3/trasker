@@ -1,5 +1,9 @@
 /*
- * 
+ * focus.c - an X11 program to track focus
+ *
+ * Copyright (c) 2007 G. Allen Morris III
+ * All rights reserved
+ *
  */
 
 #define NAME "xtracker"
@@ -229,6 +233,8 @@ get_desktop()
     return desktop;
 }
 
+int idle = 0;
+
 int
 test_focus(struct window_info *win_info, XScreenSaverInfo *mit_info, long idletime)
 {
@@ -239,7 +245,7 @@ test_focus(struct window_info *win_info, XScreenSaverInfo *mit_info, long idleti
     struct vt_stat terminal_status;
     int (*old_handler)(Display *, XErrorEvent *);
 
-int flag = 0;
+    int flag = 0;
 
     {
         Atom atom = XInternAtom(my_display, "_NET_CURRENT_DESKTOP", 0);
@@ -292,8 +298,17 @@ printf("no desktop\n");
     XScreenSaverQueryInfo(my_display, DefaultRootWindow(my_display), mit_info);
 
     if (mit_info->idle > idletime) {
+        if (idle == 0) {
+fprintf(stderr, "idle\n");
+            idle = 1;
+	}
+
 	win_info->idle = 1;
     } else {
+        if (idle == 1) {
+fprintf(stderr, "active\n");
+            idle = 0;
+	}
 	win_info->idle = 0;
     }
 
@@ -309,7 +324,6 @@ printf("no desktop\n");
 	win_info->res_class = buf;
 	win_info->idle = 1;
     }
-
     old_handler = XSetErrorHandler(focus_errors);
 
     XGetInputFocus(my_display, &new, &revert_to_return);
@@ -738,13 +752,15 @@ main(int argc, char *argv[])
 	int fd = open(pid_file, O_EXCL | O_RDONLY);
 	if (fd >= 0) {
 	    struct stat buf;
-	    int ret = 0;
+	    int ret = -1;
 	    int cnt = read(fd, &vbuf, 32);
 	    int pid = atoi(vbuf);
-	    fprintf(stderr, "Killing %d\n", pid);
-	    ret = kill(pid, SIGQUIT);
-	    usleep(500000);  // .5 seconds
-	    fstat(fd, &buf);
+	    if (pid) {
+		fprintf(stderr, "Killing %d\n", pid);
+		ret = kill(pid, SIGQUIT);
+		usleep(500000);  // .5 seconds
+		fstat(fd, &buf);
+	    }
 	    if (ret == 0) {
 		fprintf(stderr, "%d killed\n", pid);
 	    } else {
@@ -780,7 +796,6 @@ main(int argc, char *argv[])
     if (options.idle) {
 	int x = options.idle;
 	idletime = x * 1000;
-printf("Idletime = %ld (%d)\n", idletime, options.idle);
     }
 
     if (verbose)
@@ -933,7 +948,7 @@ rdf_window(FILE *frdf, struct window_info *current_window_info, char **desktops)
 		current_window_info->host,
 		current_window_info->res_name,
 		current_window_info->res_class,
-		"not something",
+		current_window_info->res_role,
 		current_window_info->name
 	    );
 	} else {
@@ -947,7 +962,7 @@ rdf_xwindow(FILE *frdf, struct window_info *current_window_info)
 {
     if (frdf) {
 	if (current_window_info->start_time) {
-	    if (verbose)
+	    if (verbose > 1)
 		fprintf(stderr, "xtracker\t%s\t%s\t%lu\t%s\t%s\t%s\t%s\n",
 		    user,
 		    host_name,
