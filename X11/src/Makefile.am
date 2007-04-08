@@ -9,12 +9,14 @@ INCLUDES = $(X_CFLAGS) \
 
 INTLLIBS = -lX11 -lXt -lXmu -lXss
 
-bin_PROGRAMS = focus
+bin_PROGRAMS = winselect focus
 
-focus_SOURCES = \
-        focus.c
+winselect_SOURCES = winselect.c
+focus_SOURCES = focus.c
+
+winselect_LDADD = $(INTLLIBS) $(X_LIBS)
 
 focus_LDADD = $(INTLLIBS) $(X_LIBS)
 
-man1_MANS = focus.man
+man1_MANS = winselect.man focus.man
 EXTRA_DIST = $(man1_MANS)
