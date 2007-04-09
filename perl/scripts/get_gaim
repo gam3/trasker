@@ -32,7 +32,7 @@ sub main
     my $date = shift || Date::Calc::MySQL->today - 1;
     my $user = shift || die;
     my $path = shift || die;
-    my $cntrl = shift || die;
+    my $skip = shift || die;
     my $ff = File::Find::Object->new({}, $path);
     my $errors = 0;
 
@@ -45,7 +45,8 @@ sub main
 	next if ($date != $filedate);
         my $parser = Gaim::Log::Parser->new(file => $fullname);
         while (my $msg = $parser->next_message()) {
-	    if (my $x = $cntrl->{$msg->to}) {
+	    if (my $x = $skip->{$msg->to}) {
+eval {
 		unless ($x =~ /^_/) {
 		    my $project = $user->project(name => $x);
 		    $project->add_note(
@@ -56,6 +57,10 @@ sub main
 	        } else {
 		    warn "exclude $x " . $msg->to if ($opt_debug);
 	        }
+};
+if ($@) {
+    warn "$x: " . $@ unless $@ =~ /duplicate key/;
+};
 	    } else {
 print "Did not know what to do with message from (", $msg->to, ")\n";
                  $errors++;
@@ -64,18 +69,9 @@ print "Did not know what to do with message from (", $msg->to, ")\n";
     }
 }
 
-my $conf_file = $ENV{HOME} . '/.tasker/gaim';
+my $skip_file = $ENV{HOME} . '/.tasker/gaim';
+my $conf_file = $ENV{HOME} . '/.tasker/conf';
 
-my $cntrl_hash = LoadFile($conf_file);
-my $cntrl;
-
-for my $key (keys %$cntrl_hash) {
-    for my $email (keys %{$cntrl_hash->{$key}}) {
-        $cntrl->{$email} = $key;
-    }
-}
-
-my $config_file;
 my ( $opt_start, $opt_end );
 
 GetOptions(
@@ -85,18 +81,25 @@ GetOptions(
     'versions!' => \$opt_versions,
     'start=s'   => \$opt_start,
     'end=s'     => \$opt_end,
-    'configure=s'  => \$config_file,
+    'configure=s'  => \$conf_file,
 ) or pod2usage(-verbose => 1) && exit;
+
+my $skip_hash = LoadFile($skip_file);
+my $skip;
+
+for my $key (keys %$skip_hash) {
+    for my $email (keys %{$skip_hash->{$key}}) {
+        $skip->{$email} = $key;
+    }
+}
 
 #pod2usage(-verbose => 1) && exit if ($opt_debug !~ /^[01]$/);
 pod2usage(-verbose => 1) && exit if defined $opt_help;
 pod2usage(-verbose => 2) && exit if defined $opt_man;
 
-$conf_file ||= $ENV{HOME} . '/.tasker/conf';
+my $conf_file ||= $ENV{HOME} . '/.tasker/conf';
 my $cntrl_hash = LoadFile($conf_file);
 my $path = $ENV{HOME} . '/.gaim/logs/';
-
-use TTDB::User;
 
 dbi_setup(
     database => $cntrl_hash->{database}{name} || 'tasker',
@@ -104,8 +107,9 @@ dbi_setup(
     password => $cntrl_hash->{database}{password} || '',
 );
 
-my $user_name = $ENV{USER};
+use TTDB::User;
 
+my $user_name = $ENV{LOGNAME} || $ENV{USER};
 
 print $opt_start, $opt_end, "\n";
 
@@ -118,16 +122,16 @@ if ($opt_start) {
     if ($opt_end) {
 	$end = Date::Calc::MySQL->time2date( Date::Parse::str2time($opt_end, 'UTC') );
     } else {
-	$end = $Date::Calc::MySQL->today - 1;
+	$end = Date::Calc::MySQL->today - 1;
     }
     while ($start < $end) {
 	print  $start->string(2), ' ', $end->string(2), "\n";
-	main($start, $user);
+	main($start, $user, $path, $skip);
         $start++;
     }
     print  $start->string(2), ' ', $end->string(2), "\n";
 } else {
-    main(Date::Calc::MySQL->today - 1, $user);
+    main(Date::Calc::MySQL->today - 1, $user, $path, $skip);
 }
 
 END {
