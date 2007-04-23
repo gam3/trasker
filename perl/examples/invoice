@@ -1,25 +1,37 @@
 #!/usr/bin/perl
 use strict;
 
+use Time::HiRes qw (time);
+
 use Getopt::Long;
 use Pod::Usage;
 
 our $VERSION = "0.0.1";
 
-use TTDB::UserProject;
 use TTDB::User;
 use TTDB::Project;
+use TTDB::UserProject;
 use TTDB::Notes;
 use TTDB::Time;
 
 use Date::Calc::MySQL;
-
-use Data::Dumper;
+use Date::Calc qw (Week_of_Year Day_of_Week Monday_of_Week);
+use Date::Parse;
 
 use TTDB::DBI qw (dbi_setup);
 
-our ($opt_help, $opt_man, $opt_versions, $opt_user);
+our ( $opt_help, $opt_man, $opt_versions );
+our ( $opt_user, $opt_project );
+our ( $opt_debug, $opt_help, $opt_man, $opt_versions );
+
 our $site = 'http://www.gam3.com/tasker';
+
+use File::Find::Object;
+use File::Basename;
+
+use Data::Dumper;
+
+use YAML qw (LoadFile);
 
 sub main
 {
@@ -32,33 +44,13 @@ sub main
     my $end_date = Date::Calc::MySQL->new( Date::Calc::Monday_of_Week($week+1, $year) );
     $end_date--;
 
-    GetOptions(
-      'debug=i'   => \$opt_debug,
-      'help!'     => \$opt_help,
-      'man!'      => \$opt_man,
-      'versions!' => \$opt_versions,
-      'user=s'      => \$opt_user,
-    ) or pod2usage(-verbose => 1) && exit;
-
-    pod2usage(-verbose => 1) && exit if ($opt_debug !~ /^[01]$/);
-    pod2usage(-verbose => 1) && exit if defined $opt_help;
-    pod2usage(-verbose => 2) && exit if defined $opt_man;
-    exit if $opt_versions;
-
-    dbi_setup(
-	user => 'gam3',
-	password => 'awnmwad',
-	host => 'localhost',
-	database => 'tasker',
-    );
-
-    my $up = TTDB::UserProject->new(user => TTDB::User->get(id => 1), project => TTDB::Project->get(id => 1));
+    my $up = TTDB::UserProject->new(user => TTDB::User->get(user => $opt_user), project => TTDB::Project->get(name => $opt_project));
 
     my $p = $up->project;
     my $u = $up->user;
 
-    my $file = sprintf("%s-%04d-w%02d", $p->name, $year, $week);
-die "File already exists." if -f $file;
+    my $file = sprintf("%s-%04d-w%02d.data", $p->name, $year, $week);
+die "File $file already exists." if -f $file;
     open(OUT, '> ' . $file);
     printf "Week #%d\n", Date::Calc::Week_of_Year($date->date);
 
@@ -87,60 +79,49 @@ use Data::Dumper;
     print OUT "\n";
 }
 
-use Date::Parse;
+my $conf_file;
 
-my ($week, $year) = Date::Calc::Week_of_Year( Date::Calc::Today() );
+GetOptions(
+    'debug'       => \$opt_debug,
+    'help!'       => \$opt_help,
+    'man!'        => \$opt_man,
+    'versions!'   => \$opt_versions,
+    'configure=s' => \$conf_file,
+    'user=s'      => \$opt_user,
+    'project=s'   => \$opt_project,
+) or pod2usage(-verbose => 1) && exit;
 
-my $date;
+#pod2usage(-verbose => 1) && exit if ($opt_debug !~ /^[01]$/);
+pod2usage(-verbose => 1) && exit if defined $opt_help;
+pod2usage(-verbose => 2) && exit if defined $opt_man;
 
-if (@ARGV) {
-    $date = str2time(join(' ', @ARGV));
-}
+$conf_file ||= $ENV{HOME} . '/.tasker/conf';
+my $cntrl_hash = LoadFile($conf_file);
 
-if ($date) {
-    print "$date @ARGV\n";
-    ($week, $year) = Date::Calc::Week_of_Year( (Date::Calc::Gmtime($date))[0..2] );
-    $week--;
-    print "$week $year\n";
-} else {
-    if (@ARGV < 3) {
-print "@ARGV\n";
-    }
-}
+dbi_setup(
+    database => $cntrl_hash->{database}{name} || 'tasker',
+    user => $cntrl_hash->{database}{user} || 'tasker',
+    password => $cntrl_hash->{database}{password} || '',
+);
 
-use Date::Calc::Object qw (Monday_of_Week Week_of_Year Add_Delta_Days Time_to_Date Day_of_Week);
+my $user_name = $ENV{USER};
 
-our @dates;
+$opt_user = $user_name;
 
-{
-package Date::Calc::Object;
-sub as_iso_week
-{
-    my $date = shift;
-    my ($week, $year) = Week_of_Year($date->date), "\n";
-    my $dow = Day_of_Week($date->date) - 1;
-    $date = $date - $dow;
-   
-    sprintf("%04d-W%02d-%d\n", $year, $week, $dow);
-}
-sub bow
-{
-    my $date = shift;
-    my ($week, $year) = Week_of_Year($date->date), "\n";
-    my $dow = Day_of_Week($date->date) - 1;
-    $date = $date - $dow;
-    
-    Date::Calc::Object->new(($date->date)[0..2]);
-}
-}
+my $user = TTDB::User->get(user => $user_name);
 
+my @dates;
 
 if (@ARGV) {
+    my $dow;
     for (@ARGV) {
 	if (my $time = str2time($_)) {
 	    my $date = Date::Calc::Object->time2date($time);
-	    print $date->as_iso_week;
-	    push @dates, $date->bow;
+	    my ($week, $year) = Week_of_Year($date->date), "\n";
+	    $dow = Day_of_Week($date->date) - 1;
+	    $date = $date - $dow;
+	    printf("%04d-W%02d-%d\n", $year, $week, $dow);
+	    push @dates, Date::Calc::Object->new(($date->date)[0..2]);
 	} elsif (my ($y, $ws, $we) = (/(\d{4})-[Ww](\d+)-[Ww](\d+)$/)) {
 	    my $date = Date::Calc::Object->new(Monday_of_Week($ws, $y));
 	    my $c = $we - $ws + 1;
@@ -155,6 +136,10 @@ if (@ARGV) {
 		$date += 7;
 	    }
 	} elsif (my ($y, $w) = (/(\d{4})-[Ww](\d+)$/)) {
+	    my $date = Date::Calc::Object->new(Monday_of_Week($w, $y));
+	    push @dates, $date;
+	} elsif (my ($w) = (/^[Ww](\d+)$/)) {
+	    my $y = Date::Calc->today->year;
 	    my $date = Date::Calc::Object->new(Monday_of_Week($w, $y));
 	    push @dates, $date;
 	} else {
@@ -179,19 +164,20 @@ for my $date (@dates) {
     main($year, $week);
 }
 
-print "\n";
 
 END {
     if (defined $opt_versions) {
 	print
 	  "\nModules, Perl, OS, Program info:\n",
-	  "  TTDB::User            $TTDB::User::VERSION\n",
+	  "  TTDB::User            $TTDB::VERSION\n",
+	  "  Date::Parse           $Date::Parse::VERSION\n",
 	  "  Pod::Usage            $Pod::Usage::VERSION\n",
 	  "  Getopt::Long          $Getopt::Long::VERSION\n",
 	  "  strict                $strict::VERSION\n",
 	  "  Perl                  $]\n",
 	  "  OS                    $^O\n",
 	  "  $0\t\t$VERSION\n",
+	  "\n",
 	  "  $site\n",
 	  "\n\n";
     }
@@ -201,37 +187,60 @@ __END__
 
 =head1 NAME
 
- invoice
+invoice - Output the data for a weekly invoice
 
 =head1 SYNOPSIS
 
-  invoice --project project [date [date ...]]
+B<invoice> [I<options>]
 
 =head1 DESCRIPTION
 
-  generate an invoice for a week
-
-=head1 ARGUMENTS
-
-  arguments are a list of projects.
-
-  an invoice will be created for each date
+B<invoice> is a utility that outputs a datafile of invoice information
 
 =head1 OPTIONS
 
 =over 5
 
+=item B<--start> I<date>
+
+When given, Gaim logfiles starting on this date will be put into the database. This defaults to the previous day.
+
+=item B<--end> I<date>
+
+When given, Gaim logfiles after this date will be ignored. This defaults to the previous day.
+Many date formats can be used.
+
 =item B<--user> I<userid>
 
-Control tasker for this tasker userid.
+This is the tasker user that will be used.
 
-=item B<--project> I<project name>
+=item B<--project> I<prjectid>
 
-=item B<--versions>
+This is the tasker project that will be used.
 
-print program version
+=item B<--config>=I<DIR>
+
+Use I<DIR> as the directory for config files instead of I<~/.tasker>.
+
+=item B<--help>
+
+Print help text and exit.
+
+=item B<--version>
+
+Display version information.
 
 =back
+
+=head1 FILES
+
+I<~/.tasker/conf>: information needed to connect to the database.
+
+=head1 SEE ALSO
+
+I<http://tasker.gam3.net/>
+
+L<Date::Parse>
 
 =head1 AUTHOR
 
@@ -243,9 +252,12 @@ None that I know of.
 
 =head1 TODO
 
-We could use more security.
+The data in I<~/.tasker/gaim> in the database.
 
 =head1 UPDATES
+
+ 2007-01-28   06:22 EST
+  Clean up
 
  2006-10-08   06:22 EST
    Initial working code

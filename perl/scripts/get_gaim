@@ -213,6 +213,7 @@ I<~/.tasker/gaim>: this selects the projects that each massage will be placed in
 I<http://tasker.gam3.net/>
 
 L<Date::Parse>
+L<Gaim::Log::Parser>
 
 =head1 AUTHOR
 

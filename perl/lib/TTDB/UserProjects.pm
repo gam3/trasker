@@ -134,3 +134,69 @@ sub start
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+TTDB::UserProjects - Perl interface to the tasker auto table
+
+=head1 SYNOPSIS
+
+  use TTDB::UserProjects;
+
+  $up = TTDB::UserProjects->new(user => I<user>, project => I<project>);
+
+  $up = TTDB::UserProjects->new(
+      project_id => I<project id>,
+      user_id => I<user id>,
+  );
+
+  $up = TTDB::UserProjects->get(user => $user, role => 'bob'):
+
+=head1 DESCRIPTION
+
+This is a container that holds a User Object and a Project Object.
+
+=head2 Constructor
+
+=over
+
+=item new
+
+This does not put the object into the database.
+
+=item get
+
+Get an object from the database.
+
+=back
+
+=head2 Methods
+
+=over
+
+=item  id
+
+return the I<id> of the object.
+
+=item  user_id
+
+return the I<user_id> for the object.
+
+=item  project_id
+
+return the I<project_id> for the object.
+
+=item delete
+
+This will delete the object from the database.
+
+=back
+
+=head1 AUTHOR
+
+"G. Allen Morris III" <gam3@gam3.net>
+
+=cut
+

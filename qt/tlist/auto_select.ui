@@ -39,22 +39,6 @@
     <property name="sizeGripEnabled">
         <bool>true</bool>
     </property>
-    <widget class="QLabel">
-        <property name="name">
-            <cstring>textLabel1</cstring>
-        </property>
-        <property name="geometry">
-            <rect>
-                <x>20</x>
-                <y>10</y>
-                <width>330</width>
-                <height>20</height>
-            </rect>
-        </property>
-        <property name="text">
-            <string>Project A - Milestone one - Bug 32</string>
-        </property>
-    </widget>
     <widget class="QLayoutWidget">
         <property name="name">
             <cstring>layout2</cstring>
@@ -391,13 +375,29 @@
             </rect>
         </property>
     </widget>
+    <widget class="QLabel">
+        <property name="name">
+            <cstring>Project</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>20</x>
+                <y>10</y>
+                <width>330</width>
+                <height>20</height>
+            </rect>
+        </property>
+        <property name="text">
+            <string>Project A - Milestone one - Bug 32</string>
+        </property>
+    </widget>
 </widget>
 <connections>
     <connection>
         <sender>buttonOk</sender>
         <signal>clicked()</signal>
         <receiver>AddAuto</receiver>
-        <slot>accept()</slot>
+        <slot>set_auto()</slot>
     </connection>
     <connection>
         <sender>buttonCancel</sender>
@@ -419,22 +419,34 @@
     </connection>
 </connections>
 <includes>
+    <include location="global" impldecl="in declaration">qprocess.h</include>
     <include location="local" impldecl="in implementation">auto_select.ui.h</include>
 </includes>
 <forwards>
     <forward>class QProcess;</forward>
     <forward>class HelpAutoSet;</forward>
+    <forward>class TTCP;</forward>
 </forwards>
 <variables>
     <variable access="public">HelpAutoSet *help;</variable>
     <variable access="public">QProcess *proc;</variable>
     <variable>QString grab;</variable>
+    <variable>TTCP *control;</variable>
+    <variable>QString user;</variable>
+    <variable>int id;</variable>
 </variables>
 <slots>
     <slot>Grab_clicked()</slot>
     <slot>buttonHelp_clicked()</slot>
-    <slot access="private">grabDone()</slot>
     <slot access="protected">readFromStdout()</slot>
+    <slot access="private">grabDone()</slot>
+    <slot>set_auto()</slot>
+    <slot>accept_select( QString id )</slot>
 </slots>
+<functions>
+    <function>setUser( QString user )</function>
+    <function>setControl( TTCP * control )</function>
+    <function>setProject( QString user, const char * name, int id )</function>
+</functions>
 <layoutdefaults spacing="6" margin="11"/>
 </UI>

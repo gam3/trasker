@@ -40,7 +40,7 @@ sub new
 	},
     });
 
-    my $sth = $dbh->prepare(<<SQL) or die $dbh->err_str;
+    my $sth = $dbh->prepare(<<SQL);
 select project.name as name,
        project.id as id,
        project.parent_id as parent_id,

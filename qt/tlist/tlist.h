@@ -11,6 +11,7 @@
 #include <qdatetime.h>
 #include "addproject.h"
 #include "notes.h"
+#include "auto_select.h"
 
 #include "ttcp.h"
 
@@ -28,7 +29,7 @@ private slots:
     void set_current(QString);
     void set_currentN(long);
     void add_entry(QString, int, int, QTime, QTime);
-    void set_time(QString, QString);
+//    void set_time(QString, QString);
     void update_all();
     void connected();
     void connection_error(int);
@@ -38,12 +39,15 @@ private slots:
     void p_start();
     void p_add();
     void p_note();
+    void p_select();
     void stop();
     QListViewItem *get_current();
 
   public:
-    TTListView::TTListView(QString user, QString host, int port, int verbose);
-    TTListView::TTListView(QString user, TTCP *server, int verbose);
+//    TTListView::TTListView(QString user, QString host, int port, int verbose);
+//    TTListView::TTListView(QString user, TTCP *server, int verbose);
+    TTListView(QString user, QString host, int port, int verbose);
+    TTListView(QString user, TTCP *server, int verbose);
 
   protected:
     QSocket *commandSocket;
@@ -54,6 +58,7 @@ private slots:
     QPopupMenu* bg_menu;
     AddProject* add_proj;
     Notes* add_note;
+    AutoSet *add_autoset;
     QTimer *timer;
     QTimer *periodic;
     long current_project;
@@ -61,6 +66,7 @@ private slots:
     QDict<QTime> Timers;
     QDict<QTime> ATimers;
     QDict<int> expanded_flag;
+    QDict<QListViewItem> parents;
 
     virtual void rightButtonPressed(QListViewItem *, const QPoint &, int);
 

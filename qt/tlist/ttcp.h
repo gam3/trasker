@@ -31,6 +31,9 @@ public:
     void projectadd( QString user, const int parent, QString name, QString description );
     void noteadd( const char * user, const int project, const char *name );
     QTimer *timer;
+    void setauto( const char * user, const int project_id,
+                  QString host, QString name, QString Class,
+		  QString title, QString role, QString desktop);
 
 protected:
     virtual void operationListChildren( QNetworkOperation *op );
@@ -58,6 +61,7 @@ signals:
     void project(QString name, QString action);
     void accept_project(QString name);
     void accept_note(QString name);
+    void accept_select(QString name);
     void error(QString error_string);
     void update_all();
     void connected();

@@ -22,10 +22,6 @@ pass();
 
 use Data::Dumper;
 
-diag Dumper $proj;
-diag Dumper $user;
-diag Dumper $auto;
-
 sleep 1;
 $user->set_current_project(project_id => 1,
 			   temporary => 'other',

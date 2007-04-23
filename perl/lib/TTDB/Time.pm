@@ -40,11 +40,20 @@ sub id
 sub time
 {
     my $self = shift;
-    if ((my @date) = ($self->{data}{start_time} =~ /(\d*)-(\d*)-(\d*) (\d*):(\d*):(\d*)/)) {
-	return Date::Calc::Object->new(@date);
+    if ((my @date) = ($self->{data}{time} =~ /(\d*):(\d*):(\d*)/)) {
+warn " @date ";        
+	return Date::Calc::MySQL->new([1], 0, 0, 0, @date);
     } else {
-        die 'bad time';
+warn '0';        
+        return Date::Calc::MySQL->new([1], 0, 0, 0, 0, 0, 0);
     }
+}
+
+sub elapsed
+{
+    my $self = shift;
+
+    $self->{data}{time};
 }
 
 sub duration
@@ -67,7 +76,7 @@ sub print
    print $self->active ? 'a' : 'b';
 }
 
-use Date::Calc;
+use Date::Calc::MySQL;
 use Date::ICal;
 
 sub ical_start
@@ -75,7 +84,7 @@ sub ical_start
     my $self = shift;
 
     my @date = split(/[-: ]/, $self->{data}{start_time});
-    "@date";
+
     Date::ICal->new( year => $date[0],
                      month => $date[1], day => $date[2],
 		     hour => $date[3], min => $date[4], sec => $date[5] )->ical;
@@ -86,7 +95,7 @@ sub ical_end
     my $self = shift;
 
     my @date = split(/[-: ]/, $self->{data}{end_time});
-    "@date";
+
     Date::ICal->new( year => $date[0],
                      month => $date[1], day => $date[2],
 		     hour => $date[3], min => $date[4], sec => $date[5] )->ical;

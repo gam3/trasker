@@ -585,6 +585,8 @@ void data( Display *dpy, Window new )
 	printf("class %s\n", win_info->res_class);
     if (win_info->res_role)
 	printf("role %s\n", win_info->res_role);
+    else
+	printf("role \n");
     if (win_info->name)
 	printf("title %s\n", win_info->name);
 }

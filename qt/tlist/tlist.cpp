@@ -33,6 +33,8 @@
 
 #include "ttcp.h"
 
+#include <assert.h>
+
 TTListView::TTListView(QString user, TTCP *ttcp, int verb = 0) 
   : ttcp(ttcp), timer(new QTimer()), periodic(new QTimer()), verbose(verb)
 {
@@ -90,10 +92,7 @@ TTListView::TTListView(QString user, TTCP *ttcp, int verb = 0)
     it_menu->insertItem( "Start",  this, SLOT(p_start()), CTRL+Key_T );
     it_menu->insertItem( "Add Note",   this, SLOT(p_note()), CTRL+Key_N );
     it_menu->insertItem( "Add Task",   this, SLOT(p_add()), CTRL+Key_A );
-
-    st_menu = new MyPopupMenu();
-    st_menu->insertItem( "Add Note",   this, SLOT(p_note()), CTRL+Key_N );
-    st_menu->insertItem( "Add Task",   this, SLOT(p_add()), CTRL+Key_A );
+    it_menu->insertItem( "Auto Select", this, SLOT(p_select()), CTRL+Key_A );
 
     bg_menu = new MyPopupMenu();
     bg_menu->insertItem( "Add Note",   this, SLOT(p_note()), CTRL+Key_N );
@@ -107,12 +106,16 @@ TTListView::TTListView(QString user, TTCP *ttcp, int verb = 0)
     add_note->setControl(ttcp);
     add_note->setUser(user);
 
+    add_autoset = new AutoSet();
+    add_autoset->setControl(ttcp);
+    add_autoset->setUser(user);
+
     QAccel *a = new QAccel( this );
     a->connectItem( a->insertItem(Key_N+CTRL),
 	            this,
 		    SLOT(p_note()) );
 
-    periodic->start(3600 * 1000);
+    periodic->start(30 * 60 * 1000);
     timer->start(1000);
 }
 
@@ -166,6 +169,20 @@ void TTListView::p_note()
     add_note->setActiveWindow();
 }
 
+void TTListView::p_select()
+{
+    QListViewItem *item;
+    item = selectedItem();
+
+    if (item) {
+	add_autoset->setProject(user, item->text(PROJECT_NAME).ascii(), item->text(PROJECT_NUMBER).toInt());
+    } else {
+assert(0);
+    }
+    add_autoset->show();
+    add_autoset->setActiveWindow();
+}
+
 void TTListView::stop()
 {
     char buf[1024];
@@ -200,11 +217,17 @@ void TTListView::update()
     QListViewItemIterator it( this );
     while ( it.current() ) {
 	QListViewItem *item = it.current();
-	proj == item->text(PROJECT_NUMBER).toLong();
+	proj = item->text(PROJECT_NUMBER).toLong();
 	ttcp->needtime(user, proj);
 	++it;
     }
 }
+
+/**********************************************************
+ *
+ * update times once a second
+ * 
+ **********************************************************/
 
 void TTListView::timeout()
 {
@@ -270,7 +293,6 @@ void TTListView::error(QString error_string)
     //
 }
 
-
 void TTListView::entry(int user_id, QString name, int project_id, int parent_id, QTime time, QTime atime)
 {
     add_entry(name, project_id, parent_id, time, atime);
@@ -308,9 +330,12 @@ void TTListView::settime(int project_id, QTime time, QTime atime)
     QTime *ntime = new QTime(time);
     QTime *natime = new QTime(atime);
 
+
+//FIX this is very slow -- use a hash to find item
     while ( it.current() ) {
 	QListViewItem *item = it.current();
 	if (project_id == item->text(PROJECT_NUMBER).toInt()) {
+
 	    Timers.replace(item->text(PROJECT_NUMBER), ntime);
 	    ATimers.replace(item->text(PROJECT_NUMBER), natime);
 
@@ -342,6 +367,7 @@ QListViewItem *TTListView::get_current()
     return NULL;
 }
 
+/*
 void TTListView::set_time(QString proj, QString time)
 {
     QListViewItem *q;
@@ -362,6 +388,7 @@ void TTListView::set_time(QString proj, QString time)
 	++it;
     }
 }
+*/
 
 void TTListView::set_currentN(long proj)
 {
@@ -434,49 +461,34 @@ void TTListView::add_entry(QString name, int id, int pid, const QTime time, cons
     QTime *ntime = new QTime(time);
     QTime *natime = new QTime(atime);
 
-    setCaption(name);
     Timers.insert(sid, ntime);
     ATimers.insert(sid, natime);
 
-    item = this->firstChild();
-
-    QListViewItemIterator it( this );
-    while ( it.current() ) {
-	QListViewItem *item = it.current();
-	if (pid && item->text(PROJECT_NUMBER).toInt() == pid) {
-	    parent = item;
-	} else
-	if (item->text(PROJECT_NUMBER).toInt() == id) {
-	    QListViewItem *new_parent = item->parent();
-	    if (new_parent && parent) {
-		assert(new_parent->text(PROJECT_NUMBER).toInt() == parent->text(PROJECT_NUMBER).toInt());
-	    } else if (new_parent) {
-		assert(0);
-	    } else if (parent) {
-		assert(0);
-	    }
-
-	    item->setEnabled(true);
-	    item->setSelectable(true);
-printf("%s %s (1)\n", item->text(PROJECT_NAME).ascii(), name.ascii());
-// Fix need to update times and check parent
-	    return;
-	}
-	++it;
+    if (pid) {
+	char tmp[30];
+	sprintf(tmp, "%d", pid);
+	parent = parents[tmp];
+	assert(parent);
     }
 
-    if (parent) {
-// FIX there is no long name now.
-	item = new QListViewItem(parent, name, ATimers[sid]->toString("hh:mm"), sid, name);
+    item = parents[sid];
+
+    if (item) {
+	item->setEnabled(true);
     } else {
-        if (!pid) {
-	    item = new QListViewItem(this, name, ATimers[sid]->toString("hh:mm"), sid, name);
+	if (parent) {
+    // FIX there is no long name now.
+	    item = new QListViewItem(parent, name, ATimers[sid]->toString("hh:mm"), sid, name);
 	} else {
-	    assert(0);
-	    return;
+	    if (!pid) {
+		item = new QListViewItem(this, name, ATimers[sid]->toString("hh:mm"), sid, name);
+	    } else {
+		assert(0);
+		return;
+	    }
 	}
     }
-    item->setSelectable(1);
+    parents.insert(sid, item);
 
     return;
 }

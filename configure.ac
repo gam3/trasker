@@ -83,8 +83,8 @@ AC_CHECK_FUNCS([strchr])
 
 AM_PATH_GLIB_2_0()
 
-AC_CONFIG_SUBDIRS( X11 gtk qt servers/ tselect/ )
+AC_CONFIG_SUBDIRS( X11 gtk qt servers )
 
-AC_CONFIG_FILES([Makefile docs/Makefile perl/Makefile perl/Build.PL ])
+AC_CONFIG_FILES([Makefile docs/Makefile perl/Makefile ])
 
 AC_OUTPUT

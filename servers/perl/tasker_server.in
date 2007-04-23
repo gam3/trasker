@@ -85,7 +85,6 @@ our $cmd_hash = {
     help => \&help,
     note => \&note,
     nop => \&nop,
-    pop => \&xpop,
     project => \&project,
     push => \&xpush,
     quit => \&quit,
@@ -96,6 +95,7 @@ our $cmd_hash = {
     xtracker => \&xtracker,
     getauto => \&getauto,
     setauto => \&setauto,
+    addauto => \&addauto,
 };
 
 sub help()
@@ -116,9 +116,7 @@ sub nop
     my $client = shift;
     my $data = shift;
 
-    print($client join(' ', @_), "\n");
-    print(join(' ', @_), "\n");
-    '';
+    print($client join(' ', @_), "\n") if @_;
 }
 
 sub note
@@ -127,8 +125,7 @@ sub note
     my $data = shift;
     my $user = shift;
     my $project_id = shift;
-
-    my ($a, $b, $c, $note) = split('\t', $data);
+    my $note = shift;
 
     my $userobj = get_user($user, $client);
     my $noteobj;
@@ -285,31 +282,26 @@ sub getauto()
     my $client = shift;
     my $data = shift;
     my $userid = shift;
-    warn 'Need 6 arguments ' . @_  unless @_ == 6;
-    my $host = shift;
-    my $class = shift;
-    my $name = shift;
-    my $role = shift;
-    my $title = shift;
-    my $desktop = shift;
 
-print("client $client, $userid\n\n");
+    my $project_id = shift;
 
     my $user = get_user($userid, $client);
+    my $project = $user->project(id => $project_id);
 
-    if (my $pid = $user->auto_get_project(
-					  host => $host,
-					  desktop => $desktop,
-					  class => $class,
-					  name => $name,
-					  role => $role,
-					  title => $title,
-					 )
-       ) {
-	print $client "Project $pid\n";
-    } else {
-	print($client "none\n");
+    for my $auto ($project->get_all_auto()) {
+        printf("auto %d\n", $auto->id);
+        printf($client "auto\t%d\t%s\t%s\t%s\t%s\t%s\t%s\n",
+	$auto->id,
+	$auto->host,
+	$auto->name,
+	$auto->class,
+	$auto->role,
+	$auto->desktop,
+	$auto->title,
+	);
     }
+
+    '';
 }
 
 sub setauto()
@@ -329,7 +321,51 @@ sub setauto()
     my $title = shift;
     my $desktop = shift;
 
-    $user->auto_add(
+print STDERR "host $host\n";
+print STDERR "class $host\n";
+print STDERR "name $host\n";
+print STDERR "role $host\n";
+print STDERR "title $host\n";
+print STDERR "desktop $host\n";
+
+    if (my $pid = $user->auto_set_project(
+		    host => $host,
+		    desktop => $desktop,
+		    class => $class,
+		    name => $name,
+		    role => $role,
+		    title => $title,
+		   )
+		   ) {
+print "OK\n";
+    } else {
+print "FAIL\n";
+    }
+}
+
+sub addauto()
+{
+    my $client = shift;
+    my $data = shift;
+    my $userid = shift;
+    my $project_id = shift;
+
+    print $client "Need 6 arguments (" . join(' ', @_) . ")\n" unless @_ == 6;
+
+    my $user = get_user($userid, $client);
+
+    my $host = shift;
+    my $class = shift;
+    my $name = shift;
+    my $role = shift;
+    my $title = shift;
+    my $desktop = shift;
+
+    my $project = $user->project(id => $project_id);
+
+    print join(':', $host, $desktop, $class, $name, $role, $title), "\n";
+
+    $project->new_auto(
 		    host => $host,
 		    desktop => $desktop,
 		    class => $class,
@@ -337,6 +373,8 @@ sub setauto()
 		    role => $role,
 		    title => $title,
 		   );
+    
+    print($client "accept_select\tOK\n");
 }
 
 sub tracker
@@ -344,9 +382,14 @@ sub tracker
     my $client = shift;
     my $data = shift; # data
     my $userid = shift;
-    my ($host1, $idle, $desktop, $window, $host, $class, $title, $role, $name) = @_;
+    my ($host1, $idle, $desktop, $window, $host, $name, $class, $role, $title) = @_;
 
     my $user = get_user($userid, $client);
+
+    if (0) {
+	printf("%s %s dsk %s win %s host (%s) name (%s) class (%s) role (%s) title (%s)\n",
+	       $host1, $idle, $desktop, $window, $host, $name, $class, $role, $title);
+    }
 
     if ($idle) {
 	if (my $pid = $user->auto_revert_project(
@@ -359,6 +402,7 @@ sub tracker
 					        )
 	   ) {
 	    update_user($user);
+	    printf $client "OK revert %d\n", $pid;
 	} else {
 print "idle NOK\n";
 	}
@@ -371,6 +415,7 @@ print "idle NOK\n";
 					      role => $role,
 					     )
 	   ) {
+	    printf $client "OK set %d\n", $pid;
 	    update_user($user);
 	} else {
 print "set NOK\n";
@@ -445,17 +490,6 @@ sub xpush
     my $value = shift;
 
     die 'push is not defined';
-}
-
-sub xpop
-{
-    my $client = shift;
-    my $data = shift;
-    my $user = shift;
-
-    get_user($user, $client)->revert();
-
-    die 'pop is not defined';
 }
 
 sub get_clients_for
@@ -758,6 +792,65 @@ The first step is that the server sends a version number;
 
 The client should then authorize the user.
 
+=over 
+
+=item addauto 
+
+  addauto userid  host class name role title desktop
+
+=item addtask 
+
+=item authorize 
+
+=item change 
+
+=item clients 
+=item desktop 
+
+=item getauto 
+
+
+=item gettime 
+
+   gettime I<user> I<project_id>
+
+=item help 
+
+=item nop 
+
+This echos I<string> if included, else it does nothing. 
+
+  nop I<string>
+
+=item note
+
+This addes a note to the database with the current time. It is attached
+to a project.  Project 0 being a global project.
+
+  note I<user> I<project_id | 0> I<string>
+
+=item project 
+=item push 
+=item quit 
+
+Have the server close the connection to the client
+
+  quit
+
+=item setauto 
+
+=item track 
+
+Follow the focus
+
+  track [on|off]
+
+=item tracker 
+=item update 
+=item user 
+=item xtracker 
+
+=back
 
 =head1 AUTHOR
 
@@ -788,4 +881,3 @@ None that I know of.
    Initial code
 
 =cut
-

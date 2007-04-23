@@ -17,10 +17,20 @@ sub new
 	},
 	user => {
 	    isa => 'TTDB::User',
+	    optional => 1,
 	},
 	project => {
 	    isa => 'TTDB::Project',
-	}
+	    optional => 1,
+	},
+	temporary => 0,
+	host => 0,
+	elapsed => 0,
+	id => 0,
+	user_id => 0,
+	auto_id => 0,
+	revert_to => 0,
+	project_id => 0,
     });
     my $self = bless({ %p }, $class);
 
@@ -72,7 +82,7 @@ SQL
     return $self;
 }
 
-sub ids
+sub id
 {
     my $self = shift;
     
@@ -108,7 +118,8 @@ sub user
 sub project
 {
     my $self = shift;
-    $self->{project};
+
+    $self->{project} ||= TTDB::Project->get(id => $self->{project_id});
 }
 
 sub elapsed

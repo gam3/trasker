@@ -59,8 +59,8 @@ sub get
 	user => 0,
     });
 
-    croak(q(Can't have both user and id)) if (defined $p{user} && defined $p{id});
-    croak(q(Must have an user or id)) if (!defined $p{user} && !defined $p{id});
+    croak(q(Can't have both a user and an id)) if (defined $p{user} && defined $p{id});
+    croak(q(Must have a user or an id)) if (!defined $p{user} && !defined $p{id});
 
     my $sth;
 
@@ -103,6 +103,38 @@ sub id
     $self->{id} || die "No id";
 }
 
+sub get_timeslices_for_day
+{
+    my $self = shift;
+    require TTDB::TimeSlice;
+    my %p = validate(@_, {
+        date => {
+	    isa => 'Date::Calc',
+	},
+    });
+    my $dbh = get_dbh;
+
+    my $st = $dbh->prepare(<<SQL);
+select * from timeslice
+ where user_id = ?
+   and start_time <= date(?) + interval '1 day'
+   and end_time >= date(?)
+SQL
+    my @ret;
+
+    $st->execute($self->id, $p{date}->mysql, $p{date}->mysql);
+
+    while (my $row = $st->fetchrow_hashref()) {
+        push @ret, TTDB::TimeSlice->new(
+	   %$row,
+	   start_time => Date::Calc::MySQL->new($row->{start_time}),
+	   end_time => Date::Calc::MySQL->new($row->{end_time}),
+	);
+    }
+
+    @ret;
+}
+
 sub userid
 {
     my $self = shift;
@@ -124,10 +156,10 @@ sub projects
 
     require TTDB::UserProject;
 
-    my $up = TTDB::Projects->new(user => $self);
+    my $prjs = TTDB::Projects->new(user => $self);
     my @ret;
 
-    for my $project ($up->entries) {
+    for my $project ($prjs->entries) {
 	my $up = TTDB::UserProject->new(user => $self, project => $project);
 	if ($up->active()) {
 	    push(@ret, $up)
@@ -144,11 +176,19 @@ sub project
     my %p = validate(@_, {
 	id => 0,
 	project => 0,
+	name => 0,
     });
 
     my $id = $p{id};
 
-    my $project = $p{project} || TTDB::Project->get(id => $id);
+    my $project;
+    if (my $p = $p{project}) {
+	$project = $p;
+    } elsif (my $name = $p{name}) {
+	$project = TTDB::Project->get(name => $name);
+    } elsif (my $id = $p{id}) {
+	$project = TTDB::Project->get(id => $id);
+    }
 
 require TTDB::UserProject;
 
@@ -294,31 +334,30 @@ insert into timeslice (user_id, project_id, temporary, auto_id, start_time, host
                SELECT user_id, project_id, 'revert', auto_id, now(), host FROM timeslice where id = ?
 SQL
 
-    eval {
-	$sth->execute($user_id);
+    $sth->execute($user_id);
 
-        my $rows = $sth->rows;
+    my $rows = $sth->rows;
 
-	if ($rows == 1) {
-	    my ($id, $flag, $rid, $pid, $host) = $sth->fetchrow_array;
+    if ($rows == 1) {
+	my ($id, $flag, $rid, $pid, $host) = $sth->fetchrow_array;
 
-	    if ($flag eq $p{type} and defined $rid and $rid > 0) {
-		$stha->execute($id) or die $dbh->errstr;
-		$sthi->execute($rid) or die $dbh->errstr;
-	    } else {
-warn "Rollback";
+	if ($flag eq $p{type} and defined $rid and $rid > 0) {
+	    eval {
+		$stha->execute($id);
+		$sthi->execute($rid);
+	    };
+	    if ($@) {
 		$dbh->rollback;
+	    } else {
+		$dbh->commit;
 	    }
-	} elsif ($rows == 0) {
-	    die "Nothing to revert too.";
 	} else {
-	    die "Fatal Error: ", $rows;
+	    warn "Rollback";
 	}
-    };
-    if ($@) {
-	$dbh->rollback;
+    } elsif ($rows == 0) {
+	warn "Nothing to revert too." if ($TTDB::debug);
     } else {
-	$dbh->commit;
+	die "Fatal Error: ", $rows;
     }
 }
 
@@ -350,9 +389,7 @@ sub auto_get_project
 	desktop => 1,
 	role => 1,
     });
-use Data::Dumper;
-print Dumper \%p;
-    
+
     my $st = $dbh->prepare(<<SQL);
 select project_id, id, presidence from auto
  where ? like host
@@ -369,7 +406,7 @@ SQL
     $st->execute($p{host}, $self->id, $p{desktop}, $p{name}, $p{class}, $p{role}, $p{title});
 
     my ($pid, $id, $presidence ) = $st->fetchrow_array;
-print "Got $pid, $id, $presidence\n";
+
     $pid;
 }
 
@@ -540,40 +577,107 @@ sub day
 
     my $day = $p{date};
     my $start = Date::Calc::MySQL->new($day->date, 0,0,0);
-    my $end = Date::Calc::MySQL->new(($day+1)->date, 0,0,0);
 
     my $dbh = get_dbh();
 
-    my $project_id_clause = "and project_id in (1, 2, 3, 4)";
+   
+    my $project_id_clause = '';
+    my @args;
+    if ($a = $p{pids}) {
+	$project_id_clause = sprintf("and project_id in (%s)", join(', ', map({'?'} @$a)));
+	push(@args, @$a);
+
+    }
 
     my $sth = $dbh->prepare(<<SQL);
-select project_id,
-       user_id,
-       sum(elapsed) as time,
-       'eof'
+select
+       sum(
+           coalesce(
+           case when date(end_time) >= date(?) + interval '1 day' then date(?) + interval '1 day' else end_time end,
+	   now())  -
+           case when date(start_time) < date(?) then date(?) else start_time end) as time
   from timeslice
-  where start_time < ?
-    and end_time >= ?
+  where start_time < date(?) + interval '1 day'
+    and coalesce(end_time, now()) >= date(?)
     and user_id = ?
     $project_id_clause
-    group by user_id, project_id
 SQL
 
-
-print join(' : ', $start->mysql, $end->mysql);
-
     $sth->execute(
-	$end->mysql, $start->mysql,
-	$self->id
+	$start->mysql,
+	$start->mysql,
+	$start->mysql,
+	$start->mysql,
+	$start->mysql,
+	$start->mysql,
+	$self->id,
+	@args,
     );
 
     my @data;
 
-    while (my $data = $sth->fetchrow_hashref()) {
-	push(@data, bless { data => $data, date => $start }, 'TTDB::Time');
+    my $data = $sth->fetchrow_hashref() || { time => '0:00:00.0' };
+
+    return bless({ %p, data => $data, date => $start }, 'TTDB::Time');
+}
+
+sub days
+{
+    my $self = shift;
+    my %p = validate(@_, {
+        start => { isa => 'Date::Calc' },
+        end => { isa => 'Date::Calc' },
+        pids => 0,
+    });
+
+    die 'need a date' if ($p{start}->is_long);
+    die 'need a date' if ($p{end}->is_long);
+
+    my $day = $p{start};
+    my $start = Date::Calc::MySQL->new($day->date, 0,0,0);
+    $day = $p{end};
+    my $end = Date::Calc::MySQL->new($day->date, 0,0,0);
+
+    my $dbh = get_dbh();
+
+    my $project_id_clause;
+    my @args;
+    if ($a = $p{pids}) {
+	$project_id_clause = sprintf("and project_id in (%s)", join(', ', map({'?'} @$a)));
+	push(@args, @$a);
+
     }
 
-    @data;
+    my $sth = $dbh->prepare(<<SQL);
+select
+       sum(
+           coalesce(
+           case when date(end_time) >= date(?) + interval '1 day' then date(?) + interval '1 day' else end_time end,
+	   now())  -
+           case when date(start_time) < date(?) then date(?) else start_time end) as time
+  from timeslice
+  where start_time < date(?) + interval '1 day'
+    and coalesce(end_time, now()) >= date(?)
+    and user_id = ?
+    $project_id_clause
+SQL
+
+    $sth->execute(
+	$end->mysql,
+	$end->mysql,
+	$start->mysql,
+	$start->mysql,
+	$end->mysql,
+	$start->mysql,
+	$self->id,
+	@args,
+    );
+
+    my @data;
+
+    my $data = $sth->fetchrow_hashref() || { time => '0:00:00.0' };
+
+    return bless({ %p, data => $data, date => $start }, 'TTDB::Time');
 }
 
 
@@ -599,9 +703,15 @@ TTDB::User - Perl interface to the tasker user
 
 =over
 
-=item new
+=item new(name => I<required>, fullname => I<required>)
 
-=item get
+This creates a user object.  Use I<create> to make this object
+preminate.
+
+=item get( { id => # | name => 'name' } )
+
+I<get> returns a user object that describes the user requested
+by either I<name>  or I<id>.
 
 =back
 
@@ -617,23 +727,28 @@ TTDB::User - Perl interface to the tasker user
 
 This is an alias to the userid function
 
-=item  fullname
+=item fullname
 
-=item  projects
+=item projects
 
-=item  project
+=item project
 
 =item set_current_project
+
 =item revert
+
 =item auto_revert_project
+
 =item auto_set_project
 
 =item auto_get_project
 
 =item current_project
+
 =item has_project
 
 =item add_task
+
 =item add_note
 
 =item create
@@ -647,6 +762,12 @@ This will delete a user, but only if the user has never been active.
 =item day
 
 Return information about a give day for the user.
+
+=item days
+
+Return information about a give range of days for the user.
+
+=item get_timeslices_for_day
 
 =back
 

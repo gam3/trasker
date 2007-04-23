@@ -1,6 +1,6 @@
 use strict;
 
-use Test::More tests => 3;
+use Test::More tests => 4;
 
 BEGIN {
     use_ok('TTDB::Auto');
@@ -16,56 +16,42 @@ if ($@) {
     fail('no args');
 }
 
-my $auto = TTDB::Auto->new(user_id => 1, project_id => 1, role => 'testme');
+my $auto;
 
-$auto->create();
-
-$auto = TTDB::Auto->new(user_id => 1, project_id => 1, name => 'testme');
-$auto->create();
-
-$auto = TTDB::Auto->new(user_id => 1, project_id => 1, class => 'testme');
-$auto->create();
-
-$auto = TTDB::Auto->new(user_id => 1, project_id => 1, title => 'testme');
-$auto->create();
-
-$auto = TTDB::Auto->new(user_id => 1, project_id => 1, desktop => 'testme');
-$auto->create();
-
-$auto = TTDB::Auto->new(user_id => 1, project_id => 1,
-title => 'testme',
-role => 'testme',
-name => 'testme',
-class => 'testme',
+$auto = TTDB::Auto->create(
+    user_id => 1,
+    project_id => 1,
+    name => 'testme',
+    class => 'testme',
+    role => 'testme',
+    title => 'This is a title.',
+    desktop => 'testme',
+    host => 'harpo',
 );
-$auto->create();
 
-$auto = TTDB::Auto->new(user_id => 1, project_id => 1,
-title => 'testme',
-role => 'testme',
-name => 'testme',
-class => 'testme',
-desktop => 'testme'
+my $nauto = TTDB::Auto->get(
+    user_id => 1,
+    name => 'testme',
+    class => 'testme',
+    role => 'testme',
+    title => 'This is a title.',
+    desktop => 'testme',
+    host => 'harpo',
 );
-$auto->create();
 
-$auto = TTDB::Auto->new(user_id => 1, project_id => 1,
-title => 'testme',
-role => 'testme',
-name => 'testme',
-class => 'testme',
-desktop => 'testme',
-host => 'testme'
-);
-$auto->create();
-
-$auto = TTDB::Auto->get(user_id => 1, role => 'testme', desktop => 'testme');
-
-use Data::Dumper;
-warn Dumper $auto;
-
-$auto = TTDB::Auto->get(user_id => 1, name => 'testme', desktop => 'testme');
-
-warn Dumper $auto;
+is($nauto->id, $auto->id, 'get');
 
 $auto->delete();
+
+$auto = TTDB::Auto->get(
+    user_id => 1,
+    name => 'testme',
+    class => 'testme',
+    role => 'testme',
+    title => 'This is a title %',
+    desktop => 'testme',
+    host => 'harpo',
+);
+
+$auto->delete();
+

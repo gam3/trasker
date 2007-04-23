@@ -6,7 +6,7 @@ BEGIN {
     use_ok('TTDB::Projects');
 };
 
-my $projects = TTDB::Projects::get();
+my $projects = TTDB::Projects->get();
 
 my $count;
 

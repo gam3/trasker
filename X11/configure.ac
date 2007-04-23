@@ -24,7 +24,7 @@ AC_CHECK_HEADERS(fcntl.h locale.h sys/ioctl.h X11/Xlib.h X11/X.h X11/Intrinsic.h
 
 AC_CHECK_HEADERS([X11/extensions/scrnsaver.h], [], [], [ # include <X11/Xlib.h> ])
 
-AC_CONFIG_SUBDIRS( focus_tracker )
+#AC_CONFIG_SUBDIRS( focus_tracker )
 
 AC_CONFIG_FILES([Makefile src/Makefile])
 

@@ -13,7 +13,6 @@ all : $(dobjects) $(pobjects) $(cobjects)
 
 %.tex : %.data makeinvoice.pl
 	./makeinvoice.pl $<
-	${MAKE}
 
 clean :
 	rm invoice-*.aux

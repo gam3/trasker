@@ -45,9 +45,9 @@ sub get_dbh
     if (!$dbi) {
 	$dbi = DBI->connect("DBI:${db}:database=" . $database . ";", $user, $password,
 	    {
-		RaiseError => 0,
-		PrintError => 1,
-		PrintWarn => 1,
+		RaiseError => 1,
+		PrintError => 0,
+		PrintWarn => 0,
 		AutoCommit => 0,
 	    }
 	);

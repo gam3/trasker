@@ -11,12 +11,13 @@ INCLUDES = $(X_CFLAGS) \
 
 INTLLIBS = -lqt-mt
 
-BUILT_SOURCES = tlist.moc addproject.moc notes.moc ttcp.moc
+BUILT_SOURCES = tlist.moc addproject.moc notes.moc ttcp.moc auto_select.moc tselect_help.moc
 
 bin_PROGRAMS = tlist
 
 tlist_SOURCES = main.cpp tlist.cpp addproject.cpp ttcp.cpp tlist.h addproject.h addproject.ui.h ttcp.h addproject.ui \
- notes.cpp notes.h notes.ui.h notes.ui global.h
+ notes.cpp notes.h notes.ui.h notes.ui global.h \
+ auto_select.cpp auto_select.h auto_select.ui.h auto_select.ui
 
 AM_CFLAGS = ${GLIB_CFLAGS}
 

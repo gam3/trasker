@@ -34,3 +34,13 @@ sleep 1;
 $user_A->set_current_project(project_id => 2, host => 'none');
 
 pass('all');
+
+my $project = $user_A->project(name => 'First');
+
+my $note = $project->add_note(
+    note => 'This is a note',
+    type => 2,
+);
+
+#use Data::Dumper;
+#diag Dumper $note;

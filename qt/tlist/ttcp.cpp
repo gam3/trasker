@@ -197,7 +197,6 @@ void TTCP::readyRead()
 	}
 
 	if (list[0] == "entry") {
-	    //         
 	    emit entry(list[1].toInt(), list[2], list[3].toInt(), list[4].toInt(), totime(list[5]),  totime(list[6]));
 	} else if (list[0] == "current") {
 	    emit current(list[2].toInt());
@@ -217,6 +216,8 @@ void TTCP::readyRead()
 	    emit accept_note(list[1]);
 	} else if (list[0] == "accept_task") {
 	    emit accept_project(list[1]);
+	} else if (list[0] == "accept_select") {
+	    emit accept_select(list[1]);
 	} else {
 	    printf("TTCP Unknown %s\n", list[0].ascii());
 	}
@@ -283,6 +284,31 @@ void TTCP::noteadd( const char * user, const int project_id, const char *text )
     }
 
     sprintf(buffer, "note\t%s\t%d\t%s\n", user, project_id, text);
+    commandSocket->writeBlock(buffer, strlen(buffer));
+}
+
+void TTCP::setauto( const char * user, const int project_id,
+                    QString host, QString name, QString Class,
+		    QString title, QString role, QString desktop)
+{
+    char buffer[1024];
+
+    sprintf(buffer,
+"addauto\t%s\t%d"
+"\t%s"  // host
+"\t%s"  // name
+"\t%s"  // class
+"\t%s"  // title
+"\t%s"  // role
+"\t%s\n", // desktop
+user, project_id,
+host.ascii(),
+name.ascii(),
+Class.ascii(),
+title.ascii(),
+role.ascii(),
+desktop.ascii());
+
     commandSocket->writeBlock(buffer, strlen(buffer));
 }
 /* eof */

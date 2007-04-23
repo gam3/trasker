@@ -9,6 +9,8 @@ use TTDB::Project;
 
 use TTDB::DBI qw (get_dbh);
 
+use Date::Calc::MySQL;
+
 use Params::Validate qw( validate validate_pos SCALAR BOOLEAN HASHREF OBJECT );
 
 sub new
@@ -196,7 +198,7 @@ sub start
 }
 
 our $get_time = {
-    time => 0,
+    time => {},
     data => {},
 };
 
@@ -206,7 +208,7 @@ sub get_time
     my $id = $self->project->id();
 
     if ($get_time->{'time'} && time - $get_time->{'time'} < 5) {
-	return $get_time->{data}->{$id} || Date::Calc::Object->new([1], 0, 0, 0, 0,0,0);
+	return $get_time->{data}{$id} || Date::Calc::MySQL->new([1], 0, 0, 0, 0,0,0);
     }
 
     my $dbh = get_dbh();
@@ -224,13 +226,16 @@ SQL
 
     $sth->execute($self->user->id);
 
+    $dbh->commit;
+
+    $get_time->{data} = {};
+    $get_time->{time} = time();
     while (my $row = $sth->fetchrow_arrayref) {
 	my $time = $row->[1];
-	my $ntime = Date::Calc::Object->new([1], 0, 0, 0, split(':', $time));
-	$get_time->{data}->{$row->[0]} = $ntime;
+	my $ntime = Date::Calc::MySQL->new([1], 0, 0, 0, split(':', $time));
+	$get_time->{data}{$row->[0]} = $ntime;
     }
-    $get_time->{time} = time();
-    $get_time->{data}->{$id} || Date::Calc::Object->new([1], 0, 0, 0, 0, 0, 0);
+    $get_time->{data}{$id} || Date::Calc::MySQL->new([1], 0, 0, 0, 0, 0, 0);
 }
 
 sub time
@@ -248,12 +253,12 @@ sub children
     map({ TTDB::UserProject->new(user => $self->user, project => $_); } $self->project->children);
 }
 
-sub _alltime
+sub get_alltime
 {
     my $self = shift;
     my $time = $self->get_time();
     foreach my $child ($self->children) {
-        $time += $child->_alltime;
+        $time += $child->get_alltime;
     }
     $time;
 }
@@ -262,7 +267,7 @@ sub alltime
 {
     my $self = shift;
 
-    my $time = $self->_alltime();
+    my $time = $self->get_alltime();
 
     sprintf("%2d:%02d:%02d", $time->normalize()->time());
 }
@@ -280,21 +285,45 @@ sub add_note
     my $self = shift;
     my $dbh = get_dbh;
     my %p = validate(@_, {
+        time => {
+	   optional => 1,
+	   isa => 'Date::Calc',
+	},
         note => 1,
+        type => { default => 1 },
     });
-    my $st = $dbh->prepare("insert into notes (type, time, user_id, project_id, note) values (1, now(), ?, ?, ?)");
+
+    my $st;
+
+    my $type = $p{type} || 1;
+
+    my $st_id = $dbh->prepare(qq/select nextval('note_id_seq')/);
+
+    my @extra = ();
+    if ($p{time}) {
+	$st = $dbh->prepare("insert into notes (type, user_id, project_id, note, time) values (?, ?, ?, ?, ?)");
+	push @extra, $p{time}->mysql;
+    } else {
+	$st = $dbh->prepare("insert into notes (type, user_id, project_id, note, time) values (?, ?, ?, ?, now())");
+    }
+
+    require TTDB::Note;
+    my $note = TTDB::Note->new(
+	%p,
+        user => $self->user,
+        project => $self->project,
+    );
 
     eval {
-	$st->execute($self->user->id(), $self->project->id(), $p{note}) or die $dbh->errstr();
+	$st->execute($type, $self->user->id(), $self->project->id(), $p{note}, @extra);
     }; if ($@) {
 	$dbh->rollback;
 	die $@;
     } else {
-warn "Added note";
 	$dbh->commit or die $dbh->errstr();
     }
 
-    $self;
+    $note;
 }
 
 sub add_task
@@ -327,5 +356,119 @@ sub add_task
     $self->new(project_id => $id);
 }
 
+sub depth
+{
+    my $p = shift->project;
+
+    $p->depth; 
+}
+
+use Data::Dumper;
+
+sub get_all_auto
+{
+    my $self = shift;
+    my $dbh = get_dbh;
+
+    my $st = $dbh->prepare(<<SQL);
+select * from auto where user_id = ? and project_id = ?
+SQL
+    $st->execute($self->user->id, $self->project->id);
+    my @ret;
+
+    require TTDB::Auto;
+
+    while (my $row = $st->fetchrow_hashref()) {
+        push @ret, TTDB::Auto->new(%$row);
+    }
+    @ret;
+}
+
+sub new_auto
+{
+    my $self = shift;
+    require TTDB::Auto;
+
+    my $auto = TTDB::Auto->new(
+        user_id => $self->user->id,
+        project_id => $self->project->id,
+	@_,
+    );
+
+    $auto = TTDB::Auto->create(
+        user_id => $self->user->id,
+        project_id => $self->project->id,
+	@_,
+    );
+
+    warn Dumper($auto);
+
+    0;
+}
+
 1;
 __END__
+
+=head1 NAME
+
+TTDB::UserProject - Perl interface to the tasker auto table
+
+=head1 SYNOPSIS
+
+  use TTDB::UserProject;
+
+  $up = TTDB::UserProject->new(user => I<user>, project => I<project>);
+
+  $up = TTDB::UserProject->new(
+      project_id => I<project id>,
+      user_id => I<user id>,
+  );
+
+  $up = TTDB::UserProject->get(user => $user, role => 'bob'):
+
+=head1 DESCRIPTION
+
+This is a container that holds a User Object and a Project Object.
+
+=head2 Constructor
+
+=over
+
+=item new
+
+This does not put the object into the database.
+
+=item get
+
+Get an object from the database.
+
+=back
+
+=head2 Methods
+
+=over
+
+=item  id
+
+return the I<id> of the object.
+
+=item  user_id
+
+return the I<user_id> for the object.
+
+=item  project_id
+
+return the I<project_id> for the object.
+
+=item delete
+
+This will delete the object from the database.
+
+=back
+
+=head1 AUTHOR
+
+"G. Allen Morris III" <gam3@gam3.net>
+
+=cut
+

@@ -4,9 +4,11 @@ package TTDB::Project;
 use TTDB::DBI qw (get_dbh);
 
 use TTDB::Projects;
-use Date::Calc::Object;
+use Date::Calc::MySQL;
 
 use Params::Validate qw( validate validate_pos SCALAR BOOLEAN HASHREF OBJECT );
+
+use Carp qw (croak);
 
 sub new
 {
@@ -65,7 +67,7 @@ sub get
 
     my $project = $projects->{data}{$p{id}};
 
-    return $project || die "No project $p{id}.";
+    return $project || croak "No project $p{id}.";
 }
 
 sub create
@@ -256,7 +258,7 @@ sub get_time
     my $id = $self->id();
 
     if (time - $get_time->{time} < 1) {
-	return $get_time->{data}->{$id} || Date::Calc::Object->new([1], 0, 0, 0, 0,0,0);
+	return $get_time->{data}->{$id} || Date::Calc::MySQL->new([1], 0, 0, 0, 0,0,0);
     }
     $get_time->{data} = {};
 
@@ -297,21 +299,20 @@ SQL
 
     while (my $row = $sth->fetchrow_arrayref) {
 	my $time = $row->[1];
-use Data::Dumper;
-print Dumper $row;
-	my $ntime = Date::Calc::Object->new([1], 0, 0, 0, split(':', $time));
+
+	my $ntime = Date::Calc::MySQL->new([1], 0, 0, 0, split(':', $time));
 	$get_time->{data}->{$row->[0]} = $ntime;
     }
     $get_time->{time} = time();
-    $get_time->{data}->{$id} || Date::Calc::Object->new([1], 0, 0, 0, 0, 0, 0);
+    $get_time->{data}->{$id} || Date::Calc::MySQL->new([1], 0, 0, 0, 0, 0, 0);
 }
 
-sub _alltime
+sub get_alltime
 {
     my $self = shift;
     my $time = $self->get_time();
     foreach my $child ($self->children) {
-        $time += $child->_alltime;
+        $time += $child->get_alltime;
     }
     $time;
 }
@@ -322,7 +323,7 @@ sub get_times
     my $id = $self->id();
 
     if (time - $get_time->{time} < 1) {
-	return $get_time->{data}->{$id} || Date::Calc::Object->new([1], 0, 0, 0, 0,0,0);
+	return $get_time->{data}->{$id} || Date::Calc::MySQL->new([1], 0, 0, 0, 0,0,0);
     }
 
     my $dbh = get_dbh();
@@ -341,11 +342,11 @@ SQL
 
     while (my $row = $sth->fetchrow_arrayref) {
 	my $time = $row->[1];
-	my $ntime = Date::Calc::Object->new([1], 0, 0, 0, split(':', $time));
+	my $ntime = Date::Calc::MySQL->new([1], 0, 0, 0, split(':', $time));
 	$get_time->{data}->{$row->[0]} = $ntime;
     }
     $get_time->{time} = time();
-    $get_time->{data}->{$id} || Date::Calc::Object->new([1], 0, 0, 0, 0, 0, 0);
+    $get_time->{data}->{$id} || Date::Calc::MySQL->new([1], 0, 0, 0, 0, 0, 0);
 }
 
 sub children
@@ -353,6 +354,20 @@ sub children
     my $self = shift;
 
     map({ TTDB::Project->get(id => $_) } keys %{$self->{child}});
+}
+use Data::Dumper;
+
+sub depth
+{
+    my $self = shift;
+
+    my $depth = 0;
+
+    if (my $p = $self->parent()) {
+	$p->depth + 1;
+    } else {
+        0;
+    }
 }
 
 sub time
@@ -367,10 +382,7 @@ sub alltime
 {
     my $self = shift;
 
-    my $time = $self->_alltime();
-
-use Data::Dumper;
-print Dumper [ $self, $time ];
+    my $time = $self->get_alltime();
 
     sprintf("%2d:%02d:%02d", $time->normalize()->time());
 }
@@ -378,7 +390,8 @@ print Dumper [ $self, $time ];
 sub is_task
 {
     my $self = shift;
-    $self->{data}{user_id};
+
+    $self->{user_id};
 }
 
 sub user_id
@@ -386,6 +399,12 @@ sub user_id
     my $self = shift;
 
     $self->{user_id};
+}
+
+sub all_ids
+{
+    my $self = shift;
+    ($self->id, map({ $_ } keys %{$self->{child}}));
 }
 
 1;
@@ -408,9 +427,19 @@ TTDB::Project - Perl interface to the tasker project data
 
 =item new
 
+create a project object.  The database is not updated.
+
 =item get
 
+get a project from the database.
+
 =item create
+
+create a project in the database.
+
+=item update
+
+update the database.
 
 =back
 
@@ -419,15 +448,31 @@ TTDB::Project - Perl interface to the tasker project data
 =over
 
 =item  id
+
 =item  parent
+
 =item  parent_id
+
+=item  depth
+
+The depth of the project.
+
 =item  longname
+
 =item  name
+
 =item  id
+
 =item  users
+
 =item  child
+
 =item  add_child
+
 =item  get_time
+
+=item  get_alltime
+
 =item  get_times
 
 =item  hidden
@@ -437,6 +482,10 @@ TTDB::Project - Perl interface to the tasker project data
 =item  children
 
 returns a list of projects that are children of the project.
+
+=item  all_ids
+
+returns a list with the project_id and children project_ids.
 
 =item  time
 
