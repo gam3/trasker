@@ -1,11 +1,11 @@
 .\" -*- nroff -*-
 .TH winselect 1 "October 2006" "tasker version 0.01"
 .SH NAME
-winselect \- track an X user for the tasker system
+winselect \- get information about a window
 .SH SYNOPSIS
 .B winselect
 [
-.B \-s {server}
+.B \--help
 ]
 .SH DESCRIPTION
 track the actions of and X user for the tasker system

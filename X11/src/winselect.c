@@ -1,5 +1,5 @@
 /*
- * focus.c - an X11 program to track focus
+ * winselect.c - an X11 program to get window information
  *
  * Copyright (c) 2007 G. Allen Morris III
  * All rights reserved
@@ -303,21 +303,14 @@ struct cmdlineopt {
 
 void usage(char *name)
 {
-    fprintf(stderr, _("Usage: focus [options]\n"
-" Focus tracking daemon\n"
+    fprintf(stderr, _("Usage: winselect [options]\n"
+" Program to get information on a window\n"
 "\n"
 "Mandatory arguments to long options are mandatory for short options too.\n"
 "\n"
 " -d --display {display}     set display to something other than $DISPLAY.\n"
 " -D --debug                 stay in the foreground.\n"
-" -k --kill                  kill any running clients.\n"
-" -s --server {ip address}   set servers ip address [127.0.0.1].\n"
-" -p --port {port #}         set servers port number [8080].\n"
-" -u --user {user}           set user [$USER]\n"
 " -v --verbose               display more information.\n"
-" -P --pid {file}            use other than default pid file.\n"
-" -l --log {file}            use other than default log file.\n"
-" -h --home {path}           use this instead of $HOME for log and pid files.\n"
 "\n"
 " -? --help     display this help and exit\n"
 " -V --version  output version information and exit\n"
@@ -341,7 +334,7 @@ void parse_command_line(int argc, char **argv, struct cmdlineopt *opt)
 
     memset(opt, 0, sizeof(struct cmdlineopt));
 
-    while ((c = getopt_long(argc, argv, "d:D?i:kP:p:s:u:v", long_options, NULL)) != -1)
+    while ((c = getopt_long(argc, argv, "d:D?tvV", long_options, NULL)) != -1)
     {
 	switch (c) {
 	    case 'D':
@@ -367,43 +360,6 @@ void parse_command_line(int argc, char **argv, struct cmdlineopt *opt)
 	    case '?':
 		usage(argv[0]);
 		exit(0);
-	    case 'l':
-		if (optarg != NULL) {
-		    log_file = optarg;
-		} else {
-		    usage(argv[0]);
-		}
-		break;
-	    case 's':
-		if (optarg != NULL) {
-		    server = optarg;
-		} else {
-		    usage(argv[0]);
-		    exit(0);
-		}
-		break;
-	    case 'u':
-		if (optarg != NULL) {
-		    user = optarg;
-		} else {
-		    usage(argv[0]);
-		    exit(0);
-		}
-		break;
-	    case 'p':
-		if (optarg != NULL) {
-		    port = atoi(optarg);
-		} else {
-		    usage(argv[0]);
-		}
-		break;
-	    case 'P':
-		if (optarg != NULL) {
-		    pid_file = optarg;
-		} else {
-		    usage(argv[0]);
-		}
-		break;
 	    case 'V':
 		printf("tracker (%s) %s\n", PACKAGE, VERSION);
 		exit(0);
@@ -589,6 +545,7 @@ void data( Display *dpy, Window new )
 	printf("role \n");
     if (win_info->name)
 	printf("title %s\n", win_info->name);
+    printf("WID 0x%x\n", win_info->window);
 }
 
 int
@@ -616,8 +573,6 @@ main(int argc, char *argv[])
 
     parse_command_line(argc, argv, &options);
 
-    user = getenv("USER");
-
     gethostname(host_name, 100);
     host_name[100] = '\0';
 
@@ -639,10 +594,12 @@ main(int argc, char *argv[])
 	}
     }
     
-    target_win = Select_Window( my_display, 0 );
+    if (!options.desktops) {
+	target_win = Select_Window( my_display, 0 );
 
-    if (target_win) {
-	data(my_display, target_win);
+	if (target_win) {
+	    data(my_display, target_win);
+	}
     }
 }
 
