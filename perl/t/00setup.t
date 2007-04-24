@@ -12,6 +12,12 @@ $dbh->do(qq/delete from timeslice/) or die;
 
 $dbh->do(qq/SELECT setval('timeslice_id_seq', 1, false)/);
 
+$dbh->do(qq/delete from auto/) or die;
+
+$dbh->do(qq/delete from notes/) or die;
+
+$dbh->do(qq/SELECT setval('auto_id_seq', 1, false)/);
+
 $dbh->do(qq/delete from user_project/) or die;
 
 $dbh->do(qq/delete from project/) or die;

@@ -17,6 +17,7 @@ $dbh->do(qq/SELECT setval('timeslice_id_seq', 1, false)/);
 $dbh->do('delete from project');
 $dbh->do(qq/SELECT setval('project_id_seq', 1, false)/);
 $dbh->do(qq/delete from user_project/) or die;
+
 $dbh->commit;
 
 eval {
