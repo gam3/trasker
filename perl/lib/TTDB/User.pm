@@ -283,7 +283,7 @@ SQL
 	  $user_id,
 	  $project_id,
 	  $p{temporary},
-	  $p{auto_id},
+	  $p{auto_id} || undef,
 	  $new_rid,
 	  $p{host},
 	) || die $sthi->{Statement} . ' ' . $dbh->errstr ;

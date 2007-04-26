@@ -124,3 +124,38 @@ sub name
 
 1;
 __END__
+
+=head1 NAME
+
+TTDB::Time - Perl interface to the tasker timeslice table
+
+=head1 SYNOPSIS
+
+  use TTDB::Time;
+
+  $user = TTDB::Time->new(user => 'bob', fullname => 'Robert Smith'):
+
+  $user->create();
+
+  $user = TTDB::Time->get(user => 'bob'):
+  $user = TTDB::Time->get(id => 1):
+
+=head1 DESCRIPTION
+
+=head2 Constructors
+
+=over
+
+=item new()
+
+=back
+
+=head2 Methods
+
+
+=head1 AUTHOR
+
+"G. Allen Morris III" <gam3@gam3.net>
+
+=cut
+
