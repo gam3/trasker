@@ -57,3 +57,36 @@ sub get_dbh
 
 1;
 __END__
+
+=head1 NAME
+
+TTDB::DBI - Perl interface to the DBI
+
+=head1 SYNOPSIS
+
+  use TTDB::DBI qw (get_dbi);
+
+=head2 Constructor
+
+=over
+
+=back
+
+=head2 Methods
+
+=over
+
+=item dbi_setup
+
+=item get_dbh
+
+=back
+
+=head1 DESCRIPTION
+
+=head1 AUTHOR
+
+"G. Allen Morris III" <gam3@gam3.net>
+
+=cut
+

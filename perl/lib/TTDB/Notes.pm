@@ -128,6 +128,8 @@ return the I<project_id> for the object.
 
 =item delete
 
+=item entries
+
 This will delete the object from the database.
 
 =back

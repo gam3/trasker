@@ -29,7 +29,6 @@ sub print_log {
     print "\n";
 }
 
-use TTDB::Entry;
 use TTDB::User;
 use TTDB::Project;
 
@@ -228,8 +227,6 @@ sub gettime
         warn "ID: $user_id $id ", $@;
 	return '';
     }
-
-#    printf("update_time\t%s\t%d\t%s\t%s\n", $user_id, $id, $time, $atime);
 
     printf($client "update_time\t%s\t%d\t%s\t%s\n", $user_id, $id, $time, $atime);
     undef;
@@ -805,6 +802,7 @@ The client should then authorize the user.
 =item change 
 
 =item clients 
+
 =item desktop 
 
 =item getauto 
@@ -830,7 +828,9 @@ to a project.  Project 0 being a global project.
   note I<user> I<project_id | 0> I<string>
 
 =item project 
+
 =item push 
+
 =item quit 
 
 Have the server close the connection to the client
@@ -846,8 +846,11 @@ Follow the focus
   track [on|off]
 
 =item tracker 
+
 =item update 
+
 =item user 
+
 =item xtracker 
 
 =back

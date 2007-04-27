@@ -344,6 +344,18 @@ return the I<project_id> for the object.
 
 This will delete the object from the database.
 
+=item class
+
+=item desktop
+
+=item host
+
+=item name
+
+=item role
+
+=item title
+
 =back
 
 =head1 DESCRIPTION

@@ -152,6 +152,33 @@ TTDB::Time - Perl interface to the tasker timeslice table
 
 =head2 Methods
 
+=over
+
+=item id
+
+Each timeslice has a unique I<id>.
+
+=item active
+
+=item duration
+
+=item elapsed
+
+=item ical_end
+
+=item ical_start
+
+=item name
+
+=item print
+
+=item project_name
+
+=item time
+
+=item user_name
+
+=back
 
 =head1 AUTHOR
 

@@ -152,8 +152,6 @@ SQL
     }
 
     @data;
-    
-    $self;
 }
 
 1;
@@ -164,15 +162,6 @@ __END__
 TTDB::Times - Perl interface to the tasker timeslice table
 
 =head1 SYNOPSIS
-
-  use TTDB::Times;
-
-  $user = TTDB::Times->new(user => 'bob', fullname => 'Robert Smith'):
-
-  $user->create();
-
-  $user = TTDB::Times->get(user => 'bob'):
-  $user = TTDB::Times->get(id => 1):
 
 =head1 DESCRIPTION
 
@@ -188,10 +177,13 @@ TTDB::Times - Perl interface to the tasker timeslice table
 
 =over
 
-sub today
-sub day
-sub entries
-sub all_day
+=item all_day
+
+=item day
+
+=item entries
+
+=item today
 
 =back
 

@@ -464,6 +464,56 @@ return the I<project_id> for the object.
 
 This will delete the object from the database.
 
+=item active
+
+The project is active for the user
+
+=item add
+
+=item add_note
+
+=item add_task
+
+=item alltime
+
+=item children
+
+=item clear
+
+=item depth
+
+=item entries
+
+=item get_all_auto
+
+=item get_alltime
+
+=item get_entry
+
+=item get_time
+
+=item longname
+
+=item name
+
+=item new_auto
+
+=item project
+
+=item set
+
+=item start
+
+Make this the current project for the user.
+
+=item subentries
+
+=item time
+
+=item unset
+
+=item user
+
 =back
 
 =head1 AUTHOR

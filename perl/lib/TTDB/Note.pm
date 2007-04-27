@@ -203,13 +203,34 @@ This will create a auto entry, if one does not exist.
 
 return the I<id> of the object.
 
+=item text
+
+Get the text for the note.
+
+=item time
+
+Get the time that the note was created.
+The time is returned in a Date::OO Object.
+
+=item type
+
+This returns the type of the note.
+
 =item  user_id
 
 return the I<user_id> for the object.
 
+=item user
+
+return a I<user> Object for the note.
+
 =item  project_id
 
 return the I<project_id> for the object.
+
+=item project
+
+return a I<project> Object for the note.
 
 =item delete
 
