@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!@PERL@
 
 use strict;
 use POSIX ;
@@ -655,7 +655,7 @@ print "accept $client\n";
 			$select->add($client);
 			nonblock($client);
 			print_log(sprintf("Connected (ssl): %s:%s", $client->peerhost || 'N/A', $client->peerport || -1));
-			print($client "TTCP 0.01\n");
+			print($client "TTCP @VERSION@\n");
 			$hash->{_clients}{$client} = { ssl => 0, client => $client };
 		    }
                 } else {
@@ -754,7 +754,12 @@ GetOptions(
 pod2usage(-verbose => 1) && exit if defined $opt_help;
 pod2usage(-verbose => 2) && exit if defined $opt_man;
 
-$0 = "tasker_server";
+if ($opt_versions) {
+    print("@PACKAGE@: @VERSION@\n");
+    exit;
+}
+
+$0 = "@PACKAGE@";
 main;
 
 __END__
