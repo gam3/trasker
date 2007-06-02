@@ -1,0 +1,40 @@
+#!/usr/bin/perl
+
+use TTDB::DBI qw (get_dbh dbi_setup);
+
+sub main
+{
+
+    dbi_setup(
+#        database => 'tasker',
+#        user => 'gam3',
+#        password => 'awnmwad',
+    );
+    my $dbh = get_dbh;
+
+    my $st = $dbh->prepare(<<SQL);
+select a.id, b.id, b.end_time 
+  from timeslice a, timeslice b 
+ where a.end_time = b.start_time
+   and a.project_id = b.project_id
+   and a.revert_to = b.revert_to
+ limit 1
+SQL
+
+    my $st1 = $dbh->prepare(q(update timeslice set end_time = ? where id = ?));
+    my $st2 = $dbh->prepare(q(delete from timeslice where id = ?));
+    my $st3 = $dbh->prepare(q(update timeslice set revert_to = ? where revert_to = ?));
+    while ( $st->execute && $st->rows ) {
+        my $row = $st->fetchrow_arrayref();
+	print $row->[0], ' ', $row->[1], ' ', $row->[2], "\n";
+	$st1->execute($row->[2], $row->[0]);
+	$st3->execute($row->[0], $row->[1]);
+	$st2->execute($row->[1]);
+	$dbh->commit;
+    }
+}
+
+main;
+
+1;
+_END_
