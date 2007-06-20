@@ -7,7 +7,7 @@ use TTDB::Projects;
 use TTDB::User;
 use TTDB::Project;
 
-use TTDB::DBI qw (get_dbh);
+use TTDB::DBI qw (get_dbh dbi_setup);
 
 use Date::Calc::MySQL;
 
@@ -31,14 +31,22 @@ sub new
         $self->{project} = $class->{project};
     }
     $self->{user} = $p{user} if $p{user};
-    $self->{project} = $p{project} if $p{project};
-    if (my $uid = $p{user_id}) {
+    if ($p{user}) {
+	$self->{user} = $p{user};
+    } elsif (my $uid = $p{user_id}) {
         require TTDB::User;
         $self->{user} = TTDB::User->get(id => $uid);
+    } else {
+        die "Need a user";
     }
-    if (my $pid = $p{project_id}) {
+
+    if ($p{project}) {
+	$self->{project} = $p{project};
+    } elsif (my $pid = $p{project_id}) {
         require TTDB::Project;
         $self->{project} = TTDB::Project->get(id => $pid);
+    } else {
+        die "Need a project";
     }
     return $self;
 }
@@ -202,6 +210,33 @@ our $get_time = {
     data => {},
 };
 
+sub day
+{
+    require TTDB::TimeSpan;
+    my $self = shift;
+    my %p = validate(@_, {
+        date => { isa => 'Date::Calc' },
+        all => 0,
+    });
+    my $date = $p{date};
+
+
+    my $start = Date::Calc::MySQL->new($date->date);
+    my $end = Date::Calc::MySQL->new(($date + 1)->date);
+
+    my @project_ids = ( $self->project->id );
+    if ($p{all}) {
+	push(@project_ids, map({ $_->id; } $self->project->children));
+    }
+
+    TTDB::TimeSpan->get(
+        start_time => $start,
+        end_time => $end,
+	uids => [ $self->user->id ],
+	pids => [ @project_ids ],
+    );
+}
+
 sub get_time
 {
     my $self = shift;
@@ -233,7 +268,11 @@ SQL
     while (my $row = $sth->fetchrow_arrayref) {
 	my $time = $row->[1];
 	my $ntime = Date::Calc::MySQL->new([1], 0, 0, 0, split(':', $time));
-	$get_time->{data}{$row->[0]} = $ntime;
+	if (defined($row->[0])) {
+	    $get_time->{data}{$row->[0]} = $ntime;
+	} else {
+	    $get_time->{data}{0} = $ntime;
+	}
     }
     $get_time->{data}{$id} || Date::Calc::MySQL->new([1], 0, 0, 0, 0, 0, 0);
 }
@@ -273,10 +312,12 @@ sub alltime
 }
 
 sub name {
+die "use ->project->name";
     shift->project->name;
 }
 
 sub longname {
+die "use ->project->longname";
     shift->project->longname;
 }
 
@@ -324,6 +365,19 @@ sub add_note
     }
 
     $note;
+}
+
+sub get_notes
+{
+    my $self = shift;
+    require TTDB::Notes;
+    my %p = validate(@_, {
+    });
+
+    TTDB::Notes->new(
+	user_ids => [ $self->user->id ],
+	project_ids => [ $self->project->id ],
+    )->entries;
 }
 
 sub add_task
@@ -404,6 +458,11 @@ sub new_auto
     warn Dumper($auto);
 
     0;
+}
+
+sub rate
+{
+    20.00;
 }
 
 1;
@@ -513,6 +572,18 @@ Make this the current project for the user.
 =item unset
 
 =item user
+
+=item day
+
+Get time for given date
+
+=item rate
+
+The rate of pay for the project/user
+
+=item get_notes
+
+Get the notes for a user/project
 
 =back
 

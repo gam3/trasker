@@ -6,6 +6,8 @@ use TTDB::DBI qw (get_dbh);
 
 use TTDB::Projects;
 
+our $VERSION = '0.001';
+
 use Params::Validate qw( validate validate_pos SCALAR BOOLEAN HASHREF OBJECT );
 
 use Carp qw (croak);
@@ -14,6 +16,7 @@ sub new
 {
     my $class = shift;
     my %p = validate(@_, {
+	id => 0,
 	name => 1,
 	fullname => 1,
     });

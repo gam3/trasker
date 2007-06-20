@@ -1,0 +1,89 @@
+use strict;
+
+package Date::Calc::MySQL;
+
+use base 'Date::Calc::Object';
+
+use POSIX qw();
+
+sub today
+{
+    shift->SUPER::today(@_);
+}
+
+sub new
+{
+    my $class = shift;
+    my @data = @_;
+
+    if (@_ == 1) {
+        my $string = $data[0];
+	if ($string =~ /-/) {
+	    @data = split(/[- :]/, $string);
+	} else {
+            my @x;
+	    if (my ($d, $x) = ($string =~ /(\d) days (.*)/)) {
+                push(@x, 0, 0, $d);
+                $string = $x;
+	    } else {
+                push(@x, 0, 0, 0);
+            }
+	    push(@x, split(/[:]/, $string));
+	    @data = ([1], @x);
+	}
+    } else {
+
+    }
+
+    $class->SUPER::new(@data);
+}
+
+sub as_hours
+{
+    my $self = shift;
+    my $format = shift || '%.1f';
+
+    die 'Not a delta' unless ($self->is_delta);
+
+    my $x = $self->[6]/360;
+    $x += $self->[5] / 60;
+    $x += $self->[4];
+
+    die if $self->[3];
+    die if $self->[2];
+    die if $self->[1];
+
+    sprintf($format, $x);
+}
+
+sub mysql
+{
+    my $self = shift;
+    my $ref = '';
+    if ($self->is_delta) {
+        $self->normalize();
+
+	$ref = int(abs($self));
+
+        $ref .= sprintf(" %d:%d:%d", $self->time);
+    } else {
+	$ref = join('-', $self->date);
+	if ($self->is_long) {
+	    $ref .= ' ' . join(':', $self->time);
+	}
+    }
+    return $ref;
+}
+
+sub strftime
+{
+    my $self = shift;
+    my $format = shift or die "Need a format";
+   
+    POSIX::strftime($format, localtime(Date::Calc::Mktime($self->datetime)));
+}
+
+1;
+__END__
+
+

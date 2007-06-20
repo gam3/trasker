@@ -6,6 +6,8 @@ use TTDB::DBI qw (get_dbh);
 use TTDB::Projects;
 use Date::Calc::MySQL;
 
+our $VERSION = '0.001';
+
 use Params::Validate qw( validate validate_pos SCALAR BOOLEAN HASHREF OBJECT );
 
 use Carp qw (croak);
@@ -196,6 +198,14 @@ sub longname
    $self->{long_name} = join(':', reverse @name);
 }
 
+sub invoice_name
+{
+    my $self = shift;
+
+    'Invoice: ' . $self->name;
+}
+
+
 sub name
 {
    my $self = shift;
@@ -229,7 +239,7 @@ sub users
     my $self = shift;
     require TTDB::Users;
 
-    TTDB::Users->new(project_id => $self->id());
+    TTDB::Users->new(project => $self);
 }
 
 sub child
@@ -355,7 +365,11 @@ sub children
 
     map({ TTDB::Project->get(id => $_) } keys %{$self->{child}});
 }
-use Data::Dumper;
+
+sub default_rate
+{
+    20.00;
+}
 
 sub depth
 {
@@ -506,6 +520,14 @@ If a task then this returns the user_id for the task.
 =item update
 
 make changes to the object and store them in the database.
+
+=item default_rate
+
+The default charges for this project.
+
+=item invoice_name
+
+This should be in a sub object.
 
 =back
 
