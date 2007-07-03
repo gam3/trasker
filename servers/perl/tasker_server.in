@@ -452,7 +452,7 @@ sub user
 
 	    printf($client "entry\t%s\t%s\t%d\t%d\t%s\t%s\t%s\n",
 		   $userid,
-		   $entry->name,
+		   $entry->project->name,
 		   $entry->project->id,
 		   $entry->project->parent_id,
 		   $time, $atime,
