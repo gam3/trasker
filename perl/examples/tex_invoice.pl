@@ -19,7 +19,7 @@ use Data::Dumper;
 
 use TTDB::DBI qw (dbi_setup);
 
-use Params::Validate qw( validate validate_pos SCALAR BOOLEAN HASHREF OBJECT );
+use Params::Validate qw( validate validate_pos SCALAR BOOLEAN ARRAYREF HASHREF OBJECT );
 
 our ($opt_help, $opt_man, $opt_versions, $opt_user, $opt_project);
 our $site = 'http://www.gam3.com/tasker';
@@ -81,20 +81,6 @@ sub now {
     push @dates, Date::Calc::Object->new(($date->date)[0..2]);
 }
 
-if (0) {
-    my $project = TTDB::Project->get(name => 'Peter');
-    my $user = TTDB::User->get(user => 'gam3');
-
-    for (my $date = Date::Calc::MySQL->new(2007, 1, 22); $date < Date::Calc::MySQL->now; $date += 7) {
-	my $up = TTDB::UserProject->new(user => $user, project => $project);
-	my ($week, $year) = Date::Calc::Week_of_Year($date->date);
-	my $total = $up->week(date => $date, all => 1);
-	print $date, " ", $date->strftime('%W'), ' ', $total->duration->as_hours, "\n";
-
-    }
-    exit;
-}
-
 sub main
 {
     my %p = validate(@_, {
@@ -134,13 +120,13 @@ sub main
 	next unless $hours_d->duration;
 	my $hours = $hours_d->duration->as_hours;
 	my $amount = $rate * $hours;
-	$name = "Misc.";
+	$name = "Default";
 
 	if ($amount) {
 	    $data_1 .= q(\\FSdesc{) . $name .
 		       qq(}{) . $rate . qq(}{) .
 		       sprintf("%0.1f", $hours) . qq(}{) .
-		       sprintf('%0.2f', $amount) . qq(}\n);
+		       printf('%0.2f', $amount) . qq(}\n);
 	}
     }
     for my $cup ($up->children) {
@@ -149,7 +135,6 @@ sub main
 	my $hours_d = $cup->week(date => $date);
 	my $hours = $hours_d->duration->as_hours;
 	my $amount = $rate * $hours;
-
 	next unless $amount;
 
         $data_1 .= q(\\FSdesc{) . $name .
@@ -165,30 +150,57 @@ sub main
 	my $hours_d = $up->day(date => $d, all => 1);
 	my $h = $hours_d->duration->as_hours;
 	$sub_total += $h;
+	next unless $h;
         $data_2 .= <<X;
-$dstr & Misc & $h \\\\
+$dstr & default & $h \\\\
 X
 	for my $notes ($hours_d->get_notes(exclude_type => 99)) {
 	    my $text = $notes->text;
+
+	    $text =~ s/&/\\&/g;
 
 	    $text =~ s/\\n/ - /g;
 	    $data_2 .= <<X;
 & \\parbox[l]{8.2cm}{ $text } & \\\\
 X
 	}
+	for my $cup ($up->children) {
+	    my $name  = $cup->project->name;
+	    my $rate  = $cup->rate;
+	    my $hours_d = $cup->day(date => $d);
+	    my $hours = $hours_d->duration->as_hours;
+	    my $amount = $rate * $hours;
+	    next unless $amount;
+
+	for my $notes ($hours_d->get_notes(exclude_type => 99)) {
+	    my $text = $notes->text;
+
+	    $text =~ s/&/\\&/g;
+
+	    $text =~ s/\\n/ - /g;
+	    $data_2 .= <<X;
+& \\parbox[l]{8.2cm}{ $text } & \\\\
+X
+	}
+
+	    $data_2 .= <<X;
+$dstr & $name & $hours \\\\
+X
+	}
     }
 
     open OUT, ">$filename" or die;
+
+    my $name = $project->co_name;
+    my @address = $project->address;
 
     print OUT invoice(
         date      => $x,
         date_text => $y,
         invnum    => sprintf('%s %05d', $sproj, $week),
         email     => q("G. Allen Morris III" $<$gam3@gam3.com$>$),
-        co_name   => q(Almond Hill Enterprises),
-        co_add1   => q(125 Chaparral Court),
-        co_add2   => q(Suite 100),
-        co_add3   => q(Anaheim Hills, CA 92808-2263),
+        co_name   => $name,
+        co_add    => \@address,
         total     => sprintf("%0.2f", $total->duration->as_hours * $rate ),
         data_1    => $data_1,
 
@@ -221,14 +233,19 @@ sub invoice
         invnum    => 1,
         email     => 1,
         co_name   => 1,
-        co_add1   => 1,
-        co_add2   => 0,
-        co_add3   => 0,
-        co_add4   => 0,
+        co_add    => ARRAYREF,
         total     => 1,
         data_1    => 1,
         data_2    => 1,
     });
+
+    my @adds = @{$data{co_add}};
+    delete $data{co_add};
+    my $str = '';
+    for my $add (@adds) {
+        $str .= "\\addressline{$add}";
+    }
+    $data{co_add} = $str;
 
 my $tex = <<'TEX';
 \documentclass[letterpaper]{article}
@@ -383,10 +400,7 @@ Saranac Lake, New York 12983
 \begin{minipage}[t]{5.0cm}
 \vspace{0.25cm}
 \textbf{@@co_name@@}\\
-\addressline{@@co_add1@@}
-\addressline{@@co_add2@@}
-\addressline{@@co_add3@@}
-\addressline{@@co_add4@@}
+@@co_add@@
 \rule{0pt}{8.5ex}
 
 \end{minipage}}
@@ -444,25 +458,41 @@ TEX
     $tex;
 }
 
-die 'need a project' unless $opt_project;
-die 'need a user' unless $opt_user;
-die 'need a date' unless @opt_dates;
-
-for my $tdate (@opt_dates) {
-    my $date;
-    if ($tdate =~ /w/) {
-        my ($year, $week) = split('-', $tdate);
-	$week =~ s/w//;
-	$date = Date::Calc::MySQL->new(Date::Calc::Monday_of_Week($week, $year));
+for my $string (@ARGV) {
+#    AHE-2007-w05-gam3
+    if (my ($pn, $year, $week, $un) = ($string =~ /^(.*)-([0-9]*)-w([0-9]*)-([^-]*)$/)) {
+	my $date = Date::Calc::MySQL->new(Date::Calc::Monday_of_Week($week, $year));
+	main(
+	    project_name => $pn,
+	    user_name => $un,
+	    date => $date,
+	);
     } else {
-	$date = Date::Calc::MySQL->new(split('-', $tdate));
+        warn $string;
     }
-    
-    main(
-	project_name => $opt_project,
-	user_name => $opt_user,
-	date => $date,
-    );
+}
+
+if (@opt_dates) {
+    die 'Need a project' unless $opt_project;
+    die 'Need a user' unless $opt_user;
+    die 'Need a date' unless @opt_dates;
+
+    for my $tdate (@opt_dates) {
+	my $date;
+	if ($tdate =~ /w/) {
+	    my ($year, $week) = split('-', $tdate);
+	    $week =~ s/w//;
+	    $date = Date::Calc::MySQL->new(Date::Calc::Monday_of_Week($week, $year));
+	} else {
+	    $date = Date::Calc::MySQL->new(split('-', $tdate));
+	}
+	
+	main(
+	    project_name => $opt_project,
+	    user_name => $opt_user,
+	    date => $date,
+	);
+    }
 }
 
 __END__

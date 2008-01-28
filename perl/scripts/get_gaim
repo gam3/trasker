@@ -43,7 +43,9 @@ sub main
 	my @d = ($file =~ /^(\d{4})-(\d{2})-(\d{2})/);
 	my $filedate = Date::Calc::MySQL->new(@d);
 	next if ($date != $filedate);
+
         my $parser = Gaim::Log::Parser->new(file => $fullname);
+
         while (my $msg = $parser->next_message()) {
 	    if (my $x = $skip->{$msg->to}) {
 eval {

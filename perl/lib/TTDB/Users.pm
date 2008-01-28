@@ -53,6 +53,7 @@ SQL
 
     my @data;
     require TTDB::UserProject;
+
     while (my $data = $sth->fetchrow_hashref()) {
 	my $user = TTDB::User->new(id => $data->{user_id}, name => $data->{user_name}, fullname => $data->{user_fullname}  );
         if ($project) {

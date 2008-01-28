@@ -8,6 +8,9 @@ pobjects = $(patsubst %.tex,%.pdf,$(wildcard *.tex))
 
 all : $(dobjects) $(pobjects) $(cobjects)
 
+%.tex : tex_invoice.pl
+	perl -I ../lib ./tex_invoice.pl $*
+
 %.pdf : %.tex
 	pdflatex $<
 

@@ -1,0 +1,298 @@
+#!/usr/bin/perl
+
+use BSD::Resource;
+
+use Date::Calc::Object;
+
+setrlimit(LIMIT_CPU, 60, 120);
+setrlimit(RLIMIT_VMEM, 60000000, 90000000);
+
+use Cwd;
+
+use lib '/usr/src/gam3/tasker/perl/cgi-bin/lib';
+
+BEGIN {
+
+}
+
+BEGIN {
+    if (defined $ENV{TURBOLIB}) {
+	unshift(@INC, $ENV{TURBOLIB});
+    }
+}
+
+use CGI;
+
+use Scalar::Util qw(reftype blessed);
+
+{
+package Exception;
+
+sub print
+{
+    my $self = shift;
+    print "content-type: text/html\n\n";
+
+    print $self->{message}, "\n";
+    use Data::Dumper;
+    print Dumper $self;
+}
+
+}
+
+
+{
+package ourprint;
+use Carp qw(croak);
+
+sub TIEHANDLE
+{
+    my $type = shift;
+    my $class = ref $type || $type;
+    bless { }, $class;
+}
+
+sub PRINT
+{
+    my $self = shift;
+    croak("print (", join(" ", @_), ") [", caller , "]");
+    1;
+}
+
+sub PRINTF
+{
+    my $self = shift;
+    my $format = shift;
+    $self->PRINT(sprintf($format, @_));
+}
+
+sub DESTROY
+{
+}
+
+}
+
+our @warn_list = ();
+
+sub main {
+    local $SIG{__WARN__} = sub {
+	my $warn = join('', @_);
+	chomp $warn;
+	push(@warn_list, "Warn: $warn");
+    };
+
+    my $cgi = CGI->new;
+
+    my $path = $cgi->path_info();
+
+    my $now = Date::Calc->new();
+
+    sub now
+    {
+	$now;
+    }
+
+    my ($element, $extra) = ($path =~ m|^/([^/]*)/?(.*)|);
+    $element ||= 'home';
+
+    my $pages = {
+	'home' => sub {
+	    require Tasker::Home;
+	    Tasker::Home->new(@_);
+	},
+	'invoice' => sub {
+	    require Tasker::Invoice;
+	    Tasker::Invoice->new(@_);
+	},
+	'timeedit' => sub {
+	    require Tasker::TimeEdit;
+	    Tasker::TimeEdit->new(@_);
+	},
+	# test pages.
+	'check' => 'Check',
+	'die' => sub {
+	    die "This is a test of dying.";
+	},
+	't_session' => sub {
+	    require Tasker::Exception;
+	    die Tasker::Exception->Session( 
+		self_url => CGI::self_url(),
+		path_info => CGI::path_info(),
+		{%ENV}
+	    );
+	},
+    };
+
+    my $page;
+
+    eval {
+	my $init = $pages->{$element} || sub { die "Unknown page $element"; };
+        if (ref($init) eq 'CODE') {
+	    $page = $init->(extra => $extra, self_url => CGI->self_url());
+	} elsif (!ref($init)) {
+	    $page = $init->new(extra => $extra);
+	} else {
+	    die 'unknown entry type: ', ref($init);
+	}
+    };
+    if ($@) {
+	if (my $type = blessed $@) {
+	    if ($type eq 'Redirect') {
+		print "content-type: text/html\n";
+		print "Location: " . $@->{path} . "\n\n";
+	    } else {
+		print "content-type: text/html\n\n";
+		if ($@->can('print')) {
+		    $@->print;
+		} elsif ($@->can('path')) {
+		    print "content-type: text/html\n";
+		    print "Location: " . $@->path . "\n\n";
+		} else {
+		    print "unknow error " . $type;
+		}
+	    }
+	    exit;
+	}
+	
+	print "content-type: text/html\n";
+
+	print "\n";
+	print "<head>\n";
+	print "<title>Error</title>\n";
+	print "</head>\n";
+	print "<body>\n";
+	print "<pre>\n";
+	print $@;
+	print "\n";
+	print "This will redirect you to a fatal error page.";
+	print "<\pre>\n";
+	print "</body>\n";
+	exit;
+    }
+
+    eval {
+	tie local *STDOUT, 'ourprint';
+
+	$page->set_params($cgi->Vars);
+    };
+    if ($@) {
+	print "content-type: text/html\n\n";
+	print "<pre>\n";
+	print $@;
+	print "<\pre>\n";
+	exit;
+    }
+
+    eval {
+	$page->init();
+    };
+    if ($@) {
+	if (my $type = blessed $@) {
+	    if ($type eq 'Redirect') {
+		print "content-type: text/html\n";
+		print "Location: " . $@->{path} . "\n\n";
+	    } else {
+		if ($@->can('print')) {
+		    print "content-type: text/html\n\n";
+		    $@->print;
+		} elsif ($@->can('path')) {
+		    print "content-type: text/html\n";
+# The next line should not be printed if debugging.
+		    print "Location: " . $@->path . "\n\n";
+		    print "\n\n";
+		    print q(You should be redirected <a href=") . $@->path . qq(">here</a>\n);
+		} else {
+		    print "content-type: text/plain\n\n";
+		    print "unknow error " . $type;
+		}
+	    }
+	    exit;
+	}
+	
+	print "content-type: text/html\n\n";
+	print "<pre>\n";
+	$@ =~ s/</&lt;/g;
+	print $@;
+	print "\n";
+	print "This should have an error message.\n";
+	print "<\pre>\n";
+	exit;
+    }
+
+    my $html = '';
+    eval {
+	tie local *STDOUT, 'ourprint';
+	$html .= $page->html();
+    };
+    if ($@) {
+	print "content-type: text/html\n\n";
+	print "<pre>\n";
+	$@ =~ s/</&lt;/g;
+	print $@;
+	print "<\pre>\n";
+	exit;
+    }
+
+    my $http_headers = $page->header;
+    print $header;
+    print "\n\n";
+
+    #print q(<?xml-stylesheet href="/ahe/css/europa_blue/turbo.css" type="text/css"?>), "\n";
+    #print q(<?xml-stylesheet href="#internalStyle" type="text/css"?>), "\n";
+    if (0) {
+	print q(<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">);
+    } else {
+    #    print qq(<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    #	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">\n);
+	print qq(<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"\n
+	    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">\n);
+    }
+
+eval {
+    print $page->head();
+    print $page->start_body();
+};if ($@) {
+    print "$@\n";
+}
+    #print q( <div align="center">);
+    #print " <table border=10> <tr> <td>";
+    print $html;
+    #print " </td> </tr> </title> ";
+    #print q( </div>);
+
+    eval {
+	print $page->footer();
+    }; if ($@) {
+	print "<pre>\n";
+	print $@;
+	print "<\pre>\n";
+	exit;
+    }
+    if (1) {
+	if (@warn_list) {
+	    my $x = join("<br/>\n", @warn_list);
+	    $x =~ s/</&lt;/g;
+	    print(qq(<div align="left">));
+	    print(qq( <hr width="90%"/>\n));
+	    print(" <pre>\n");
+	    print join("\n", $x);
+	    print(" </pre>\n");
+	    print("</div>");
+	}
+	@warn_list = ();
+	print("<hr>\n");
+	print(CGI->server_name);
+	require Data::Dumper;
+#	my $x = Data::Dumper::Dumper($page),
+#	$x =~ s/>/&gt;/g;
+#	$x =~ s/</&lt;/g;
+#	print qq(<div align="left"><pre>\n), $x, "</pre></div>\n";
+    }
+    print $page->end_body();
+    print "</html>\n";
+}
+
+main();
+
+__END__
+

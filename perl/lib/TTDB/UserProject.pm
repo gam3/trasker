@@ -7,6 +7,8 @@ use TTDB::Projects;
 use TTDB::User;
 use TTDB::Project;
 
+use Carp qw (croak);
+
 use TTDB::DBI qw (get_dbh dbi_setup);
 
 use Date::Calc::MySQL;
@@ -37,7 +39,7 @@ sub new
         require TTDB::User;
         $self->{user} = TTDB::User->get(id => $uid);
     } else {
-        die "Need a user";
+        croak "Need a user";
     }
 
     if ($p{project}) {
@@ -210,6 +212,32 @@ our $get_time = {
     data => {},
 };
 
+sub week
+{
+    require TTDB::TimeSpan;
+    my $self = shift;
+    my %p = validate(@_, {
+        date => { isa => 'Date::Calc' },
+        all => 0,
+    });
+    my $date = $p{date};
+
+    my $start = Date::Calc::MySQL->new($date->date);
+    my $end = Date::Calc::MySQL->new(($date + 7)->date);
+
+    my @project_ids = ( $self->project->id );
+    if ($p{all}) {
+	push(@project_ids, map({ $_->id; } $self->project->children));
+    }
+
+    TTDB::TimeSpan->get(
+        start_time => $start,
+        end_time => $end,
+	uids => [ $self->user->id ],
+	pids => [ @project_ids ],
+    );
+}
+
 sub day
 {
     require TTDB::TimeSpan;
@@ -225,16 +253,22 @@ sub day
     my $end = Date::Calc::MySQL->new(($date + 1)->date);
 
     my @project_ids = ( $self->project->id );
+
     if ($p{all}) {
 	push(@project_ids, map({ $_->id; } $self->project->children));
     }
 
-    TTDB::TimeSpan->get(
+    my $dur = TTDB::TimeSpan->get(
         start_time => $start,
         end_time => $end,
 	uids => [ $self->user->id ],
 	pids => [ @project_ids ],
     );
+    my $duration = Date::Calc::MySQL->new($dur->{data}{time});
+    my $max = Date::Calc::MySQL->new(1, 0, 0, 0);
+
+die 'bad duration' if $duration > $max;
+    $dur;
 }
 
 sub get_time
@@ -312,7 +346,7 @@ sub alltime
 }
 
 sub name {
-die "use ->project->name";
+    croak("use ->project->name");
     shift->project->name;
 }
 

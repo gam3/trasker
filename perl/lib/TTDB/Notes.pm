@@ -16,6 +16,14 @@ sub new
 	    isa => 'Date::Calc::MySQL',
 	},
 	today => 0,
+        start_time => {
+	    optional => 1,
+	    isa => 'Date::Calc::MySQL',
+	},
+        end_time => {
+	    optional => 1,
+	    isa => 'Date::Calc::MySQL',
+	},
 	project_ids => {
 	    optional => 1,
 	    type => ARRAYREF,
@@ -56,6 +64,10 @@ sub entries
     if ($self->{date}) {
         $sql .= ' and date(time) = date(?)';
 	push(@args, $self->{date}->mysql);
+    }
+    if ($self->{start_time}) {
+        $sql .= ' and time between ? and ?';
+	push(@args, $self->{start_time}->mysql, $self->{end_time}->mysql);
     }
 
     $sql .= ' order by time';

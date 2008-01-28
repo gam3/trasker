@@ -177,13 +177,15 @@ sub addtask
     my $userobj = get_user($user, $client);
 
     my $userproj;
-
+die $data unless $parent_id;
     if ($parent_id) {
 	$userproj = $userobj->project(id => $parent_id);
     } else {
+die;
 	$userproj = $userobj;
     }
-
+use Data::Dumper;
+warn Dumper $userobj;
     if (my $up = $userproj->add_task(
 	name => $name,
 	description => $description)
@@ -646,6 +648,7 @@ print "accept $client\n";
 print "accept $client\n";
 		    my $req = request_init(RQ_DAEMON, $progname, RQ_FILE, $client->fileno());
 		    fromhost($req);
+
 		    if (!hosts_access($req)) {
 			print $client "The maximum number of simultaneous connections reached.\n";
 			$client->shutdown(2);

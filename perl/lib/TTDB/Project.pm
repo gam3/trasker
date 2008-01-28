@@ -205,7 +205,6 @@ sub invoice_name
     'Invoice: ' . $self->name;
 }
 
-
 sub name
 {
    my $self = shift;
@@ -359,6 +358,13 @@ SQL
     $get_time->{data}->{$id} || Date::Calc::MySQL->new([1], 0, 0, 0, 0, 0, 0);
 }
 
+sub children_ids
+{
+    my $self = shift;
+
+    map({ $_ } keys %{$self->{child}});
+}
+
 sub children
 {
     my $self = shift;
@@ -419,6 +425,63 @@ sub all_ids
 {
     my $self = shift;
     ($self->id, map({ $_ } keys %{$self->{child}}));
+}
+
+sub notes
+{
+    my $self = shift;
+    my %p = validate(@_, {
+        date => {
+	   isa => [ qw(  Date::Calc::MySQL) ],
+	},
+	all => 0,
+    });
+
+    my @pids = ($self->id);
+
+    if ($p{all}) {
+        push @pids, $self->children_ids;
+    }
+
+    require TTDB::Notes;
+    TTDB::Notes->new(
+       date => $p{date},
+    );
+}
+
+sub co_name
+{
+    my $self = shift;
+    my $ret;
+
+    if ($self->name eq 'AHE') {
+        $ret = qq(Almond Hill Enterprises);
+    } elsif ($self->name eq 'Peter') {
+	$ret = qq(Peter);
+    } else {
+        die '???';
+    }
+    return $ret;
+}
+
+sub address
+{
+    my $self = shift;
+    my @ret = ();
+
+    if ($self->name eq 'AHE') {
+        @ret = (
+          q(125 Chaparral Court),
+          q(Suite 100),
+          q(Anaheim Hills, CA 92808-2263),
+	);
+    } elsif ($self->name eq 'Peter') {
+        @ret = (
+          q(asdf),
+	)
+    } else {
+        die '???';
+    }
 }
 
 1;

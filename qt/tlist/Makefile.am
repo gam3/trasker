@@ -15,9 +15,11 @@ BUILT_SOURCES = tlist.moc addproject.moc notes.moc ttcp.moc auto_select.moc tsel
 
 bin_PROGRAMS = tlist
 
-tlist_SOURCES = main.cpp tlist.cpp addproject.cpp ttcp.cpp tlist.h addproject.h addproject.ui.h ttcp.h addproject.ui \
+tlist_SOURCES = main.cpp tlist.cpp addproject.cpp ttcp.cpp tlist.h addproject.h \
+ addproject.ui.h ttcp.h addproject.ui \
  notes.cpp notes.h notes.ui.h notes.ui global.h \
- auto_select.cpp auto_select.h auto_select.ui.h auto_select.ui
+ auto_select.cpp auto_select.h auto_select.ui.h auto_select.ui \
+ base64.cpp base64.h
 
 AM_CFLAGS = ${GLIB_CFLAGS}
 
@@ -39,5 +41,4 @@ tlist_LDADD = $(INTLLIBS) $(X_LIBS) $(GLIB_LIBS) $(QT_LIBS)
 man1_MANS = tlist.man
 
 dist_man1_MANS = tlist.man
-
 

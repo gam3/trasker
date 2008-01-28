@@ -6,6 +6,8 @@ use TTDB::DBI qw (get_dbh);
 
 use Params::Validate qw (validate);
 
+use Date::Calc::MySQL;
+
 sub new
 {
     my $class = shift;
@@ -144,6 +146,13 @@ sub project
 	$self->{project} ||= TTDB::Project->get(id => $self->project_id);
     }
     $self->{project};
+}
+
+sub date
+{
+    my $self = shift;
+
+    Date::Calc::MySQL->new($self->{time});
 }
 
 sub text

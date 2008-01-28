@@ -6,9 +6,9 @@ sub main
 {
 
     dbi_setup(
-#        database => 'tasker',
-#        user => 'gam3',
-#        password => 'awnmwad',
+        database => 'tasker',
+        user => 'gam3',
+        password => 'awnmwad',
     );
     my $dbh = get_dbh;
 

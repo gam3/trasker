@@ -13,142 +13,54 @@ sub new
     bless {}, $class;
 }
 
-sub today
+sub get
 {
     my $self = shift;
     my $dbh = get_dbh();
-
-    my $sth = $dbh->prepare(<<SQL);
-select timeslice.id,
-       user.name user_name,
-       project.name,
-       start_time,
-       timediff(ifnull(end_time, now()), start_time) elapsed,
-       ifnull(end_time, now()) end_time,
-       'eof'
-  from timeslice, project, user
- where user.id = timeslice.user_id
-   and project.id = project_id
-   and date(now()) >= date(start_time)
-   and (date(now()) <= date(end_time) or end_time is null)
- order by start_time desc
- limit 100
-SQL
-
-    $sth->execute();
-
-    my @data;
-
-    while (my $data = $sth->fetchrow_hashref()) {
-	push(@data, bless { data => $data, id => $data->{id} }, 'TTDB::Time');
-    }
-
-    @data;
-}
-
-sub day
-{
-    my $self = shift;
-    my $dbh = get_dbh();
-
-    my $date = '2006-10-06';
-
-    my $sth = $dbh->prepare(<<SQL);
-select timeslice.id,
-       user.name user_name,
-       project.name,
-       start_time,
-       timediff(ifnull(end_time, now()), start_time) elapsed,
-       ifnull(end_time, now()) end_time,
-       'eof'
-  from timeslice, project, user
- where user.id = timeslice.user_id
-   and project.id = project_id
-   and date(now()) >= date(start_time)
-   and (date(now()) <= date(end_time) or end_time is null)
- order by start_time desc
- limit 100
-SQL
-
-    $sth->execute($date, $date);
-
-    my @data;
-
-    while (my $data = $sth->fetchrow_hashref()) {
-	push(@data, bless { data => $data, id => $data->{id} }, 'TTDB::Time');
-    }
-
-    @data;
-}
-
-sub entries
-{
-    my $self = shift;
-    my $dbh = get_dbh();
-
-    my $sth = $dbh->prepare(<<SQL);
-select timeslice.id,
-       user.name user_name,
-       project.name,
-       start_time,
-       timediff(ifnull(end_time, now()), start_time) elapsed,
-       ifnull(end_time, now()) end_time,
-       'eof'
-  from timeslice, user, project
- where user.id = user_id
-   and project.id = project_id
- order by start_time desc
- limit 200
-SQL
-
-    $sth->execute();
-
-    my @data;
-
-    while (my $data = $sth->fetchrow_hashref()) {
-	push(@data, bless { data => $data, id => $data->{id} }, 'TTDB::Time');
-    }
-
-    @data;
-}
-
-sub all_day
-{
-    my $self = shift;
     my %p = validate(@_, {
-        date => { isa => 'Date::Calc' },
+        date => {
+	    date => {
+		isa => 'Date::Calc',
+	    },
+	},
     });
 
-    my $dbh = get_dbh();
+    my @args = ();
+
+    my $date_clause = '';
+    
+    if ($p{date}) {
+	$date_clause = <<EOP;
+and start_time < ? and end_time >= ?
+EOP
+        push(@args, ($p{date} + 1)->mysql);
+        push(@args, ($p{date} + 0)->mysql);
+    }
 
     my $sth = $dbh->prepare(<<SQL);
-select project.id project_id,
-       timeslice.user_id,
-       project.name project_name,
-       sec_to_time(
-        sum(
-	 time_to_sec(
-	  timediff(
-	   if(date(end_time) = '2006-10-31', end_time, '2006-10-31 24:00:00'),
-	   if(date(start_time) = '2006-10-31', start_time, '2006-10-31 00:00:00')
-	  )
-	 )
-        )
-       )
+select timeslice.id,
+       users.name as user_name,
+       project.id as project_id,
+       project.name as project_name,
+       start_time,
+       end_time,
        'eof'
-  from timeslice, project
- where project.id = project_id
-   and date(start_time) <= '2006-10-31' and (date(end_time) >= '2006-10-31' or end_time is null)
-   and timeslice.user_id = 1
- group by project_id, timeslice.user_id
+  from timeslice, project, users
+ where users.id = timeslice.user_id
+   and project.id = project_id
+   $date_clause
+ order by start_time
+ limit 100
 SQL
 
-    $sth->execute();
+    $sth->execute(@args);
 
     my @data;
 
+    require TTDB::TimeSlice;
+
     while (my $data = $sth->fetchrow_hashref()) {
-	push(@data, bless { data => $data, id => $data->{id} }, 'TTDB::Time');
+	push(@data, bless { data => $data, id => $data->{id} }, 'TTDB::TimeSlice');
     }
 
     @data;

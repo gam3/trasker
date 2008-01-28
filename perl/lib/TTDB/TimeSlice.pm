@@ -92,22 +92,23 @@ sub id
 sub start_time
 {
     my $self = shift;
+    require Date::Calc::MySQL;
 
-    $self->{start_time}
+    Date::Calc::MySQL->new($self->{data}{start_time});
 }
 
 sub end_time
 {
     my $self = shift;
 
-    $self->{end_time}
+    $self->{data}{end_time} ? Date::Calc::MySQL->new($self->{data}{end_time}) : Date::Calc::MySQL->now();
 }
 
 sub duration
 {
     my $self = shift;
 
-    'fixme';
+    $self->end_time - $self->start_time;
 }
 
 sub user
@@ -119,7 +120,7 @@ sub project
 {
     my $self = shift;
 
-    $self->{project} ||= TTDB::Project->get(id => $self->{project_id});
+    $self->{project} ||= TTDB::Project->get(id => $self->{data}{project_id});
 }
 
 sub elapsed
@@ -282,6 +283,17 @@ SQL
     $dbh->commit;
 }
 
+sub notes
+{
+    my $self = shift;
+    require TTDB::Notes;
+    
+    TTDB::Notes->new(
+	start_time => $self->start_time,
+	end_time => $self->end_time,
+    );
+}
+
 1;
 __END__
 
@@ -315,15 +327,25 @@ TTDB::TimeSlice - Perl interface to the tasker timeslice table
 =over
 
 =item count
+
 =item create
+
 =item duration
+
 =item elapsed
+
 =item end_time
+
 =item get
+
 =item id
+
 =item project
+
 =item start_time
+
 =item update
+
 =item user
 
 =back

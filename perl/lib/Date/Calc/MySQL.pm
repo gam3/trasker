@@ -45,13 +45,16 @@ sub as_hours
 
     die 'Not a delta' unless ($self->is_delta);
 
-    my $x = $self->[6]/360;
+    my $x = $self->[6] / 3600;
     $x += $self->[5] / 60;
     $x += $self->[4];
 
-    die if $self->[3];
-    die if $self->[2];
-    die if $self->[1];
+    if (my $day = $self->[3]) {
+        $x += $day * 24; 
+    }
+
+    die Dumper $self if $self->[2];
+    die Dumper $self if $self->[1];
 
     sprintf($format, $x);
 }

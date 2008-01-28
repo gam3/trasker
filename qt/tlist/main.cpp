@@ -32,7 +32,8 @@ int main(int argc, char *argv[])
 
     parse_command_line(a.argc(), a.argv(), &options);
     host = options.server;
-    TTCP *server = new TTCP(host, options.port);
+
+    TTCP *server = new TTCP(host, options.port, false);
 
     TTListView *listview = new TTListView(options.user, server, options.verbose);
 
@@ -69,7 +70,13 @@ int main(int argc, char *argv[])
     listview->show();
     a.setMainWidget(listview);
 
-    return a.exec();
+//    server->start(host, options.port);
+
+    a.exec();
+
+    delete server;
+
+    return 0;
 }
 
 #include <getopt.h>

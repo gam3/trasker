@@ -11,20 +11,29 @@
 #ifndef TTCP_H
 #define TTCP_H
 
+#include "../conf.h"
 #include <qstring.h>
 #include <qsocket.h>
 #include <qtimer.h>
+#include <qptrlist.h>
 #include <qnetworkprotocol.h>
+#include <qdom.h>
+
+#if HAVE_QCA_H
+# include <qca.h>
+#endif
 
 class TTCP : public QNetworkProtocol
 {
     Q_OBJECT
 
 public:
-    TTCP();
-    TTCP(const char *host, int port);
+//    TTCP();
+    TTCP(const char *host, int port, bool);
+//    TTCP(const QString&, int);
     virtual ~TTCP();
     virtual int supportedOperations() const;
+    void start(const char *, int);
     void get_entries(QString);
     void needtime(QString, int);
     void start(QString, int);
@@ -39,7 +48,13 @@ protected:
     virtual void operationListChildren( QNetworkOperation *op );
     virtual void operationGet( QNetworkOperation *op );
 
-    QSocket *commandSocket;
+    QSocket   *socket;
+#if HAVE_QCA_H
+    QCA::TLS  *ssl;
+    QCA::Cert  cert;
+    QPtrList<QCA::Cert> rootCerts;
+#endif
+
     bool connectionReady;
     bool readGroups;
     bool readArticle;
@@ -49,9 +64,20 @@ private:
     void close();
     void parseGroups();
     void parseArticle();
-    const char *host;
-    int  port;
+    QString host;
+    Q_UINT16 port;
     float version;
+
+    QString resultToString(int result);
+
+#if HAVE_QCA_H
+    void showCertInfo(const QCA::Cert &cert);
+    QPtrList<QCA::Cert> getRootCerts(const QString &store);
+    QCA::Cert readCertXml(const QDomElement &e);
+#endif
+
+    void doTheRead(QSocket *socket);
+
 
 signals:
     void entry(int user_id, QString name, int project_id, int parent_id, QTime time, QTime atime);
@@ -68,12 +94,21 @@ signals:
     void disconnected();
 
 protected slots:
-    void hostFound();
-    void myConnected();
-    void closed();
-    void readyRead();
-    void error( int );
+    void sock_hostFound();
+    void sock_connected();
+    void sock_readyRead();
+    void sock_closed();
+    void sock_error( int );
     void timeout();
+
+#if HAVE_QCA_H
+    void ssl_handshaken();
+    void ssl_readyRead();
+    void ssl_closed();
+    void ssl_error(int);
+    void ssl_readyReadOutgoing(int);
+#endif
+
 };
 
 #endif
