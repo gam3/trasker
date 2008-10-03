@@ -207,7 +207,7 @@ void TTCP::doTheRead(QSocket *socket)
     while (socket->canReadLine()) {
 	QString line = socket->readLine();
 	line.remove('\n');
-	QStringList list = QStringList::split("\t", line);
+	QStringList list = QString::split("\t", line);
 
 	if (0.0 == version) {
 	    if (list[0] == "TTCP") {

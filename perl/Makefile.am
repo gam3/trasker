@@ -8,6 +8,7 @@ noinst_DATA = .made_test
 
 .made_test: Build
 	./Build test
+	touch .made_test
 
 #Makefile.perl: Makefile.PL
 #	$(PERL) $< MAKEFILE=$@

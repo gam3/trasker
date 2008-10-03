@@ -11,7 +11,7 @@ our @ISA = qw (Exporter);
 our @EXPORT_OK = qw(get_dbh dbi_setup);  # symbols to export on request
 
 our $database = 'test_tasker';
-our $host = '';
+our $host = 'harpo';
 our $user = 'tasker';
 our $password = 'seviceforward';
 our $db = 'Pg';
@@ -43,7 +43,7 @@ sub dbi_setup
 sub get_dbh
 {
     if (!$dbi) {
-	$dbi = DBI->connect("DBI:${db}:database=" . $database . ";", $user, $password,
+	$dbi = DBI->connect("DBI:${db}:database=" . $database . ";host=$host", $user, $password,
 	    {
 		RaiseError => 1,
 		PrintError => 0,

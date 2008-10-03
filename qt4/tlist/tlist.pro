@@ -1,16 +1,19 @@
-HEADERS     = treeitem.h \
+FORMS       = mainwindow.ui
+HEADERS     = mainwindow.h \
+              treeitem.h \
               treemodel.h \
 	      connection.h \
-	      ttcp.h \
-	      peermanager.h
-RESOURCES   = tlist.qrc
-SOURCES     = treeitem.cpp \
+	      ttcp.h
+RESOURCES   = tlist.qrc systray.qrc
+SOURCES     = mainwindow.cpp \
+	      treeitem.cpp \
               treemodel.cpp \
 	      connection.cpp \
 	      ttcp.cpp \
-	      peermanager.cpp \
               main.cpp
 CONFIG  += qt
+
+CONFIG += debug
 
 QT += network
 

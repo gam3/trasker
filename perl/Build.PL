@@ -10,6 +10,7 @@ my $builder = Module::Build->new(
     license       => 'perl',
     requires => {
         'perl'          => '5.6.0',
+	"Date::ICal"	=> 0,
     },
     script_files => [ 'scripts/get_gaim' ],
     build_requires => {

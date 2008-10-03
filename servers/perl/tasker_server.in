@@ -514,10 +514,7 @@ sub update
 {
     my $client = shift;
 
-#warn Dumper $client;
     for my $clientd (map({ $hash->{_clients}{$_} } keys %{$hash->{_clients}})) {
-use Data::Dumper;
-#warn Dumper $clientd;
         my $cli = $clientd->{client};
 	printf($cli "update\n");
     }
@@ -708,7 +705,6 @@ QUIT:
 		    } else {
 			($cmd, @args) = split(' ', $data);
 		    }
-warn "command: " . $data;
 		    if (my $function = $cmd_hash->{$cmd}) {
 			my $action;
 		        eval {

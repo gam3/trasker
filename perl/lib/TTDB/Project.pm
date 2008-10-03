@@ -12,6 +12,26 @@ use Params::Validate qw( validate validate_pos SCALAR BOOLEAN HASHREF OBJECT );
 
 use Carp qw (croak);
 
+=head1 NAME
+
+TTDB::Project - Perl interface to the tasker project data
+
+=head1 SYNOPSIS
+
+  use TTDB::Project;
+
+  $user = TTDB::Project(id => 1):
+
+=head2 Constructor
+
+=over
+
+=item new
+
+create a project object.  The database is not updated.
+
+=cut
+
 sub new
 {
     my $class = shift;
@@ -33,6 +53,12 @@ sub new
 
     return $self;
 }
+
+=item get
+
+get a project from the database.
+
+=cut
 
 sub get
 {
@@ -71,6 +97,12 @@ sub get
 
     return $project || croak "No project $p{id}.";
 }
+
+=item create
+
+Create a new project.
+
+=cut
 
 sub create
 {
@@ -198,12 +230,24 @@ sub longname
    $self->{long_name} = join(':', reverse @name);
 }
 
+=item invoice_name
+
+This should be in a sub object.
+
+=cut
+
 sub invoice_name
 {
     my $self = shift;
 
     'Invoice: ' . $self->name;
 }
+
+=item name
+
+The name of the project
+
+=cut
 
 sub name
 {
@@ -358,6 +402,12 @@ SQL
     $get_time->{data}->{$id} || Date::Calc::MySQL->new([1], 0, 0, 0, 0, 0, 0);
 }
 
+=item children_ids
+
+Return a list of the child project ids.
+
+=cut
+
 sub children_ids
 {
     my $self = shift;
@@ -407,12 +457,20 @@ sub alltime
     sprintf("%2d:%02d:%02d", $time->normalize()->time());
 }
 
+=item is_task
+
+=cut
+
 sub is_task
 {
     my $self = shift;
 
     $self->{user_id};
 }
+
+=item user_id
+
+=cut
 
 sub user_id
 {
@@ -421,11 +479,19 @@ sub user_id
     $self->{user_id};
 }
 
+=item all_ids
+
+=cut
+
 sub all_ids
 {
     my $self = shift;
     ($self->id, map({ $_ } keys %{$self->{child}}));
 }
+
+=item notes
+
+=cut
 
 sub notes
 {
@@ -449,6 +515,10 @@ sub notes
     );
 }
 
+=item co_name
+
+=cut
+
 sub co_name
 {
     my $self = shift;
@@ -463,6 +533,12 @@ sub co_name
     }
     return $ret;
 }
+
+=item address
+
+Get the billing address for the project.
+
+=cut
 
 sub address
 {
@@ -484,31 +560,6 @@ sub address
     }
 }
 
-1;
-
-__END__
-
-=head1 NAME
-
-TTDB::Project - Perl interface to the tasker project data
-
-=head1 SYNOPSIS
-
-  use TTDB::Project;
-
-  $user = TTDB::Project(id => 1):
-
-=head2 Constructor
-
-=over
-
-=item new
-
-create a project object.  The database is not updated.
-
-=item get
-
-get a project from the database.
 
 =item create
 
@@ -535,10 +586,6 @@ update the database.
 The depth of the project.
 
 =item  longname
-
-=item  name
-
-=item  id
 
 =item  users
 
@@ -588,11 +635,15 @@ make changes to the object and store them in the database.
 
 The default charges for this project.
 
-=item invoice_name
-
-This should be in a sub object.
 
 =back
+
+=cut
+
+1;
+
+__END__
+
 
 =head1 DESCRIPTION
 

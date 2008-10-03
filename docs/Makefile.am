@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-%.html : %.text
+.html.text:
 	texi2html $<
 
 all : tasker.info tasker.html tasker

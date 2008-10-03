@@ -16,6 +16,8 @@
 
 int main(int argc, char *argv[])
 {
+    Q_INIT_RESOURCE(systray);
+
     QApplication app(argc, argv);
 
     if (QSystemTrayIcon::isSystemTrayAvailable()) {
@@ -27,10 +29,22 @@ int main(int argc, char *argv[])
     MainWindow window(ttcp);
     window.show();
 
+    QIcon icon = QIcon(":/pics/active-icon-0.xpm");
+
     QSystemTrayIcon *trayIcon = new QSystemTrayIcon();
+
+    QAction *maximizeAction = new QAction(QObject::tr("Ma&ximize"), trayIcon);
+    QAction *minimizeAction = new QAction(QObject::tr("Mi&nimize"), trayIcon);
+
+    QMenu *trayIconMenu = new QMenu();
+    trayIconMenu->addAction(minimizeAction);
+
+    trayIcon->setIcon(icon);
+    trayIcon->setContextMenu(trayIconMenu);
+
     trayIcon->show();
 
     return app.exec();
 }
 
-
+/* eof */
