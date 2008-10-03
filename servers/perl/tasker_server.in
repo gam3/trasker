@@ -95,6 +95,7 @@ our $cmd_hash = {
     getauto => \&getauto,
     setauto => \&setauto,
     addauto => \&addauto,
+    ping => \&ping,
 };
 
 sub help()
@@ -159,7 +160,7 @@ sub authorize
     my $data = shift;
     my $user = shift;
 
-    print $client $user, "\n";
+    print $client "authorized\t$user\tOK\n";
 }
 
 sub addtask
@@ -437,6 +438,16 @@ sub xtracker
     '';
 }
 
+sub ping
+{
+    my $client = shift;
+    my $data = shift;
+    my $userid = shift;
+
+    print("ping\n");
+    printf($client "pong\n");
+}
+
 sub user
 {
     my $client = shift;
@@ -697,7 +708,7 @@ QUIT:
 		    } else {
 			($cmd, @args) = split(' ', $data);
 		    }
-
+warn "command: " . $data;
 		    if (my $function = $cmd_hash->{$cmd}) {
 			my $action;
 		        eval {
