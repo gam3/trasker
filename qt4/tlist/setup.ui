@@ -1,0 +1,191 @@
+<ui version="4.0" >
+ <class>SetupHost</class>
+ <widget class="QWidget" name="SetupHost" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>418</width>
+    <height>262</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>Form</string>
+  </property>
+  <widget class="QPushButton" name="done" >
+   <property name="geometry" >
+    <rect>
+     <x>130</x>
+     <y>220</y>
+     <width>131</width>
+     <height>28</height>
+    </rect>
+   </property>
+   <property name="sizePolicy" >
+    <sizepolicy vsizetype="Fixed" hsizetype="Fixed" >
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="text" >
+    <string>OK</string>
+   </property>
+  </widget>
+  <widget class="QWidget" native="1" name="widget_2" >
+   <property name="geometry" >
+    <rect>
+     <x>9</x>
+     <y>9</y>
+     <width>400</width>
+     <height>207</height>
+    </rect>
+   </property>
+   <widget class="QCheckBox" name="remPass" >
+    <property name="geometry" >
+     <rect>
+      <x>90</x>
+      <y>80</y>
+      <width>158</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text" >
+     <string>Remember Password</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_4" >
+    <property name="geometry" >
+     <rect>
+      <x>59</x>
+      <y>141</y>
+      <width>26</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="text" >
+     <string>Port</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="hostEdit" >
+    <property name="geometry" >
+     <rect>
+      <x>90</x>
+      <y>110</y>
+      <width>283</width>
+      <height>24</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="useEdit" >
+    <property name="geometry" >
+     <rect>
+      <x>90</x>
+      <y>18</y>
+      <width>283</width>
+      <height>24</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label" >
+    <property name="geometry" >
+     <rect>
+      <x>16</x>
+      <y>18</y>
+      <width>69</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="text" >
+     <string>User name</string>
+    </property>
+    <property name="buddy" >
+     <cstring>useEdit</cstring>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_2" >
+    <property name="geometry" >
+     <rect>
+      <x>23</x>
+      <y>49</y>
+      <width>62</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="text" >
+     <string>Password</string>
+    </property>
+    <property name="buddy" >
+     <cstring>passwordEdit</cstring>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="passwordEdit" >
+    <property name="geometry" >
+     <rect>
+      <x>90</x>
+      <y>49</y>
+      <width>283</width>
+      <height>24</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="useSSL" >
+    <property name="geometry" >
+     <rect>
+      <x>90</x>
+      <y>172</y>
+      <width>79</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text" >
+     <string>Use SSL</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_3" >
+    <property name="geometry" >
+     <rect>
+      <x>56</x>
+      <y>110</y>
+      <width>29</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="text" >
+     <string>Host</string>
+    </property>
+    <property name="buddy" >
+     <cstring>hostEdit</cstring>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="portEdit" >
+    <property name="geometry" >
+     <rect>
+      <x>90</x>
+      <y>141</y>
+      <width>283</width>
+      <height>24</height>
+     </rect>
+    </property>
+   </widget>
+  </widget>
+  <zorder>widget</zorder>
+  <zorder>buttonBox</zorder>
+  <zorder>widget</zorder>
+  <zorder>pushButton</zorder>
+  <zorder>widget</zorder>
+  <zorder>horizontalSpacer</zorder>
+  <zorder>buttonBox</zorder>
+  <zorder>dockWidget</zorder>
+  <zorder>dockWidget</zorder>
+  <zorder>pushButton</zorder>
+  <zorder>horizontalSpacer</zorder>
+  <zorder>horizontalSpacer_2</zorder>
+  <zorder>done</zorder>
+  <zorder>widget_2</zorder>
+ </widget>
+ <resources/>
+ <connections/>
+ <slots>
+  <slot>saveData()</slot>
+ </slots>
+</ui>

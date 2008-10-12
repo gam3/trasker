@@ -1,0 +1,12 @@
+
+all: tlist configure
+
+makefile : tlist.pro
+	qmake
+
+tlist : makefile
+	make
+
+
+configure: configure.ac
+	autoconf

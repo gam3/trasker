@@ -1,3 +1,4 @@
+MAKEFILE = makefile
 
 FORMS       = mainwindow.ui \
 	      addproject.ui \
