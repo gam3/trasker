@@ -6,16 +6,16 @@
 #include "ttcp.h"
 #include "connection.h"
 
-TTCP::TTCP(const char *name, int port, bool ssl)
+TTCP::TTCP(const QString &host, quint16 port, bool ssl, const QString &userN, const QString &password) : user(userN)
 {
     connection = new Connection(this);
 
+    if (ssl) {
+    }
+
     newConnection(connection);
 
-    QHostAddress senderIp("127.0.0.1");
-    quint16 senderPort = 8000;
-
-    connection->connectToHost(senderIp, senderPort);
+    connection->connectToHost(host, port);
 }
 
 TTCP::~TTCP()
@@ -43,22 +43,21 @@ bool TTCP::hasConnection(const QHostAddress &senderIp, int senderPort) const
 
 void TTCP::newConnection(Connection *connection)
 {
-    QObject::connect(connection, SIGNAL(error(QAbstractSocket::SocketError)),
-                     this, SLOT(connectionError(QAbstractSocket::SocketError)));
-    QObject::connect(connection, SIGNAL(disconnected()), this, SLOT(disconnected()));
+
+    QObject::connect(connection, SIGNAL(disconnected()), this, SIGNAL(disconnected()));
+    QObject::connect(connection, SIGNAL(readyForUse()), this, SIGNAL(connected()));
     QObject::connect(connection, SIGNAL(readyForUse()), this, SLOT(readyForUse()));
     QObject::connect(connection, SIGNAL(newCommand(QStringList)), this, SLOT(newCommand(QStringList)));
     QObject::connect(connection, SIGNAL(connected()), this, SLOT(setConnected()));
-    std::cerr << "TTCP::newConnection" << std::endl;
+
 }
 
 void TTCP::setunConnected()
 {
-    std::cerr << "TTCP::unconnected" << std::endl;
 }
+
 void TTCP::setConnected()
 {
-    std::cerr << "TTCP::connected" << std::endl;
 }
 
 void TTCP::readyForUse()
@@ -68,21 +67,46 @@ void TTCP::readyForUse()
     connection->write("user gam3\n");
 }
 
-void TTCP::disconnected()
-{
-    std::cerr << "TTCP::disconnected" << std::endl;
-}
-
-void TTCP::connectionError(QAbstractSocket::SocketError /* socketError */)
-{
-    std::cerr << "TTCP::connectionError" << std::endl;
-}
-
 QTime totime(QString timestring)
 {
     QStringList tlist = timestring.split(":");
     QTime time(tlist[0].toInt(), tlist[1].toInt(), tlist[2].toInt());
     return time;
+}
+
+void TTCP::getauto(const int id)
+{
+    QByteArray cmd;
+    connection->write(QString("getauto %1 %2\n").arg(user).arg(id).toAscii());
+}
+
+void TTCP::gettime(const int id)
+{
+    QByteArray cmd;
+    if (connection->state() == QAbstractSocket::ConnectedState)
+	connection->write(QString("gettime %1 %2\n").arg(user).arg(id).toAscii());
+}
+
+void TTCP::setProject(const int id)
+{
+    QByteArray cmd;
+
+    if (connection->state() == QAbstractSocket::ConnectedState)
+	connection->write(QString("change %1 %2\n").arg(user).arg(id).toAscii());
+}
+
+void TTCP::addnote(const int id, const QString &note) const
+{
+    QString s(note);
+    s.replace("\\", "\\\\");
+    s.replace("\t", "\\t");
+    s.replace("\n", "\\n");
+    connection->write(QString("note\t%1\t%2\t%3\n").arg(user).arg(id).arg(s).toAscii());
+}
+
+void TTCP::setAuto(QString &host, QString &classN, QString &name, QString &role, QString &title, QString &desktop)
+{
+
 }
 
 void TTCP::newCommand(const QStringList &list)
@@ -94,7 +118,7 @@ void TTCP::newCommand(const QStringList &list)
     } else if (list[0] == "disable") {
 	emit disable(list[2].toInt());
     } else if (list[0] == "error") {
-	emit error(list[2]);
+	emit error(list[1]);
     } else if (list[0] == "update") {
 	emit update_all();
     } else if (list[0] == "update_time") {
@@ -104,13 +128,14 @@ void TTCP::newCommand(const QStringList &list)
 	    printf("Error in update_time\n");
 	}
     } else if (list[0] == "accept_note") {
+std::cerr << qPrintable(list[0]) << std::endl;
 	emit accept_note(list[1]);
     } else if (list[0] == "accept_task") {
 	emit accept_project(list[1]);
     } else if (list[0] == "accept_select") {
 	emit accept_select(list[1]);
     } else {
-	printf("TTCP Unknown %s/%d\n", qPrintable(list[0]), list.size() - 1);
+	printf("TTCP Unknown: '%s'/%d\n", qPrintable(list[0]), list.size() - 1);
     }
 }
 

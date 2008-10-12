@@ -14,10 +14,13 @@
 #include <QVariant>
 #include <QVector>
 
+#include <QTime>
+
 class TreeItem
 {
 public:
-    TreeItem(const QVector<QVariant> &data, TreeItem *parent = 0);
+    TreeItem(TreeItem *parent = 0);
+    TreeItem(const QString &name, const QTime &time, const QTime &atime, const int id, const int pid, TreeItem *parent = 0);
     ~TreeItem();
 
     TreeItem *child(int number);
@@ -25,7 +28,7 @@ public:
     int columnCount() const;
     QVariant data(int column) const;
     bool insertChildren(int position, int count, int columns);
-    TreeItem *appendChild(QString name);
+    TreeItem *appendChild(const QString &name, const int, const int, const QTime&, const QTime&);
     bool insertColumns(int position, int columns);
     TreeItem *parent();
     bool removeChildren(int position, int count);
@@ -33,10 +36,29 @@ public:
     int childNumber() const;
     bool setData(int column, const QVariant &value);
 
+    void start();
+    void stop();
+
+    void expanded(int);
+
+    int getId() const;
+    int getPid() const;
+    QString getName() const;
+
+    void set_times(QTime time, QTime atime);
+
 private:
     QList<TreeItem*> childItems;
-    QVector<QVariant> itemData;
     TreeItem *parentItem;
+    QVector<QVariant> itemData;
+    QString name;
+    int pid;
+    int id;
+    QTime time;
+    QTime atime;
+    QTime active;
+
+    int expanded_flag;
 };
 
 #endif

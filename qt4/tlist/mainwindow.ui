@@ -13,20 +13,28 @@
    <string>Editable Tree Model</string>
   </property>
   <widget class="QWidget" name="centralwidget" >
+   <property name="geometry" >
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>573</width>
+     <height>445</height>
+    </rect>
+   </property>
    <layout class="QVBoxLayout" >
-    <property name="margin" >
-     <number>0</number>
-    </property>
     <property name="spacing" >
      <number>0</number>
     </property>
+    <property name="margin" >
+     <number>0</number>
+    </property>
     <item>
-     <widget class="QTreeView" name="view" >
+     <widget class="MyTreeView" name="view" >
       <property name="alternatingRowColors" >
        <bool>true</bool>
       </property>
       <property name="selectionBehavior" >
-       <enum>QAbstractItemView::SelectItems</enum>
+       <enum>QAbstractItemView::SelectRows</enum>
       </property>
       <property name="horizontalScrollMode" >
        <enum>QAbstractItemView::ScrollPerPixel</enum>
@@ -41,37 +49,16 @@
     </item>
    </layout>
   </widget>
-  <widget class="QMenuBar" name="menubar" >
+  <widget class="QStatusBar" name="statusbar" >
    <property name="geometry" >
     <rect>
      <x>0</x>
-     <y>0</y>
+     <y>445</y>
      <width>573</width>
-     <height>31</height>
+     <height>23</height>
     </rect>
    </property>
-   <widget class="QMenu" name="fileMenu" >
-    <property name="title" >
-     <string>&amp;File</string>
-    </property>
-    <addaction name="exitAction" />
-   </widget>
-   <widget class="QMenu" name="actionsMenu" >
-    <property name="title" >
-     <string>&amp;Actions</string>
-    </property>
-    <addaction name="insertRowAction" />
-    <addaction name="insertColumnAction" />
-    <addaction name="separator" />
-    <addaction name="removeRowAction" />
-    <addaction name="removeColumnAction" />
-    <addaction name="separator" />
-    <addaction name="insertChildAction" />
-   </widget>
-   <addaction name="fileMenu" />
-   <addaction name="actionsMenu" />
   </widget>
-  <widget class="QStatusBar" name="statusbar" />
   <action name="exitAction" >
    <property name="text" >
     <string>E&amp;xit</string>
@@ -121,8 +108,15 @@
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>MyTreeView</class>
+   <extends>QTreeView</extends>
+   <header>mytreeview.h</header>
+  </customwidget>
+ </customwidgets>
  <resources>
-  <include location="editabletreemodel.qrc" />
+  <include location="tlist.qrc" />
  </resources>
  <connections/>
 </ui>

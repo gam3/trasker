@@ -23,13 +23,13 @@ Connection::Connection(QObject *parent)
 {
     greetingMessage = tr("undefined");
     username = tr("unknown");
-    state = WaitingForGreeting;
+    cstate = WaitingForGreeting;
     currentDataType = Undefined;
     numBytesForCurrentDataType = -1;
     transferTimerId = 0;
     isGreetingMessageSent = false;
     pingTimer.setInterval(PingInterval);
-    connectionTimer.setInterval(PingInterval);
+    connectionTimer.setInterval(400);
 
     QObject::connect(this, SIGNAL(readyRead()), this, SLOT(processReadyRead()));
     QObject::connect(this, SIGNAL(disconnected()), &pingTimer, SLOT(stop()));
@@ -76,18 +76,18 @@ void Connection::timerEvent(QTimerEvent *timerEvent)
 
 void Connection::processReadyRead()
 {
-    if (state == WaitingForGreeting) {
+    if (cstate == WaitingForGreeting) {
 std::cerr << "WaitingForGreeting" << std::endl;
         if (!readProtocolHeader())
             return;
 
-        state = ReadingGreeting;
+        cstate = ReadingGreeting;
     }
 
-    if (state == ReadingGreeting) {
+    if (cstate == ReadingGreeting) {
         pingTimer.start();
         pongTime.start();
-        state = ReadyForUse;
+        cstate = ReadyForUse;
         emit readyForUse();
 std::cerr << "ReadingGreeting" << std::endl;
     }
@@ -109,48 +109,18 @@ void Connection::sendPing()
 
 void Connection::setDisconnected()
 {
-    std::cerr << "Disconnected!" << std::endl;
+    cstate = WaitingForGreeting;
+    std::cerr << "Connection::Disconnected!" << std::endl;
 }
 
 void Connection::sendGreetingMessage()
 {
     std::cerr << "connected!" << std::endl;
-    QByteArray data = "authorize\tgam3\tab12cd34\n";
+    QByteArray data = "authorize\tgam3/ab12cd34\n";
     connectionTimer.stop();
     pingTimer.start();
     if (write(data) == data.size())
         isGreetingMessageSent = true;
-}
-
-int Connection::readDataIntoBuffer(int maxSize)
-{
-    if (maxSize > MaxBufferSize)
-        return 0;
-
-    int numBytesBeforeRead = buffer.size();
-    if (numBytesBeforeRead == MaxBufferSize) {
-        abort();
-        return 0;
-    }
-
-    while (bytesAvailable() > 0 && buffer.size() < maxSize) {
-        buffer.append(read(1));
-        if (buffer.endsWith(SeparatorToken))
-            break;
-    }
-    return buffer.size() - numBytesBeforeRead;
-}
-
-int Connection::dataLengthForCurrentDataType()
-{
-    if (bytesAvailable() <= 0 || readDataIntoBuffer() <= 0
-            || !buffer.endsWith(SeparatorToken))
-        return 0;
-
-    buffer.chop(1);
-    int number = buffer.toInt();
-    buffer.clear();
-    return number;
 }
 
 bool Connection::readProtocolHeader()
@@ -169,28 +139,12 @@ bool Connection::readProtocolHeader()
         float version = list[1].toFloat(0);
 	std::cerr << "version: " << version << std::endl;
     }
+    if (list[0] == "notauthorized") {
+        exit(1);
+    }
     if (list[0] == "authorized") {
 	std::cerr << "authorized: " << std::endl;
     }
-    return true;
-}
-
-bool Connection::hasEnoughData()
-{
-    if (transferTimerId) {
-        QObject::killTimer(transferTimerId);
-        transferTimerId = 0;
-    }
-
-    if (numBytesForCurrentDataType <= 0)
-        numBytesForCurrentDataType = dataLengthForCurrentDataType();
-
-    if (bytesAvailable() < numBytesForCurrentDataType
-            || numBytesForCurrentDataType <= 0) {
-        transferTimerId = startTimer(TransferTimeout);
-        return false;
-    }
-
     return true;
 }
 
@@ -219,7 +173,6 @@ void Connection::connectionError(QAbstractSocket::SocketError ername)
 	std::cerr << "connectionError disconnect" << std::endl;
 	connectionTimer.start();
     } else if (ername == QAbstractSocket::ConnectionRefusedError) { 
-	std::cerr << "connectionError failed" << std::endl;
 	connectionTimer.start();
     } else {
 	std::cerr << "connectionError FATAL " << ername << std::endl;

@@ -8,12 +8,22 @@
 **
 ****************************************************************************/
 
+#define Q_WS_X11
+
 #include <iostream>
 
 #include <QtGui>
 
 #include "mainwindow.h"
+#include "notes.h"
+#include "addproject.h"
+#include "auto_select.h"
+#include "error.h"
+
 #include "treemodel.h"
+#include "treeitem.h"
+
+class Project : public TreeItem {};
 
 #include "ttcp.h"
 
@@ -22,11 +32,31 @@ MainWindow::MainWindow(TTCP *ttcp, QWidget *parent)
 {
     setupUi(this);
 
+    readSettings();
+
+    createActions();
+
+    this->ttcp = ttcp;
+
+    trayIcon = new QSystemTrayIcon();
+    trayIconMenu = new QMenu();
+    QIcon icon = QIcon(":/pics/active-icon-0.xpm");
+
+    trayIconMenu->addAction(selectCurrentAction);
+    trayIconMenu->addAction(minimizeAction);
+    trayIconMenu->addAction(maximizeAction);
+    trayIconMenu->addAction(restoreAction);
+    trayIconMenu->addAction(quitAction);
+
+    trayIcon->setIcon(icon);
+    trayIcon->setContextMenu(trayIconMenu);
+
+    trayIcon->show();
+
     QStringList headers;
     headers << tr("Title") << tr("Description");
 
-    TreeModel *model = new TreeModel();
-
+    TreeModel *model = new TreeModel(this);
     view->setModel(model);
     view->resizeColumnToContents(0);
     QHeaderView *header = view->header();
@@ -35,31 +65,86 @@ MainWindow::MainWindow(TTCP *ttcp, QWidget *parent)
     view->hideColumn(2);
     header->setMovable(false);
 
+    /*! \sa
+     * MyTreeView::popMenu()
+     * MainWindow::itemMenu()
+     */
+    connect(ttcp, SIGNAL(error(const QString &)), this, SLOT(p_error(const QString &)));
+    connect(view, SIGNAL(popMenu()), this, SLOT(itemMenu()));
+    connect(view, SIGNAL(projPopMenu(int)), this, SLOT(projItemMenu(int)));
+
+    connect(model, SIGNAL(get_time(int)), ttcp, SLOT(gettime(int)));
+    connect(this, SIGNAL(changeProjectTo(int)), ttcp, SLOT(setProject(int)));
+
     connect(exitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
 
-    connect(ttcp, SIGNAL(add_entry(QString,int,int,QTime,QTime)),
-            this, SLOT(add_entry(QString,int,int,QTime,QTime)));
+    connect(view, SIGNAL(expanded(QModelIndex)),
+            model, SLOT(expanded(QModelIndex)));
+
+    connect(view, SIGNAL(collapsed(QModelIndex)),
+            model, SLOT(collapsed(QModelIndex)));
+
+    connect(ttcp, SIGNAL(disconnected()),
+            view, SLOT(disable()));
+    connect(ttcp, SIGNAL(connected()),
+            view, SLOT(enable()));
 
     connect(ttcp, SIGNAL(add_entry(QString,int,int,QTime,QTime)),
             model, SLOT(add_entry(QString,int,int,QTime,QTime)));
 
     connect(ttcp, SIGNAL(current(int)),
-            this, SLOT(set_current(int)));
+            this, SLOT(setCurrent(int)));
+
+    //! Unselect the view
+    connect(ttcp, SIGNAL(current(int)),
+            view, SLOT(clearSelection()));
+
+    connect(ttcp, SIGNAL(current(int)),
+            model, SLOT(set_current(int)));
+
+    connect(ttcp, SIGNAL(settime(int, QTime, QTime)),
+            model, SLOT(update_time(int, QTime, QTime)));
 
     connect(view->selectionModel(),
             SIGNAL(selectionChanged(const QItemSelection &,
                                     const QItemSelection &)),
             this, SLOT(updateActions()));
 
-    connect(actionsMenu, SIGNAL(aboutToShow()), this, SLOT(updateActions()));
-    connect(insertRowAction, SIGNAL(triggered()), this, SLOT(insertRow()));
-    connect(insertColumnAction, SIGNAL(triggered()), this, SLOT(insertColumn()));
-    connect(removeRowAction, SIGNAL(triggered()), this, SLOT(removeRow()));
-    connect(removeColumnAction, SIGNAL(triggered()), this, SLOT(removeColumn()));
-    connect(insertChildAction, SIGNAL(triggered()), this, SLOT(insertChild()));
+    connect(trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
+	    this, SLOT(iconActivated(QSystemTrayIcon::ActivationReason)));
+
+#if defined (Q_WS_X11)
+    x11();
+#endif
 
     updateActions();
+
+    addNoteW = new Notes(ttcp, this);
+    connect(ttcp, SIGNAL(accept_note(const QString &)), addNoteW, SLOT(done(const QString &)));
+    addTaskW = new AddProject();
+    addAutoSelW = new AddAuto(ttcp);
+    errorWin = new ErrorWindow(this);
 }
+
+#if defined (Q_WS_X11)
+#include <X11/Xlib.h>
+#include <QX11Info>
+
+void MainWindow::x11()
+{
+    XSelectInput(QX11Info::display(), internalWinId(),
+                 KeyPressMask | KeyReleaseMask |
+                 ButtonPressMask | ButtonReleaseMask |
+                 KeymapStateMask |
+                 ButtonMotionMask | PointerMotionMask |
+                 EnterWindowMask | LeaveWindowMask |
+                 FocusChangeMask |
+                 ExposureMask |
+                 PropertyChangeMask |
+                 StructureNotifyMask |
+		 VisibilityChangeMask);
+}
+#endif
 
 MainWindow::~MainWindow()
 {
@@ -168,41 +253,336 @@ void MainWindow::updateActions()
     }
 }
 
-void MainWindow::set_current(int id)
+void MainWindow::setCurrent(int id)
 {
     if (id) {
 	updateActions();
+	TreeModel *model = (TreeModel *)view->model();
+	TreeItem *item = model->getItem(id);
+
+        if (item) {
+	    statusBar()->showMessage(tr("Long.name.%1").arg(item->getName()));
+	} else {
+	    statusBar()->showMessage(tr("Bad Project: (%1)").arg(id));
+	}
+	for (int i = 0; i < recent_projects.size(); ++i) {
+	    if (recent_projects[i] == id) {
+	        recent_projects.removeAt(i);
+	    }
+	}
+	recent_projects.append(id);
+	while (recent_projects.size() > 10) {
+            recent_projects.removeFirst();
+	}
+    } else {
+	statusBar()->showMessage(tr("No Project: (%1)").arg(id));
     }
 }
 
-void MainWindow::add_entry(QString name, int id, int pid, const QTime time, const QTime atime)
+void MainWindow::menu( const QModelIndex &/* index */ )
 {
-    return;
-    if (pid > 0) {
-    } else {
-	QModelIndex index = view->rootIndex();
-	QAbstractItemModel *model = view->model();
+//    TreeModel *model = (TreeModel *)view->model();
+    std::cerr << "mouse" << std::endl;
+}
 
-	if (model->columnCount(index) == 0) {
-	    if (!model->insertColumn(0, index))
-		return;
-	}
+void MainWindow::myHide()
+{
+    saveSize = size();
+    savePos = pos();
+    hide();
+}
 
-	if (!model->insertRow(0, index))
-	    return;
+#include <X11/Xlib.h>
+#include <X11/Xatom.h>
+#include <QX11Info>
 
-	QModelIndex child = model->index(0, 0, index);
+namespace x11 {
+void wmMessage(Window win, long type, long l0, long l1, long l2, long l3, long l4);
+}
 
-//        TreeItem *x = model->getItem(index);
-
-	model->setData(child, QVariant(name), Qt::EditRole);
-	child = model->index(0, 1, index);
-	model->setData(child, QVariant(atime.toString("hh:mm")), Qt::EditRole);
-	child = model->index(0, 2, index);
-	model->setData(child, QVariant(name), Qt::EditRole);
-
-	updateActions();
+void MainWindow::myShow()
+{
+    if (visible_flag) {
+	std::cerr << "visible" << std::endl;
+	return;
     }
+    if (isVisible()) {
+	activateWindow();
+        const QX11Info x11Info;
+	static Atom NET_ACTIVE_WINDOW = XInternAtom(QX11Info::display(), "_NET_ACTIVE_WINDOW", False);
+	x11::wmMessage(winId(), NET_ACTIVE_WINDOW, 2, CurrentTime, 0, 0, 0);
+    } else {
+	resize(saveSize);
+	move(savePos);
+	showNormal();
+    }
+}
+
+void MainWindow::exposeCurrentProject()
+{
+    TreeModel *model = view->model();
+
+    const QModelIndex &item = model->getCurrentIndex();
+
+    view->scrollTo(item, QAbstractItemView::PositionAtCenter);
+}
+
+void MainWindow::createActions()
+{
+    selectCurrentAction = new QAction(tr("Select Current"), this);
+
+    connect(selectCurrentAction, SIGNAL(triggered()), this, SLOT(exposeCurrentProject()));
+
+    minimizeAction = new QAction(tr("Mi&nimize"), this);
+
+    connect(minimizeAction, SIGNAL(triggered()),
+            this, SLOT(myHide()));
+
+    maximizeAction = new QAction(tr("Ma&ximize"), this);
+    connect(maximizeAction, SIGNAL(triggered()), this, SLOT(lower()));
+
+    restoreAction = new QAction(tr("&Restore"), this);
+    connect(restoreAction, SIGNAL(triggered()), this, SLOT(myShow()));
+
+    quitAction = new QAction(tr("&Quit"), this);
+    connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
+
+    startAction = new QAction(this);
+    startAction->setText("&Start");
+    startAction->setStatusTip(tr("Change to this project"));
+    startAction->setShortcut(tr("Ctrl+S"));
+
+    connect(startAction, SIGNAL(triggered()), this, SLOT(startProject()));
+
+    noteAction = new QAction(this);
+    noteAction->setText("Add &Note");
+    noteAction->setStatusTip(tr("Change to this project"));
+    noteAction->setShortcut(tr("Ctrl+N"));
+
+    connect(noteAction, SIGNAL(triggered()), this, SLOT(p_note()));
+
+    taskAction = new QAction(this);
+    taskAction->setText("Add &Task");
+    taskAction->setStatusTip(tr("Add a task to this project"));
+    taskAction->setShortcut(tr("Ctrl+T"));
+
+    connect(taskAction, SIGNAL(triggered()), this, SLOT(p_task()));
+
+    autoAction = new QAction(this);
+    autoAction->setText("Add &Auto Select");
+    autoAction->setStatusTip(tr("Set up auto select of project"));
+    autoAction->setShortcut(tr("Ctrl+A"));
+
+    connect(autoAction, SIGNAL(triggered()), this, SLOT(p_auto()));
+}
+
+void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason)
+{
+    switch (reason) {
+    case QSystemTrayIcon::Trigger:
+	if (visible()) {
+	    visible_flag = false;
+	    hidden_flag = true;
+	    hide();
+	} else {
+	    myShow();
+	}
+        break;
+    case QSystemTrayIcon::DoubleClick:
+	std::cerr << "a" << std::endl;
+        break;
+    case QSystemTrayIcon::MiddleClick:
+        {
+	    QMenu *quickMenu = new QMenu;
+
+	    int numRecentFiles = qMin(recent_projects.size(), 10);
+
+            for (int i = 0; i < numRecentFiles; ++i) {
+	        TreeItem *item = view->model()->getItem(recent_projects[i]);
+		quickMenu->addAction(item->getName());
+	    }
+
+	    quickMenu->addSeparator();
+	    quickMenu->addAction("Hello");
+	    quickMenu->exec( QCursor::pos() );
+	}
+        break;
+    default:
+	std::cerr << "Mouse " << reason << std::endl;
+        break;
+    }
+}
+
+void MainWindow::mousePressEvent(QMouseEvent *event)
+{
+    QMenu quickMenu;
+
+    quickMenu.addAction(selectCurrentAction);
+    quickMenu.addAction(minimizeAction);
+    quickMenu.addAction(maximizeAction);
+    quickMenu.addAction(restoreAction);
+    quickMenu.addAction(quitAction);
+
+    quickMenu.exec(event->globalPos(), restoreAction);
+}
+
+void MainWindow::readSettings()
+{
+    QSettings settings("Tasker", "tlist");
+
+    QPoint pos = settings.value("pos", QPoint(-1, -1)).toPoint();
+    QSize size = settings.value("size", QSize(573, 468)).toSize();
+    move(pos);
+    savePos = pos;
+    resize(size);
+    saveSize = size;
+}
+
+void MainWindow::writeSettings()
+{
+    QSettings settings("Tasker", "tlist");
+    settings.setValue("pos", pos());
+    settings.setValue("size", size());
+}
+
+bool MainWindow::x11Event(XEvent *event)
+{
+    switch (event->type) {
+      case 15:
+	switch(event->xvisibility.state) {
+	   case 0:
+	      visible_flag = true;
+	      hidden_flag = false;
+	      break;
+	   case 1:
+	      visible_flag = false;
+	      hidden_flag = false;
+	      break;
+	   case 2:
+	      hidden_flag = true;
+	      visible_flag = false;
+	      break;
+	}
+	break;
+      default:
+	break;
+    }
+    
+    return false;
+}
+
+bool MainWindow::visible()
+{
+    return visible_flag;
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    if (1) {
+        writeSettings();
+        event->accept();
+    } else {
+        event->ignore();
+    }
+}
+
+/*! Ask the server to change the current project
+ */
+void MainWindow::setProject(const QModelIndex &index)
+{
+    TreeItem *item = static_cast<TreeItem *>(index.internalPointer());
+
+    ttcp->setProject(item->getId());
+}
+
+void MainWindow::projItemMenu(int projId)
+{
+	QMenu bg_menu;
+
+	bg_menu.addAction( startAction );
+	bg_menu.addSeparator();
+	bg_menu.addAction( noteAction );
+	bg_menu.addAction( taskAction );
+	bg_menu.addAction( autoAction );
+
+	startAction->setData( QVariant(projId) );
+	noteAction->setData( qVariantFromValue(projId) );
+	taskAction->setData( qVariantFromValue(projId) );
+	autoAction->setData( qVariantFromValue(projId) );
+
+	bg_menu.exec( QCursor::pos() );
+}
+
+void MainWindow::itemMenu()
+{
+    QMenu popup;
+    popup.addAction("bob");
+
+    popup.exec( QCursor::pos() );
+}
+
+void MainWindow::startProject()
+{
+    QAction *action = qobject_cast<QAction *>(sender());
+
+    if (action) {
+	int projId =  qVariantValue<int>(action->data());
+	std::cerr << projId << std::endl;
+	emit changeProjectTo( projId );
+    }
+}
+
+void MainWindow::p_error(const QString &error)
+{
+    errorWin->setText(error);
+    errorWin->show();
+}
+
+void MainWindow::p_note()
+{
+    QAction *action = qobject_cast<QAction *>(sender());
+
+    if (action) {
+	int projId =  qVariantValue<int>(action->data());
+
+	Project *projItem = getProject(projId);
+
+	addNoteW->setProject(*projItem);
+	addNoteW->show();
+    }
+}
+
+void MainWindow::p_task()
+{
+    QAction *action = qobject_cast<QAction *>(sender());
+
+    if (action) {
+	int projId =  qVariantValue<int>(action->data());
+	Project *projItem = getProject(projId);
+	addTaskW->setProjectName(projItem->getName());
+	addTaskW->show();
+    }
+}
+
+void MainWindow::p_auto()
+{
+    QAction *action = qobject_cast<QAction *>(sender());
+
+    if (action) {
+	int projId =  qVariantValue<int>(action->data());
+
+	ttcp->getauto(projId);
+
+	Project *projItem = getProject(projId);
+
+	addAutoSelW->setProjectName(projItem->getName());
+	addAutoSelW->show();
+    }
+}
+
+Project *MainWindow::getProject(int projId) {
+    Project *proj = (Project *)view->model()->getItem(projId);
+    return proj;
 }
 
 /* eof */

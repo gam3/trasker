@@ -1,0 +1,238 @@
+<ui version="4.0" >
+ <author>G. Allen Morris III</author>
+ <comment>Dialog to create a note.</comment>
+ <class>Notes</class>
+ <widget class="QDialog" name="Notes" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>539</width>
+    <height>228</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>Notes</string>
+  </property>
+  <property name="whatsThis" >
+   <string>What is this.</string>
+  </property>
+  <property name="sizeGripEnabled" >
+   <bool>false</bool>
+  </property>
+  <widget class="QWidget" name="Layout1" >
+   <property name="geometry" >
+    <rect>
+     <x>30</x>
+     <y>170</y>
+     <width>476</width>
+     <height>33</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" >
+    <property name="spacing" >
+     <number>6</number>
+    </property>
+    <property name="margin" >
+     <number>0</number>
+    </property>
+    <item>
+     <widget class="QPushButton" name="buttonHelp" >
+      <property name="text" >
+       <string>&amp;Help</string>
+      </property>
+      <property name="shortcut" >
+       <string>F1</string>
+      </property>
+      <property name="autoDefault" >
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <spacer name="Horizontal Spacing2" >
+      <property name="orientation" >
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeType" >
+       <enum>QSizePolicy::Expanding</enum>
+      </property>
+      <property name="sizeHint" stdset="0" >
+       <size>
+        <width>20</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item>
+     <widget class="QPushButton" name="buttonOk" >
+      <property name="text" >
+       <string>&amp;OK</string>
+      </property>
+      <property name="shortcut" >
+       <string/>
+      </property>
+      <property name="autoDefault" >
+       <bool>true</bool>
+      </property>
+      <property name="default" >
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="buttonCancel" >
+      <property name="text" >
+       <string>&amp;Cancel</string>
+      </property>
+      <property name="shortcut" >
+       <string/>
+      </property>
+      <property name="autoDefault" >
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QLabel" name="textLabel2" >
+   <property name="geometry" >
+    <rect>
+     <x>20</x>
+     <y>70</y>
+     <width>110</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>&lt;p align="right">Note&lt;/p></string>
+   </property>
+   <property name="wordWrap" >
+    <bool>false</bool>
+   </property>
+   <property name="buddy" >
+    <cstring>textEdit</cstring>
+   </property>
+  </widget>
+  <widget class="QLabel" name="projectName" >
+   <property name="geometry" >
+    <rect>
+     <x>150</x>
+     <y>20</y>
+     <width>300</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="font" >
+    <font>
+     <pointsize>10</pointsize>
+     <weight>75</weight>
+     <bold>true</bold>
+    </font>
+   </property>
+   <property name="toolTip" >
+    <string>The project.</string>
+   </property>
+   <property name="whatsThis" >
+    <string comment="This is replaced with the project name." >The project</string>
+   </property>
+   <property name="text" >
+    <string>Project</string>
+   </property>
+   <property name="wordWrap" >
+    <bool>false</bool>
+   </property>
+  </widget>
+  <widget class="QLabel" name="textLabel4" >
+   <property name="geometry" >
+    <rect>
+     <x>40</x>
+     <y>20</y>
+     <width>91</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text" >
+    <string>&lt;p align="right">Project Name&lt;/p></string>
+   </property>
+   <property name="wordWrap" >
+    <bool>false</bool>
+   </property>
+  </widget>
+  <widget class="QTextEdit" name="textEdit" >
+   <property name="geometry" >
+    <rect>
+     <x>150</x>
+     <y>43</y>
+     <width>351</width>
+     <height>111</height>
+    </rect>
+   </property>
+  </widget>
+ </widget>
+ <layoutdefault spacing="6" margin="11" />
+ <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
+ <tabstops>
+  <tabstop>textEdit</tabstop>
+  <tabstop>buttonOk</tabstop>
+  <tabstop>buttonCancel</tabstop>
+  <tabstop>buttonHelp</tabstop>
+ </tabstops>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonCancel</sender>
+   <signal>clicked()</signal>
+   <receiver>Notes</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>430</x>
+     <y>172</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>83</x>
+     <y>123</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonOk</sender>
+   <signal>clicked()</signal>
+   <receiver>Notes</receiver>
+   <slot>add_note()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>349</x>
+     <y>172</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>97</x>
+     <y>97</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonHelp</sender>
+   <signal>clicked()</signal>
+   <receiver>Notes</receiver>
+   <slot>show_help()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>75</x>
+     <y>182</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>207</x>
+     <y>177</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>show_help()</slot>
+  <slot>add_note()</slot>
+  <signal>open_help()</signal>
+ </slots>
+</ui>

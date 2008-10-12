@@ -8,11 +8,18 @@
 **
 ****************************************************************************/
 
+#include <iostream>
+
 #include <QtGui>
+#include <QApplication>
 #include <QSystemTrayIcon>
 
 #include "mainwindow.h"
 #include "ttcp.h"
+
+/** Tlist 
+ *
+ */
 
 int main(int argc, char *argv[])
 {
@@ -24,27 +31,17 @@ int main(int argc, char *argv[])
 	QApplication::setQuitOnLastWindowClosed(false);
     }
 
-    TTCP *ttcp = new TTCP("127.0.0.1", 8000, 0);
+    const QString host("127.0.0.1");
+    const QString user("gam3");
+    const QString password("ab12cd34");
+
+    TTCP *ttcp = new TTCP(host, (quint16)8000, false, user, password);
 
     MainWindow window(ttcp);
+
     window.show();
-
-    QIcon icon = QIcon(":/pics/active-icon-0.xpm");
-
-    QSystemTrayIcon *trayIcon = new QSystemTrayIcon();
-
-    QAction *maximizeAction = new QAction(QObject::tr("Ma&ximize"), trayIcon);
-    QAction *minimizeAction = new QAction(QObject::tr("Mi&nimize"), trayIcon);
-
-    QMenu *trayIconMenu = new QMenu();
-    trayIconMenu->addAction(minimizeAction);
-
-    trayIcon->setIcon(icon);
-    trayIcon->setContextMenu(trayIconMenu);
-
-    trayIcon->show();
-
     return app.exec();
 }
+
 
 /* eof */

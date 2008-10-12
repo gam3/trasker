@@ -17,10 +17,21 @@
 
 #include "treeitem.h"
 
-TreeItem::TreeItem(const QVector<QVariant> &data, TreeItem *parent)
+TreeItem::TreeItem(TreeItem *parent)
 {
     parentItem = parent;
-    itemData = data;
+    this->id = 0;
+    this->pid = 0;
+}
+
+TreeItem::TreeItem(const QString &name, const QTime &time, const QTime &atime, const int id, const int pid, TreeItem *parent)
+{
+    parentItem = parent;
+    this->name = name;
+    this->time = time;
+    this->atime = atime;
+    this->id = id;
+    this->pid = pid;
 }
 
 TreeItem::~TreeItem()
@@ -53,15 +64,21 @@ int TreeItem::columnCount() const
 
 QVariant TreeItem::data(int column) const
 {
-    return itemData.value(column);
+    if (column == 0) {
+        return name;
+    } else {
+       QString x;
+       if (expanded_flag) {
+	   return time.toString("hh:mm:ss");
+       } else {
+	   return atime.toString("hh:mm:ss");
+       }
+    }
 }
 
-TreeItem *TreeItem::appendChild(QString name)
+TreeItem *TreeItem::appendChild(const QString &name, const int id, const int pid, const QTime &time, const QTime &atime)
 {
-    QVector<QVariant> data(2);
-    data[0] = name;
-    data[1] = "00:00";
-    TreeItem *item = new TreeItem(data, this);
+    TreeItem *item = new TreeItem(name, time, atime, id, pid, this);
     childItems.insert(childItems.size(), item);
 
     return item;
@@ -74,7 +91,7 @@ bool TreeItem::insertChildren(int position, int count, int columns)
 
     for (int row = 0; row < count; ++row) {
         QVector<QVariant> data(columns);
-        TreeItem *item = new TreeItem(data, this);
+        TreeItem *item = new TreeItem(this);
         childItems.insert(position, item);
     }
 
@@ -118,6 +135,42 @@ bool TreeItem::setData(int column, const QVariant &value)
 
     itemData[column] = value;
     return true;
+}
+
+void TreeItem::expanded(int flag)
+{
+    expanded_flag = flag; 
+}
+
+void TreeItem::start()
+{
+}
+
+void TreeItem::stop()
+{
+}
+
+#include <iostream>
+
+QString TreeItem::getName() const
+{
+    return name;
+}
+
+int TreeItem::getId() const
+{
+    return id;
+}
+
+int TreeItem::getPid() const
+{
+    return pid;
+}
+
+void TreeItem::set_times(QTime time, QTime atime)
+{
+    this->time = time;
+    this->atime = atime;
 }
 
 /* eof */

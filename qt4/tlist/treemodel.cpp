@@ -10,7 +10,6 @@
 #include <iostream>
 
 #include <QtGlobal>
-
 #include <QtGui>
 
 #include "treeitem.h"
@@ -19,15 +18,28 @@
 TreeModel::TreeModel(QObject *parent)
     : QAbstractItemModel(parent)
 {
-    QVector<QVariant> rootData;
-    rootData << "Name" << "Time";
+    rootItem = new TreeItem();
 
-    rootItem = new TreeItem(rootData);
+    connect(&timer, SIGNAL(timeout()),
+            this, SLOT(update_timer()));
+    timer.setSingleShot(0);
 }
 
 TreeModel::~TreeModel()
 {
     delete rootItem;
+}
+
+void TreeModel::expanded(const QModelIndex &index)
+{
+    TreeItem *item = getItem(index);
+    item->expanded(1);
+}
+
+void TreeModel::collapsed(const QModelIndex &index)
+{
+    TreeItem *item = getItem(index);
+    item->expanded(0);
 }
 
 int TreeModel::columnCount(const QModelIndex &/* parent */) const
@@ -40,10 +52,49 @@ QVariant TreeModel::data(const QModelIndex &index, int role) const
     if (!index.isValid())
         return QVariant();
 
+    TreeItem *item = getItem(index);
+
+    if (role == Qt::BackgroundColorRole) {
+	if (index.column() == 0) {
+	    if (item == currentItem) {
+		return QColor(200,210,200);
+	    } else {
+		return QVariant();
+	    }
+	} else {
+	    return QVariant();
+	}
+    }
+    if (role == Qt::TextColorRole)
+	return QVariant();
+    if (role == Qt::DecorationRole)
+        if (index.column() == 0) {
+	    if (item == currentItem) {
+		return QIcon(":/pics/active-icon-0.xpm");
+	    } else {
+		return QVariant();
+	    }
+	} else {
+	    return QVariant();
+	}
+    if (role == Qt::FontRole)
+	return QVariant();
+    if (role == Qt::TextAlignmentRole)
+	return QVariant();
+    if (role == Qt::CheckStateRole)
+	return QVariant();
+    if (role == Qt::SizeHintRole)
+	return QVariant();
+    if (role == Qt::ToolTipRole)
+	return QString("ToolTip %1").arg("a");
+    if (role == Qt::StatusTipRole)
+	return QString("StatusTip %1").arg("a");
+
+    if (role != Qt::DisplayRole && role != Qt::EditRole) {
+	std::cerr << "Role: " << role << std::endl;
+    }
     if (role != Qt::DisplayRole && role != Qt::EditRole)
         return QVariant();
-
-    TreeItem *item = getItem(index);
 
     return item->data(index.column());
 }
@@ -53,7 +104,11 @@ Qt::ItemFlags TreeModel::flags(const QModelIndex &index) const
     if (!index.isValid())
         return Qt::ItemIsEnabled;
 
-    return Qt::ItemIsEditable | Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+    return Qt::ItemIsSelectable
+    | Qt::ItemIsUserCheckable
+//    | Qt::ItemIsDragEnabled
+    | Qt::ItemIsEnabled
+    ;
 }
 
 TreeItem *TreeModel::getItem(const QModelIndex &index) const
@@ -65,11 +120,24 @@ TreeItem *TreeModel::getItem(const QModelIndex &index) const
     return rootItem;
 }
 
+TreeItem *TreeModel::getItem(const int id) const
+{
+    TreeItem *item = parents[id];
+    
+    if (item) return item;
+    return rootItem;
+}
+
 QVariant TreeModel::headerData(int section, Qt::Orientation orientation,
                                int role) const
 {
-    if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
-        return rootItem->data(section);
+    if (orientation == Qt::Horizontal && role == Qt::DisplayRole) {
+        if (section == 0) {
+	    return QString("Project");
+	} else {
+	    return QString("Time");
+	}
+    }
 
     return QVariant();
 }
@@ -137,12 +205,19 @@ int TreeModel::rowCount(const QModelIndex &parent) const
 bool TreeModel::setData(const QModelIndex &index, const QVariant &value,
                         int role)
 {
+    return false;
     if (role != Qt::EditRole)
         return false;
 
     TreeItem *item = getItem(index);
 
     return item->setData(index.column(), value);
+}
+
+bool TreeModel::setRow(const QModelIndex &index, const QString &name, int id, int pid, const QTime &time, const QTime &atime)
+{
+std::cerr << "TreeModel::setRow" << std::endl;
+    return false;
 }
 
 bool TreeModel::setHeaderData(int section, Qt::Orientation orientation,
@@ -154,24 +229,78 @@ bool TreeModel::setHeaderData(int section, Qt::Orientation orientation,
     return rootItem->setData(section, value);
 }
 
+void TreeModel::update_timer()
+{
+    if (currentItem) {
+	for (TreeItem *item = currentItem; item; item = item->parent()) {
+	    if (item->getId()) {
+	        emit get_time(item->getId());
+	    }
+	}
+    }
+}
+
+void TreeModel::update_time(int id, QTime time, QTime atime)
+{
+    TreeItem *item = parents[id];
+    if (item) {
+	item->set_times(time, atime);
+	emit dataChanged(createIndex(0, 0, item), createIndex(0, 2, item));
+    }
+}
+
+TreeItem *TreeModel::getCurrent()
+{
+    return currentItem;
+}
+
+const QModelIndex TreeModel::getCurrentIndex()
+{
+    TreeItem *item = currentItem;
+
+    if (item && item->parent()) {
+	return createIndex(0, 0, item);
+    }
+
+    return QModelIndex();
+}
+
+void TreeModel::set_current(int id)
+{
+    TreeItem *item = parents[id];
+
+    if (currentItem) {
+        currentItem->stop();
+    } else {
+	timer.start(1000);
+    }
+    item->start();
+    currentItem = item;
+    emit dataChanged(createIndex(0, 0, item), createIndex(0, 1, item));
+}
+
 void TreeModel::add_entry(QString name, int id, int pid, const QTime time, const QTime atime)
 {
     TreeItem *item;
     QModelIndex parentIndex;
 
     if (pid) {
-        item = parents.value(pid);
-	Q_ASSERT(item);
-	parentIndex = createIndex(0, 0, item);
+	item = parents.value(pid);
+        Q_ASSERT(item);
+        parentIndex = createIndex(0, 0, item);
     } else {
-	item = getItem(QModelIndex());
-	parentIndex = QModelIndex();
+        item = getItem(QModelIndex());
+        parentIndex = QModelIndex();
+    }
+/// FIXME
+    if (parents[id]) {
+       return;
     }
 
     int rows = rowCount(parentIndex); 
     beginInsertRows(parentIndex, rows, rows);
-    if (TreeItem *child = item->appendChild(name)) {
-	Q_ASSERT(child);
+    if (TreeItem *child = item->appendChild(name, id, pid, time, atime)) {
+        Q_ASSERT(child);
         parents[id] = child;
     }
     endInsertRows();
