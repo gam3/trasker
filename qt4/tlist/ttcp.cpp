@@ -11,6 +11,7 @@ TTCP::TTCP(const QString &host, quint16 port, bool ssl, const QString &userN, co
     connection = new Connection(this);
 
     if (ssl) {
+std::cerr << "SSL" << std::endl;
     }
 
     newConnection(connection);

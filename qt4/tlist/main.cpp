@@ -27,15 +27,21 @@ int main(int argc, char *argv[])
 
     QApplication app(argc, argv);
 
+    QSettings settings("Tasker", "tlist");
+
+    settings.beginGroup("security");
+
+    const QString user = settings.value("user", "").toString();
+    const QString password = settings.value("password", "").toString();
+    const QString host = settings.value("password", "127.0.0.1").toString();
+    const qint16 port = settings.value("port", 8000).toInt();
+    const bool ssl = settings.value("ssl", true).toBool();
+
     if (QSystemTrayIcon::isSystemTrayAvailable()) {
 	QApplication::setQuitOnLastWindowClosed(false);
     }
 
-    const QString host("127.0.0.1");
-    const QString user("gam3");
-    const QString password("ab12cd34");
-
-    TTCP *ttcp = new TTCP(host, (quint16)8000, false, user, password);
+    TTCP *ttcp = new TTCP(host, port, ssl, user, password);
 
     MainWindow window(ttcp);
 
