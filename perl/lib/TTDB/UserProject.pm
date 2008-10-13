@@ -489,9 +489,7 @@ sub new_auto
 	@_,
     );
 
-    warn Dumper($auto);
-
-    0;
+    $auto;
 }
 
 sub rate
