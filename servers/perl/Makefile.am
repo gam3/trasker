@@ -1,29 +1,28 @@
 PERL=/usr/bin/perl
-noinst_DATA =
+noinst_DATA = .made_test
 
-man1_MANS = tasker_server.man
+#.made_mod: Makefile.perl Build
+#	$(MAKE) -fMakefile.perl
+#	./Build
+#	touch $@
 
-bin_SCRIPTS = tasker_server
+.made_test: Build
+	./Build test
+	touch .made_test
 
-check_SCRIPTS = check.pl
+#Makefile.perl: Makefile.PL
+#	$(PERL) $< MAKEFILE=$@
 
-%.man : %
-	pod2man $< > $@
+Build: Build.PL
+	$(PERL) $< MAKEFILE=$@
 
-CLEANFILES = $(bin_SCRIPTS) $(man1_MANS) $(check_SCRIPTS)
-EXTRA_DIST = tasker_server.in
+install-data-local:
+	$(MAKE) -fMakefile.perl PREFIX=$(prefix) install
 
-TESTS = check.pl
+CLEANFILES = *~ .made_mod yMod.pm
+clean-local:
+	if test -f Makefile.perl; them $(MAKE) -fMakefile.perl realclean; fi
+	rm -f Makefile.perl Makefile.perl.old
 
-do_subst = sed -e 's,[@]datadir[@],$(datadir),g' \
-               -e 's,[@]PERL[@],$(PERL),g' \
-	       -e 's,[@]PACKAGE[@],$(PACKAGE),g' \
-	       -e 's,[@]VERSION[@],$(VERSION),g'
 
-tasker_server: tasker_server.in Makefile
-	$(do_subst) < $(srcdir)/tasker_server.in > tasker_server
-	chmod +x tasker_server
 
-check.pl: Makefile
-	echo perl -c tasker_server > check.pl
-	chmod +x check.pl

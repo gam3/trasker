@@ -1,4 +1,15 @@
 use strict;
+
+## @file
+## The Time object
+##
+#
+
+## @class
+# The Time object
+#
+# This object holds a timeslice
+#
 package TTDB::Time;
 
 use Params::Validate qw( validate validate_pos SCALAR BOOLEAN HASHREF OBJECT );

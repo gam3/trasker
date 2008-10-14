@@ -1,6 +1,17 @@
 use strict;
 
+## @file
+## The Project object
+##
+#
+
+## @class
+# The Project objects
+#
+# This Object holds the information on a Project
+# 
 package TTDB::Project;
+
 use TTDB::DBI qw (get_dbh);
 
 use TTDB::Projects;

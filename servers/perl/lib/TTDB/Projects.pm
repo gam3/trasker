@@ -1,5 +1,14 @@
 use strict;
 
+## @file
+# The Projects object
+#
+
+## @class
+# A list of Project objects
+#
+# This Object simply holds a list of Project objects
+# 
 package TTDB::Projects;
 
 use TTDB::Project;

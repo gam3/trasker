@@ -1,6 +1,17 @@
 use strict;
 use warnings;
 
+## @file
+## The UserProject object
+##
+#
+
+## @class
+# A tuple of User and Project
+#
+# This Object holds User and Project Objects and has a number of
+# helper methods that work on those objects.
+#
 package TTDB::UserProject;
 
 use TTDB::Projects;
@@ -38,7 +49,8 @@ sub new
     } elsif (my $uid = $p{user_id}) {
         require TTDB::User;
         $self->{user} = TTDB::User->get(id => $uid);
-    } else {
+    }
+    unless ($self->{user}) {
         croak "Need a user";
     }
 
@@ -47,7 +59,8 @@ sub new
     } elsif (my $pid = $p{project_id}) {
         require TTDB::Project;
         $self->{project} = TTDB::Project->get(id => $pid);
-    } else {
+    }
+    unless ($self->{project}) {
         die "Need a project";
     }
     return $self;
@@ -429,7 +442,6 @@ sub add_task
     eval {
 	$st_id->execute();
 	$id = $st_id->fetchrow();
-
 	$st->execute($id, $self->user->id(), $self->project->id(), $p{name}, $p{description}) or die $dbh->errstr();
     };
     if ($@) {

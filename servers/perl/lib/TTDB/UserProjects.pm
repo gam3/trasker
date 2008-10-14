@@ -1,5 +1,15 @@
 use strict;
 
+## @file
+# The UserProjects object
+#
+
+## @class
+# A list of UserProject objects
+#
+# This object contains a list of UserProject objects.
+# This may or may not be all UserProject objects.
+#
 package TTDB::UserProjects;
 
 use TTDB::Projects;

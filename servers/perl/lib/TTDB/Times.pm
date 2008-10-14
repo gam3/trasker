@@ -1,4 +1,10 @@
 use strict;
+## @file
+# The Time object
+#
+
+## @class
+# Get time information
 package TTDB::Times;
 
 use TTDB::Time;

@@ -34,7 +34,8 @@ use TTDB::Project;
 
 use TTDB::DBI qw (dbi_setup);
 
-sub nonblock {
+sub nonblock
+{
     my $socket = shift;
     my $flags;
 print join(' ', caller) unless $socket;
@@ -48,7 +49,6 @@ print join(' ', caller) unless $socket;
 ################################################################################
 
 our $hash = {};
-our $user_hash = {};
 our $datahash = {};
 
 our $time_count;
@@ -75,27 +75,27 @@ sub get_user
 }
 
 our $cmd_hash = {
-    authorize => \&authorize,		# get authorization for client
-    addtask => \&addtask,		# add a task for a user
-    change => \&change,			# change current project
-    clients => \&clients,		# list clients
-    desktop => \&desktop,
-    gettime => \&gettime,
-    help => \&help,
-    note => \&note,
-    nop => \&nop,
-    project => \&project,
-    push => \&xpush,
-    quit => \&quit,
-    tracker => \&tracker,
-    track => \&track,
-    user => \&user,
-    update => \&update,
-    xtracker => \&xtracker,
-    getauto => \&getauto,
-    setauto => \&setauto,
-    addauto => \&addauto,
-    ping => \&ping,
+    "authorize" => \&authorize,		# get authorization for client
+    "addtask" => \&addtask,		# add a task for a user
+    "change" => \&change,		# change current project
+    "clients" => \&clients,		# list clients
+    "desktop" => \&desktop,
+    "gettime" => \&gettime,
+    "help" => \&help,
+    "note" => \&note,
+    "nop" => \&nop,
+    "project" => \&project,
+    "push" => \&xpush,
+    "quit" => \&quit,
+    "tracker" => \&tracker,
+    "track" => \&track,
+    "user" => \&user,
+    "update" => \&update,
+    "xtracker" => \&xtracker,
+    "getauto" => \&getauto,
+    "setauto"=> \&setauto,
+    "addauto"=> \&addauto,
+    "ping" => \&ping,
 };
 
 sub help()
@@ -106,7 +106,7 @@ You may need to authorize before you can use the folloing commands:
 
 user\t{username}/{password}
 change\t{project id}
-track
+track "user" [on|off]
 EOP
     '';
 }
@@ -116,7 +116,10 @@ sub nop
     my $client = shift;
     my $data = shift;
 
-    print($client join(' ', @_), "\n") if @_;
+use Data::Dumper;
+warn Dumper $hash;
+
+    print($client "nop " . join(' ', @_), "\n") if @_;
 }
 
 sub note
@@ -154,13 +157,28 @@ sub project
     print "$comand $user $parent\n";
 }
 
+sub authorized
+{
+}
+
 sub authorize
 {
     my $client = shift;
     my $data = shift;
     my $user = shift;
 
-    print $client "authorized\t$user\tOK\n";
+    my @part = split('/', $user);
+
+    if ($hash->{'_clients'}{$client}{authorized}) {
+	printf $client "error Can't reauthorized %s\n", $part[0];
+    } else {
+	if (@part == 2) {
+	    printf $client "authorized\t%s\tOK\n", $part[0];
+	    $hash->{'_clients'}{$client}{authorized} = "Token";
+	} else {
+	    printf $client "notauthorized\t%s\n", $part[0];
+	}
+    }
 }
 
 sub addtask
@@ -178,7 +196,7 @@ sub addtask
     my $userobj = get_user($user, $client);
 
     my $userproj;
-die $data unless $parent_id;
+
     if ($parent_id) {
 	$userproj = $userobj->project(id => $parent_id);
     } else {
@@ -186,7 +204,7 @@ die;
 	$userproj = $userobj;
     }
 use Data::Dumper;
-warn Dumper $userobj;
+warn Dumper $userproj;
     if (my $up = $userproj->add_task(
 	name => $name,
 	description => $description)
@@ -195,7 +213,7 @@ warn Dumper $userobj;
 
 	printf($client "entry\t%s\t%s\t%d\t%d\t%s\t%s\t%s\n",
 	       $user,
-	       $up->name,
+	       $up->project->name,
 	       $up->project->id,
 	       $up->project->parent_id,
 	       '0:00:00', '0:00:00',
@@ -214,7 +232,7 @@ sub gettime
     my $user_id = shift;
     my $id = shift;
 
-    die "Bad id: $id" unless ($id =~ m/^\d+$/);
+    die "$user_id Bad id: $id" unless ($id =~ m/^\d+$/);
 
     my $user = get_user($user_id, $client);
 
@@ -247,12 +265,13 @@ sub track
     my $client = shift;
     my $data = shift;
     my $user = shift;
+    my $state = shift;
 
-    if ($user_hash->{$user}->{'track'}->{$client}) {
-print $client "Already tracking\n";
+    if ($hash->{_clients}{$client}{_track_}{$user} eq 'on') {
+	print $client "Already tracking\n";
     } else {
-print $client "tracking\n";
-$user_hash->{$user}->{'track'}->{$client} = $client;
+	$hash->{_clients}{$client}{_track_}{$user} = 'on';
+	print $client "tracking $user\n";
     }
     '';
 }
@@ -290,14 +309,16 @@ sub getauto()
 
     for my $auto ($project->get_all_auto()) {
         printf("auto %d\n", $auto->id);
-        printf($client "auto\t%d\t%s\t%s\t%s\t%s\t%s\t%s\n",
-	$auto->id,
-	$auto->host,
-	$auto->name,
-	$auto->class,
-	$auto->role,
-	$auto->desktop,
-	$auto->title,
+        printf($client "auto\t%s\t%d\t%d\t%s\t%s\t%s\t%s\t%s\t%s\n",
+	    $auto->user_id,
+	    $auto->project_id,
+	    $auto->id,
+	    $auto->host,
+	    $auto->name,
+	    $auto->class,
+	    $auto->role,
+	    $auto->desktop,
+	    $auto->title,
 	);
     }
 
@@ -427,12 +448,12 @@ print "set NOK\n";
 
 sub xtracker
 {
-    shift;
+    my $client = shift;
     shift; # data
     my $user = shift;
 
-    for my $clientk (keys %{$user_hash->{$user}{'track'}}) {
-        my $client = $user_hash->{$user}{'track'}{$clientk};
+    for my $clientk (keys %{$hash->{_clients}{$client}{_track_}}) {
+        my $client = $hash->{_clients}{$client}{_track_}{$client};
         print($client "Tracker ", join(' ', @_), "\n");
     }
     '';
@@ -444,7 +465,6 @@ sub ping
     my $data = shift;
     my $userid = shift;
 
-    print("ping\n");
     printf($client "pong\n");
 }
 
@@ -712,7 +732,7 @@ QUIT:
 			};
 			if ($@) {
 			    print "Error: ", $@;
-print $client $@;
+print $client "error\t" . $@;
 			}
 			if ($action eq 'QUIT') {
 			    goto QUIT;
@@ -822,6 +842,7 @@ The client should then authorize the user.
 
 =item getauto 
 
+[user project_id]
 
 =item gettime 
 
@@ -858,7 +879,7 @@ Have the server close the connection to the client
 
 Follow the focus
 
-  track [on|off]
+  track {user}
 
 =item tracker 
 

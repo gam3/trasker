@@ -1,5 +1,14 @@
 use strict;
+## @file
+# The User object
+#
 
+## @class
+# The User Object.
+#
+# A user is normally a human, but can be any object that can be in only
+# one place at one time.
+#
 package TTDB::User;
 
 use TTDB::DBI qw (get_dbh);
@@ -16,9 +25,9 @@ sub new
 {
     my $class = shift;
     my %p = validate(@_, {
-	id => 0,
-	name => 1,
-	fullname => 1,
+        id => 0,
+        name => 1,
+        fullname => 1,
     });
 
     return bless { %p }, $class;
@@ -34,9 +43,9 @@ sub create
 
     my $sth_id;
     if (0) {
-	$sth_id = $dbh->prepare('select LAST_INSERT_ID()');
+        $sth_id = $dbh->prepare('select LAST_INSERT_ID()');
     } else {
-	$sth_id = $dbh->prepare("select currval('users_id_seq')");
+        $sth_id = $dbh->prepare("select currval('users_id_seq')");
     }
     my $sth = $dbh->prepare(<<SQL);
 insert into users (name, fullname) values (?, ?)
@@ -52,14 +61,19 @@ SQL
     $self;
 }
 
+## @cmethod object get(%hash)
+# create a user object.
+# @param id is the user id [optional]
+# @param user is the user name [optoinal]
+# @return user object
 sub get
 {
     my $dbh = get_dbh;
     my $class = shift;
 
     my %p = validate(@_, {
-	id => 0,
-	user => 0,
+        id => 0,
+        user => 0,
     });
 
     croak(q(Can't have both a user and an id)) if (defined $p{user} && defined $p{id});
@@ -68,7 +82,7 @@ sub get
     my $sth;
 
     if (my $user = $p{user}) {
-	$sth = $dbh->prepare(<<SQL);
+        $sth = $dbh->prepare(<<SQL);
 select name,
        fullname,
        id,
@@ -77,10 +91,10 @@ select name,
  where name = ?
 SQL
 
-	$sth->execute($user);
+        $sth->execute($user);
     } else {
-	my $id = $p{id};
-	$sth = $dbh->prepare(<<SQL);
+        my $id = $p{id};
+        $sth = $dbh->prepare(<<SQL);
 select name,
        fullname,
        id,
@@ -89,7 +103,7 @@ select name,
  where id = ?
 SQL
 
-	$sth->execute($id);
+        $sth->execute($id);
     }
 
     my $data = $sth->fetchrow_hashref();
@@ -112,8 +126,8 @@ sub get_timeslices_for_day
     require TTDB::TimeSlice;
     my %p = validate(@_, {
         date => {
-	    isa => 'Date::Calc',
-	},
+            isa => 'Date::Calc',
+        },
     });
     my $dbh = get_dbh;
 
@@ -129,10 +143,10 @@ SQL
 
     while (my $row = $st->fetchrow_hashref()) {
         push @ret, TTDB::TimeSlice->new(
-	   %$row,
-	   start_time => Date::Calc::MySQL->new($row->{start_time}),
-	   end_time => Date::Calc::MySQL->new($row->{end_time}),
-	);
+           %$row,
+           start_time => Date::Calc::MySQL->new($row->{start_time}),
+           end_time => Date::Calc::MySQL->new($row->{end_time}),
+        );
     }
 
     @ret;
@@ -163,10 +177,10 @@ sub projects
     my @ret;
 
     for my $project ($prjs->entries) {
-	my $up = TTDB::UserProject->new(user => $self, project => $project);
-	if ($up->active()) {
-	    push(@ret, $up)
-	}
+        my $up = TTDB::UserProject->new(user => $self, project => $project);
+        if ($up->active()) {
+            push(@ret, $up)
+        }
     }
 
     @ret;
@@ -177,23 +191,23 @@ sub project
     my $self = shift;
 
     my %p = validate(@_, {
-	id => 0,
-	project => 0,
-	name => 0,
+        id => 0,
+        project => 0,
+        name => 0,
     });
 
     my $id = $p{id};
 
     my $project;
     if (my $p = $p{project}) {
-	$project = $p;
+        $project = $p;
     } elsif (my $name = $p{name}) {
-	$project = TTDB::Project->get(name => $name);
+        $project = TTDB::Project->get(name => $name);
     } elsif (my $id = $p{id}) {
-	$project = TTDB::Project->get(id => $id);
+        $project = TTDB::Project->get(id => $id);
     }
 
-require TTDB::UserProject;
+    require TTDB::UserProject;
 
     TTDB::UserProject->new(project => $project, user => $self);
 }
@@ -205,14 +219,14 @@ sub set_current_project
     my $current;
 
     my %p = validate(@_, {
-	temporary => 0,
-	project_id => 0,
-	auto_id => 0,
-	host => 1,
-	project => {
-	   optional => 1,
-	   isa => [ qw(  TTDB::Project ) ],
-	},
+        temporary => 0,
+        project_id => 0,
+        auto_id => 0,
+        host => 1,
+        project => {
+           optional => 1,
+           isa => [ qw(  TTDB::Project ) ],
+        },
     });
 
     $p{host} ||= '_unknown_';
@@ -234,14 +248,14 @@ SQL
 
     my $sthu;
     if (0) {
-	$sthu = $dbh->prepare(<<'SQL') or die $dbh->err_str();
+        $sthu = $dbh->prepare(<<'SQL') or die $dbh->err_str();
 update timeslice 
    set elapsed = timediff(NOW(), start_time),
    end_time = NOW(),
  where id = ?
 SQL
     } else {
-	$sthu = $dbh->prepare(<<'SQL') or die $dbh->err_str();
+        $sthu = $dbh->prepare(<<'SQL') or die $dbh->err_str();
 update timeslice 
    set elapsed = now() - start_time,
    end_time = now()
@@ -256,46 +270,46 @@ values (      ?,          ?,         ?,      now(),       ?,         ?,    ?)
 SQL
 
     eval {
-	$sths->execute($user_id);	# get current project
+        $sths->execute($user_id);       # get current project
 
-	my ($id, $current_project_id, $type, $old_rid) = (undef, 0, undef, 0);
+        my ($id, $current_project_id, $type, $old_rid) = (undef, 0, undef, 0);
 
         my $rows = $sths->rows;
 
-	if ($rows == 1) {
-	    ($id, $current_project_id, $type, $old_rid) = ($sths->fetchrow_array);
-	    if ($project_id == $id) {
-#		warn("Not updating $id == $project_id");
-		$dbh->rollback;
-		return 0;
-	    }
-	    $sthu->execute($id);   # end current timeslice
+        if ($rows == 1) {
+            ($id, $current_project_id, $type, $old_rid) = ($sths->fetchrow_array);
+            if ($project_id == $id) {
+#               warn("Not updating $id == $project_id");
+                $dbh->rollback;
+                return 0;
+            }
+            $sthu->execute($id);   # end current timeslice
             die 'No update' unless $sthu->rows == 1;
-	} elsif ($rows == 0) {
-#	    warn "new";
-	} else {
-	    die "bad entries: ", $rows;
-	}
+        } elsif ($rows == 0) {
+#           warn "new";
+        } else {
+            die "bad entries: ", $rows;
+        }
 
-	my $new_rid;
-	if ($p{temporary} ne 'normal') {
-	   $new_rid = $old_rid || $id;
-	}
+        my $new_rid;
+        if ($p{temporary} ne 'normal') {
+           $new_rid = $old_rid || $id;
+        }
 
-	$sthi->execute(
-	  $user_id,
-	  $project_id,
-	  $p{temporary},
-	  $p{auto_id} || undef,
-	  $new_rid,
-	  $p{host},
-	) || die $sthi->{Statement} . ' ' . $dbh->errstr ;
+        $sthi->execute(
+          $user_id,
+          $project_id,
+          $p{temporary},
+          $p{auto_id} || undef,
+          $new_rid,
+          $p{host},
+        ) || die $sthi->{Statement} . ' ' . $dbh->errstr ;
     };
     if ($@) {
 warn $@;
-	$dbh->rollback;
+        $dbh->rollback;
     } else {
-	$dbh->commit;
+        $dbh->commit;
     }
 
     return 1;
@@ -342,25 +356,25 @@ SQL
     my $rows = $sth->rows;
 
     if ($rows == 1) {
-	my ($id, $flag, $rid, $pid, $host) = $sth->fetchrow_array;
+        my ($id, $flag, $rid, $pid, $host) = $sth->fetchrow_array;
 
-	if ($flag eq $p{type} and defined $rid and $rid > 0) {
-	    eval {
-		$stha->execute($id);
-		$sthi->execute($rid);
-	    };
-	    if ($@) {
-		$dbh->rollback;
-	    } else {
-		$dbh->commit;
-	    }
-	} else {
-	    warn "Rollback";
-	}
+        if ($flag eq $p{type} and defined $rid and $rid > 0) {
+            eval {
+                $stha->execute($id);
+                $sthi->execute($rid);
+            };
+            if ($@) {
+                $dbh->rollback;
+            } else {
+                $dbh->commit;
+            }
+        } else {
+            warn "Rollback";
+        }
     } elsif ($rows == 0) {
-	warn "Nothing to revert too." if ($TTDB::debug);
+        warn "Nothing to revert too." if ($TTDB::debug);
     } else {
-	die "Fatal Error: ", $rows;
+        die "Fatal Error: ", $rows;
     }
 }
 
@@ -369,12 +383,12 @@ sub auto_revert_project
     my $self = shift;
     my $dbh = get_dbh;
     my %p = validate(@_, {
-	host => 1,
-	class => 1,
-	title => 1,
-	role => 0,
-	name => 1,
-	desktop => 1,
+        host => 1,
+        class => 1,
+        title => 1,
+        role => 0,
+        name => 1,
+        desktop => 1,
     });
     
     $self->revert(type => 'window', host => $p{host});  # We only want to revert it if we set it.
@@ -385,12 +399,12 @@ sub auto_get_project
     my $self = shift;
     my $dbh = get_dbh;
     my %p = validate(@_, {
-	host => 1,
-	class => 1,
-	title => 1,
-	name => 1,
-	desktop => 1,
-	role => 1,
+        host => 1,
+        class => 1,
+        title => 1,
+        name => 1,
+        desktop => 1,
+        role => 1,
     });
 
     my $st = $dbh->prepare(<<SQL);
@@ -418,12 +432,12 @@ sub auto_set_project
     my $self = shift;
     my $dbh = get_dbh;
     my %p = validate(@_, {
-	host => 1,
-	class => 1,
-	title => 1,
-	name => 1,
-	role => 0,
-	desktop => 1,
+        host => 1,
+        class => 1,
+        title => 1,
+        name => 1,
+        role => 0,
+        desktop => 1,
     });
     
     require TTDB::Auto;
@@ -435,10 +449,10 @@ sub auto_set_project
     );
 
     if (defined $auto) {
-	return $self->set_current_project(project_id => $auto->project_id, temporary => 'window', auto_id => $auto->id, host => $p{host});
+        return $self->set_current_project(project_id => $auto->project_id, temporary => 'window', auto_id => $auto->id, host => $p{host});
     } else {
-	$self->revert(type => 'window', host => $p{host});
-	return -1;
+        $self->revert(type => 'window', host => $p{host});
+        return -1;
     }
 }
 
@@ -470,11 +484,11 @@ sub has_project
     my $dbh = get_dbh;
     my $id = $self->id() || die;
     my %p = validate(@_, {
-	id => 0,
-	project => {
-	   optional => 1,
-	   isa => [ qw(  TTDB::Project ) ],
-	},
+        id => 0,
+        project => {
+           optional => 1,
+           isa => [ qw(  TTDB::Project ) ],
+        },
     });
     die 'need a project' unless $p{id} || $p{project};
     die 'only one project' if $p{id} && $p{project};
@@ -510,14 +524,14 @@ sub add_task
 
     my $id;
     eval {
-	$st_id->execute();
-	$id = $st_id->fetchrow();
+        $st_id->execute();
+        $id = $st_id->fetchrow();
 
-	$st->execute($id, $self->id(), $p{name}, $p{description}) or die $dbh->errstr();
+        $st->execute($id, $self->id(), $p{name}, $p{description}) or die $dbh->errstr();
     };
     if ($@) {
         $dbh->rollback;
-	die $@;
+        die $@;
     } else {
         $dbh->commit;
     }
@@ -534,21 +548,21 @@ sub add_note
     my %p = validate(@_, {
         note => 1,
         time => {
-	    optional => 1,
-	    isa => "Date::Calc",
-	},
+            optional => 1,
+            isa => "Date::Calc",
+        },
     });
 
     my $st;
 
     if ($p{time}) {
-	$st = $dbh->prepare("insert into notes (type, time, user_id, note) values (2, ?, ?, ?)");
+        $st = $dbh->prepare("insert into notes (type, time, user_id, note) values (2, ?, ?, ?)");
 
-	$st->execute($p{time}->mysql, $self->id(), $p{note}) or die $dbh->err_str();
+        $st->execute($p{time}->mysql, $self->id(), $p{note}) or die $dbh->err_str();
     } else {
-	$st = $dbh->prepare("insert into notes (type, time, user_id, note) values (2, now(), ?, ?)");
+        $st = $dbh->prepare("insert into notes (type, time, user_id, note) values (2, now(), ?, ?)");
 
-	$st->execute($self->id(), $p{note}) or die $dbh->err_str();
+        $st->execute($self->id(), $p{note}) or die $dbh->err_str();
     }
 
     $dbh->commit or die $dbh->err_str();
@@ -587,8 +601,8 @@ sub day
     my $project_id_clause = '';
     my @args;
     if ($a = $p{pids}) {
-	$project_id_clause = sprintf("and project_id in (%s)", join(', ', map({'?'} @$a)));
-	push(@args, @$a);
+        $project_id_clause = sprintf("and project_id in (%s)", join(', ', map({'?'} @$a)));
+        push(@args, @$a);
 
     }
 
@@ -597,7 +611,7 @@ select
        sum(
            coalesce(
            case when date(end_time) >= date(?) + interval '1 day' then date(?) + interval '1 day' else end_time end,
-	   now())  -
+           now())  -
            case when date(start_time) < date(?) then date(?) else start_time end) as time
   from timeslice
   where start_time < date(?) + interval '1 day'
@@ -607,14 +621,14 @@ select
 SQL
 
     $sth->execute(
-	$start->mysql,
-	$start->mysql,
-	$start->mysql,
-	$start->mysql,
-	$start->mysql,
-	$start->mysql,
-	$self->id,
-	@args,
+        $start->mysql,
+        $start->mysql,
+        $start->mysql,
+        $start->mysql,
+        $start->mysql,
+        $start->mysql,
+        $self->id,
+        @args,
     );
 
     my @data;
@@ -646,8 +660,8 @@ sub days
     my $project_id_clause;
     my @args;
     if ($a = $p{pids}) {
-	$project_id_clause = sprintf("and project_id in (%s)", join(', ', map({'?'} @$a)));
-	push(@args, @$a);
+        $project_id_clause = sprintf("and project_id in (%s)", join(', ', map({'?'} @$a)));
+        push(@args, @$a);
 
     }
 
@@ -656,7 +670,7 @@ select
        sum(
            coalesce(
            case when date(end_time) >= date(?) + interval '1 day' then date(?) + interval '1 day' else end_time end,
-	   now())  -
+           now())  -
            case when date(start_time) < date(?) then date(?) else start_time end) as time
   from timeslice
   where start_time < date(?) + interval '1 day'
@@ -666,14 +680,14 @@ select
 SQL
 
     $sth->execute(
-	$end->mysql,
-	$end->mysql,
-	$start->mysql,
-	$start->mysql,
-	$end->mysql,
-	$start->mysql,
-	$self->id,
-	@args,
+        $end->mysql,
+        $end->mysql,
+        $start->mysql,
+        $start->mysql,
+        $end->mysql,
+        $start->mysql,
+        $self->id,
+        @args,
     );
 
     my @data;
@@ -781,4 +795,3 @@ Return information about a give range of days for the user.
 "G. Allen Morris III" <gam3@gam3.net>
 
 =cut
-

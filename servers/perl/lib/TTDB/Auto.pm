@@ -1,5 +1,18 @@
 use strict;
 
+## @file
+## The Auto object package
+##
+#
+
+## @class
+# autoselect info object
+#
+# @par
+#
+# The Auto object contains information that is used to auto select the
+# project that is being worked on from information gleaned from the user interface.
+#
 package TTDB::Auto;
 
 use TTDB::DBI qw (get_dbh);
@@ -15,14 +28,14 @@ sub get
 {
     my $class = shift;
     my %p = validate(@_, {
-	user_id => 0,
-	user => 0,
-	host => 1,
-	name => 1,
-	class => 1,
-	role => 1,
-	title => 1,
-	desktop => 1,
+        user_id => 0,
+        user => 0,
+        host => 1,
+        name => 1,
+        class => 1,
+        role => 1,
+        title => 1,
+        desktop => 1,
     });
     my $dbh = get_dbh;
 
@@ -36,7 +49,7 @@ sub get
     my $sth;
 
     my $id = $p{id};
-	$sth = $dbh->prepare(<<SQL);
+        $sth = $dbh->prepare(<<SQL);
 select * 
   from auto
  where user_id = ?
@@ -51,13 +64,13 @@ select *
 SQL
 
     $sth->execute(
-	$p{user_id},
-	$p{host} || '',
-	$p{name} || '',
-	$p{class} || '',
-	$p{role} || '',
-	$p{title} || '',
-	$p{desktop} || ''
+        $p{user_id},
+        $p{host} || '',
+        $p{name} || '',
+        $p{class} || '',
+        $p{role} || '',
+        $p{title} || '',
+        $p{desktop} || ''
     );
 
     my $data = $sth->fetchrow_hashref();
@@ -73,18 +86,18 @@ sub new
 {
     my $class = shift;
     my %p = validate(@_, {
-	id => 0,
-	project_id => 0,
-	project => 0,
-	user_id => 0,
-	user => 0,
-	host => 0,
-	name => 0,
-	class => 0,
-	role => 0,
-	title => 0,
-	desktop => 0,
-	presidence => 0,
+        id => 0,
+        project_id => 0,
+        project => 0,
+        user_id => 0,
+        user => 0,
+        host => 0,
+        name => 0,
+        class => 0,
+        role => 0,
+        title => 0,
+        desktop => 0,
+        presidence => 0,
     });
 
     croak "Need at least one argument" unless keys %p;
@@ -150,26 +163,26 @@ sub create
     );
 
     if (!exists $p{presidence}) {
-	my $presidence = 1;
-	for my $key (qw (host name class role title desktop)) {
-	    if ($p{$key}) {
-	        next if ($p{$key} eq '%');
-		$presidence |= $hash{$key};
-		if ($p{$key} =~ /%/) {
+        my $presidence = 1;
+        for my $key (qw (host name class role title desktop)) {
+            if ($p{$key}) {
+                next if ($p{$key} eq '%');
+                $presidence |= $hash{$key};
+                if ($p{$key} =~ /%/) {
                     $presidence &= ~0x1;
-		}
-	    }
-	}
-	$p{presidence} = $presidence;
+                }
+            }
+        }
+        $p{presidence} = $presidence;
     }
 
     my $dbh = get_dbh;
 
     my $sth_id;
     if (0) {
-	$sth_id = $dbh->prepare('select LAST_INSERT_ID()');
+        $sth_id = $dbh->prepare('select LAST_INSERT_ID()');
     } else {
-	$sth_id = $dbh->prepare("select currval('auto_id_seq')");
+        $sth_id = $dbh->prepare("select currval('auto_id_seq')");
     }
     my $sth = $dbh->prepare(<<SQL);
 insert into auto (project_id, user_id, host, name, class, role, title, desktop, presidence)
@@ -177,22 +190,22 @@ insert into auto (project_id, user_id, host, name, class, role, title, desktop, 
 SQL
 
     $sth->execute(
-	$p{project_id},
-	$p{user_id},
-	$p{host} || '%',
-	$p{name} || '%',
-	$p{class} || '%',
-	$p{role} || '%',
-	$p{title} || '%',
-	$p{desktop} || '%',
-	$p{presidence} || 32767,
+        $p{project_id},
+        $p{user_id},
+        $p{host} || '%',
+        $p{name} || '%',
+        $p{class} || '%',
+        $p{role} || '%',
+        $p{title} || '%',
+        $p{desktop} || '%',
+        $p{presidence} || 32767,
     );
     $sth_id->execute();
 
     my $id = $sth_id->fetchrow_array();
 
     my $self = TTDB::Auto->new(
-	%p,
+        %p,
         id => $id,
     );
 
@@ -206,7 +219,9 @@ SQL
 
 sub id
 {
-    shift->{id} or die 'No id';
+    my $self = shift;
+
+    $self->{id} or die 'No id';
 }
 
 sub project_id
@@ -278,11 +293,11 @@ sub delete
     my $sth = $dbh->prepare('delete from auto where id = ?');
 
     eval {
-	$sth->execute($id);
+        $sth->execute($id);
     }; if ($@) {
-	$dbh->rollback();
+        $dbh->rollback();
     } else {
-	$dbh->commit();
+        $dbh->commit();
     }
 }
 
@@ -365,4 +380,3 @@ This will delete the object from the database.
 "G. Allen Morris III" <gam3@gam3.net>
 
 =cut
-

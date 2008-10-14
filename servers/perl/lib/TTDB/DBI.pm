@@ -1,5 +1,17 @@
 use strict;
 
+## @file
+# The database interface
+#
+#
+
+## @class
+# connect to the databse
+#
+# This object return a DBI handle;
+# it is used to cache these handles and handle user name, password and host setup.
+# It also can return readonly and read/write handles.
+#
 package TTDB::DBI;
 
 our $dbi;

@@ -79,13 +79,32 @@ exit(0);
 if ($cgi->param('show') eq 'users') {
     my $users;
     print "<h1>Users</h1>\n";
+    print "<table>\n";
     eval {
 	$users = TTDB::Users->new();
 	for my $user ($users->entries()) {
-	    print $user, " \n";
+	    print " <tr>\n";
+	    print "  <td>\n";
+	    print $user->id();
+	    print "  </td>\n";
+	    print "  <td>\n";
 	    my $id = $user->id();
-	    print qq(<a href="?project=$id">), $user->name(), "</a></td><td>";
-	    print $user->name(), "<br/>\n";
+	    print qq(<a href="?user=$id">), $user->name(), "</a></td><td>";
+	    print "  </td>\n";
+	    print "  <td>\n";
+	    print $user->fullname();
+	    print "  </td>\n";
+	    print "  <td>\n";
+	    eval {
+		print $user->current_project()->id();
+	    }; if ($@) {
+	        print "fail";
+	    }
+	    print "  </td>\n";
+	    print "  <td>\n";
+	    print $user->userid();
+	    print "  </td>\n";
+	    print " </tr>\n"
 	}
     };
     print $@;
@@ -140,34 +159,55 @@ if ($cgi->param('show') eq 'users') {
     print $@;
     my $name = $project->longname();
     print "<h1>Project $pid -- $name</h1>\n";
-    print "Parent project: <select>";
-    print "<option>-Root-</option>\n";
+    print qq(<form method="get">\n);
+    print qq( <input type="hidden" name="project" value="$pid"/></br>\n);
+    print qq(Parent project: <select name="parent_project">);
+    print qq(<option value="0">-Root-</option>\n);
     my $projects = TTDB::Projects->new();
     for my $pproject ($projects->entries()) {
         next if ($project->id() == $pproject->id());
-	my $x;
+	my $x= "";
+	$x .= sprintf(qq( value="%s"), $pproject->id());
         if ($project->parent && $project->parent->id() == $pproject->id()) {
-	    $x = " selected";
+	    $x .= " selected";
 	}
         print "<option$x>", $pproject->longname, "</option>\n";
     }
     print "</select></br>";
-    print qq(Name: <input value="), $project->name, qq("/>);
+    print qq(Name: <input name="name" value="), $project->name, qq("/></br>\n);
+    if ($project->is_task) {
+	print qq(<input name="task" type="checkbox" checked/> is_task</br>);
+    } else {
+	print qq(<input name="task" type="checkbox"/> is_task</br>);
+    }
+    if ($project->hidden) {
+	print qq(<input name="hidden" type="checkbox" checked/> hidden</br>);
+    } else {
+	print qq(<input name="hidden" type="checkbox"/> hidden</br>);
+    }
+    print qq(<input type="submit"/>);
     print "</br>";
+    print qq(<textarea name="description">);
+    print $project->description();
+    print qq(</textarea>);
+    print "</form></br>";
 } elsif (my $uid = $cgi->param('user')) {
     my $user;
     print "<h1>User $uid</h1>\n";
     print "<pre>";
     eval {
-	$user = TTDB::User->new(id => $uid);
+	$user = TTDB::User->get(id => $uid);
     };
     print $@;
 
-    print $user->longname();
+    print $user->fullname();
+    print "<table>";
     for my $project ($user->projects()) {
-         print $project->longname();
+         print "<tr><td>";
+         print $project->project()->longname();
+         print "</td></tr>";
     }
-    print "</pre>";
+    print "</table>";
 } else {
     my $projects;
     my $users;
@@ -178,11 +218,10 @@ if ($cgi->param('show') eq 'users') {
 	print qq(<form name="main">\n);
 	print "<table border=1>";
 	print "<tr>";
-	print "<th>Projects</th>\n";
-	print qq(<th colspan="4" rowspan="2">Users</th>\n);
+	print "<th rowspan=\"2\">Projects</th>\n";
+	print qq(<th colspan="4" rowspan="1">Users</th>\n);
 	print "</tr>";
 	print "<tr>";
-	print "<th>&nbsp;</th>\n";
 	for my $user ($users->entries()) {
 	    my $id = $user->id();
 	    print qq(<th><a href="?user=$id">), $user->name(), "</a></th>\n";

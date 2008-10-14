@@ -1,5 +1,13 @@
 use strict;
 
+## @file
+# This is the Note object
+
+## @class
+# The Note object
+#
+# This object holds a Note that the user entered.
+#
 package TTDB::Note;
 
 use TTDB::DBI qw (get_dbh);

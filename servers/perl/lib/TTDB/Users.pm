@@ -1,14 +1,20 @@
 use strict;
 
+## @file
+# The Users package
+#
+
+## @class
+# A list of User objects
+#
+# This is simply a list of User Objects
+#
 package TTDB::Users;
-use TTDB::User;
 
 use TTDB::DBI qw (get_dbh);
-use TTDB::Users;
+use TTDB::User;
 
 use Params::Validate qw( validate validate_pos SCALAR BOOLEAN HASHREF OBJECT );
-
-our $dir = "/home/gam3/.tasker/";
 
 sub new
 {

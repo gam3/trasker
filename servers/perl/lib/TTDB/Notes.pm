@@ -1,5 +1,15 @@
 use strict;
 
+## @file
+## The Notes object
+##
+#
+
+## @class
+# A list of notes
+#
+# This Object simply holds a list of Note objects
+# 
 package TTDB::Notes;
 
 use Params::Validate qw (validate ARRAYREF);
