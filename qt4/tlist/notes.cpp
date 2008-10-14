@@ -4,6 +4,7 @@
 #include "notes.h"
 #include "ttcp.h"
 #include "project.h"
+#include "help.h"
 
 Notes::Notes(const TTCP *ttcpN, QWidget *parent) : QDialog(parent), ttcp(ttcpN)
 {
@@ -28,12 +29,12 @@ void Notes::add_note()
 
 void Notes::show_help()
 {
-    std::cerr << "bob" << std::endl;
+    HelpWin *win = new HelpWin();
+    win->show();
 }
 
 void Notes::done(QString check)
 {
-    std::cerr << "Done " << qPrintable(check) << std::endl;
     hide();
 };
 

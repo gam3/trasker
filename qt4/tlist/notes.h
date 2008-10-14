@@ -13,6 +13,10 @@
 class TTCP;
 class Project;
 
+/*! \brief The "add a note" widget.
+ *
+ */
+
 class Notes : public QDialog, private Ui::Notes {
     Q_OBJECT
 public:
@@ -20,7 +24,7 @@ public:
     void setProject(const Project &proj);
 
 public slots:
-    void done(QString bob);
+    void noteDone(QString Check);
 
 private slots:
     void add_note();
