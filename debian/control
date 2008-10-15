@@ -1,0 +1,26 @@
+Source: tasker
+Section: unknown
+Priority: extra
+Maintainer: "G. Allen Morris III" <gam3@gam3.net>
+Build-Depends: debhelper (>= 7), autotools-dev
+Standards-Version: 3.7.3
+Homepage: http://tasker.sf.net/
+
+Package: tasker-server-perl
+Architecture: any
+Depends: perl, postgresql | sqlite
+Description: An implimentation of the Tasker server writen in perl.
+ This package also contains the Tasker::TTDB perl package that can be
+ used to write other servers.
+
+Package: tasker-tlist
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: A QT 4 client to control tasker
+ This is the most popular (and currently the only> client for tasker.
+
+Package: tasker-doc
+Architecture: all
+Description: Documentation for tasker
+ This documentation is only needed for server-client information
+
