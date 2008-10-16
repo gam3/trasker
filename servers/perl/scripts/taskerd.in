@@ -789,7 +789,7 @@ if ($opt_versions) {
     exit;
 }
 
-$0 = "@PACKAGE@";
+$0 = "taskerd";
 main;
 
 __END__
