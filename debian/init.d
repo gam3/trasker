@@ -12,9 +12,9 @@
 #
 
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-DAEMON=/usr/sbin/tasker
-NAME=tasker
-DESC=tasker
+DAEMON=/usr/bin/tasker-server
+NAME=tasker-server
+DESC=tasker-server
 
 test -x $DAEMON || exit 0
 
@@ -26,8 +26,8 @@ DODTIME=1                   # Time to wait for the server to die, in seconds
                             # 'restart' will not work
 
 # Include tasker defaults if available
-if [ -f /etc/default/tasker ] ; then
-	. /etc/default/tasker
+if [ -f /etc/default/tasker-server ] ; then
+	. /etc/default/tasker-server
 fi
 
 set -e
