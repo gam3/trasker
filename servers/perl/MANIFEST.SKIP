@@ -39,3 +39,4 @@
 \bTasker-[\d\.\_]+
 
 .gitignore
+scripts/taskerd.in
