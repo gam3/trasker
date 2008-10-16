@@ -76,7 +76,7 @@
      </rect>
     </property>
    </widget>
-   <widget class="QLineEdit" name="useEdit" >
+   <widget class="QLineEdit" name="userEdit" >
     <property name="geometry" >
      <rect>
       <x>90</x>
@@ -99,7 +99,7 @@
      <string>User name</string>
     </property>
     <property name="buddy" >
-     <cstring>useEdit</cstring>
+     <cstring>userEdit</cstring>
     </property>
    </widget>
    <widget class="QLabel" name="label_2" >
@@ -168,20 +168,6 @@
     </property>
    </widget>
   </widget>
-  <zorder>widget</zorder>
-  <zorder>buttonBox</zorder>
-  <zorder>widget</zorder>
-  <zorder>pushButton</zorder>
-  <zorder>widget</zorder>
-  <zorder>horizontalSpacer</zorder>
-  <zorder>buttonBox</zorder>
-  <zorder>dockWidget</zorder>
-  <zorder>dockWidget</zorder>
-  <zorder>pushButton</zorder>
-  <zorder>horizontalSpacer</zorder>
-  <zorder>horizontalSpacer_2</zorder>
-  <zorder>done</zorder>
-  <zorder>widget_2</zorder>
  </widget>
  <resources/>
  <connections/>

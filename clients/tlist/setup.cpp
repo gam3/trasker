@@ -55,7 +55,7 @@ void Setup::saveData()
 
     emit setup(host, port, ssl, user, password);
 std::cerr << "Setup::saveData()" << std::endl;
-    done(0);
+    hide();
 }
 
 /* eof */
