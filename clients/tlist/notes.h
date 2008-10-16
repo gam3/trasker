@@ -24,7 +24,7 @@ public:
     void setProject(const Project &proj);
 
 public slots:
-    void noteDone(QString Check);
+    void notesDone(QString Check);
 
 private slots:
     void add_note();

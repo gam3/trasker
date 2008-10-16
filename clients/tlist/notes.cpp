@@ -33,7 +33,7 @@ void Notes::show_help()
     win->show();
 }
 
-void Notes::done(QString check)
+void Notes::notesDone(QString check)
 {
     hide();
 };
