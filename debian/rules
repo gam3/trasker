@@ -11,7 +11,7 @@
 # build-arch and build-indep targets  by Bill Allombert 2001
 
 # Uncomment this to turn on verbose mode.
-#export DH_VERBOSE=1
+export DH_VERBOSE=1
 
 # This has to be exported to make some magic below work.
 export DH_OPTIONS
@@ -39,7 +39,8 @@ endif
 ifneq "$(wildcard /usr/share/misc/config.guess)" ""
 	cp -f /usr/share/misc/config.guess config.guess
 endif
-	./configure $(CROSS) --prefix=/usr --mandir=\$${prefix}/share/man --infodir=\$${prefix}/share/info CFLAGS="$(CFLAGS)" LDFLAGS="-Wl,-z,defs"
+	./configure $(CROSS) --prefix=/usr --mandir=\$${prefix}/share/man --infodir=\$${prefix}/share/info \
+	            CFLAGS="$(CFLAGS)" LDFLAGS="-Wl,-z,defs" BUILDFLAGS="installdirs=vendor"
 
 
 #Architecture
@@ -80,6 +81,10 @@ install-indep:
 	# Add here commands to install the indep part of the package into
 	# debian/<package>-doc.
 	#INSTALLDOC#
+	
+	$(MAKE) DESTDIR=$(CURDIR)/debian/tasker-doc install-info
+	$(MAKE) DESTDIR=$(CURDIR)/debian/tasker-doc install-html
+	$(MAKE) DESTDIR=$(CURDIR)/debian/tasker-doc install-pdf
 
 	dh_install -i
 
@@ -91,7 +96,7 @@ install-arch:
 
 	# Add here commands to install the arch part of the package into
 	# debian/tmp.
-	$(MAKE) DESTDIR=$(CURDIR)/debian/tasker install
+	$(MAKE) DESTDIR=$(CURDIR)/debian/tmp install
 
 	dh_install -s
 # Must not depend on anything. This is to be called by
@@ -110,15 +115,15 @@ binary-common:
 #	dh_installpam
 #	dh_installmime
 #	dh_python
-#	dh_installinit
+	dh_installinit
 #	dh_installcron
-#	dh_installinfo
+	dh_installinfo
 	dh_installman
 	dh_link
 	dh_strip
 	dh_compress
 	dh_fixperms
-#	dh_perl
+	dh_perl
 	dh_makeshlibs
 	dh_installdeb
 	dh_shlibdeps
