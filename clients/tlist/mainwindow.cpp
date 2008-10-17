@@ -120,7 +120,7 @@ MainWindow::MainWindow(TTCP *ttcp, QWidget *parent)
     updateActions();
 
     addNoteW = new Notes(ttcp, this);
-    connect(ttcp, SIGNAL(accept_note(const QString &)), addNoteW, SLOT(done(const QString &)));
+    connect(ttcp, SIGNAL(accept_note(const QString &)), addNoteW, SLOT(notesDone(const QString &)));
     addTaskW = new AddProject();
     addAutoSelW = new AddAuto(ttcp);
     errorWin = new ErrorWindow(this);

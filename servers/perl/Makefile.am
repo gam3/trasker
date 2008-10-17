@@ -1,28 +1,24 @@
 PERL=/usr/bin/perl
+
 noinst_DATA = .made_test
 
-#.made_mod: Makefile.perl Build
-#	$(MAKE) -fMakefile.perl
-#	./Build
-#	touch $@
+all-an: Build
+	./Build
 
-.made_test: Build
+check: Build
 	./Build test
-	touch .made_test
-
-#Makefile.perl: Makefile.PL
-#	$(PERL) $< MAKEFILE=$@
 
 Build: Build.PL
-	$(PERL) $< MAKEFILE=$@
+	$(PERL) $< ${BUILDFLAGS}
 
-install-data-local:
-	$(MAKE) -fMakefile.perl PREFIX=$(prefix) install
+install-exec-am:
+	./Build destdir=${DESTDIR} create_packlist=0 install
 
-CLEANFILES = *~ .made_mod yMod.pm
+CLEANFILES =
+
 clean-local:
-	if test -f Makefile.perl; them $(MAKE) -fMakefile.perl realclean; fi
-	rm -f Makefile.perl Makefile.perl.old
+	rm -f Makefile.perl Makefile.perl.old Build
 
-
+#EXTRA_DIST = MANIFEST
+EXTRA_DIST = lib
 

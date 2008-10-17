@@ -3,7 +3,7 @@
 
 AC_INIT([tasker-server],[0.0.1],[tasker-bugs@gam3.net])
 AC_PREREQ(2.59)
-AC_COPYRIGHT([Copyright (c) 2006 G. Allen Morris III])
+AC_COPYRIGHT([Copyright (c) 2008 G. Allen Morris III])
 AC_CANONICAL_TARGET
 
 AM_INIT_AUTOMAKE
@@ -17,5 +17,6 @@ AC_PROG_PERL_MODULES(TTDB::User TTDB::Project, ,AC_MSG_WARN(Need some Perl modul
 
 dnl
 
-AC_CONFIG_FILES([Makefile perl/Makefile])
+AC_CONFIG_FILES([Makefile perl/Makefile perl/Build.PL perl/scripts/taskerd ])
+
 AC_OUTPUT

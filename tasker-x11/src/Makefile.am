@@ -20,3 +20,8 @@ focus_LDADD = $(INTLLIBS) $(X_LIBS)
 
 man1_MANS = winselect.man focus.man
 EXTRA_DIST = $(man1_MANS)
+
+common.o client.o : common.h
+
+client : common.o client.o
+	gcc -o client client.o common.o  -lssl -lcrypto -lpthread

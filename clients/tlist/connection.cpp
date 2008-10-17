@@ -13,33 +13,43 @@
 
 #include <QtNetwork>
 
-static const int TransferTimeout = 30 * 1000;
-static const int PongTimeout = 120 * 1000;
-static const int PingInterval = 60 * 1000;
-static const char SeparatorToken = ' ';
+#include "setup.h"
+
+static const int PongTimeout =   5 * 1000;
+static const int PingInterval =  2 * 1000;
+
+using std::cerr;
+using std::endl;
 
 Connection::Connection(QObject *parent)
     : QSslSocket(parent)
 {
     greetingMessage = tr("undefined");
     username = tr("unknown");
-    cstate = WaitingForGreeting;
+    cstate = WaitingForConnection;
     currentDataType = Undefined;
     numBytesForCurrentDataType = -1;
     transferTimerId = 0;
     isGreetingMessageSent = false;
     pingTimer.setInterval(PingInterval);
+    pongTimer.setInterval(PongTimeout);
     connectionTimer.setInterval(400);
 
+    QObject::connect(this, SIGNAL(connected()),
+                     this, SLOT(setupConnection()));
+
     QObject::connect(this, SIGNAL(readyRead()), this, SLOT(processReadyRead()));
-    QObject::connect(this, SIGNAL(disconnected()), &pingTimer, SLOT(stop()));
+
     QObject::connect(&pingTimer, SIGNAL(timeout()), this, SLOT(sendPing()));
+    QObject::connect(&pongTimer, SIGNAL(timeout()), this, SLOT(setFailed()));
+
     QObject::connect(&connectionTimer, SIGNAL(timeout()),
                      this, SLOT(reConnect()));
+
+    QObject::connect(this, SIGNAL(disconnected()), &pingTimer, SLOT(stop()));
     QObject::connect(this, SIGNAL(disconnected()),
                      this, SLOT(setDisconnected()));
-    QObject::connect(this, SIGNAL(connected()),
-                     this, SLOT(sendGreetingMessage()));
+
     QObject::connect(this, SIGNAL(error(QAbstractSocket::SocketError)),
                      this, SLOT(connectionError(QAbstractSocket::SocketError)));
 }
@@ -74,57 +84,76 @@ void Connection::timerEvent(QTimerEvent *timerEvent)
     }
 }
 
+void Connection::sendAuthorize()
+{
+    QSettings settings("Tasker", "tlist");
+    settings.beginGroup("Host");
+    const QString host = settings.value("host", "127.0.0.1").toString();
+    const qint16 port = settings.value("port", 8000).toInt();
+    const bool ssl = settings.value("ssl", true).toBool();
+    settings.endGroup();
+
+    write(QByteArray("authorize\tgam3/testme\n"));
+}
+
 void Connection::processReadyRead()
 {
     if (cstate == WaitingForGreeting) {
-std::cerr << "WaitingForGreeting" << std::endl;
         if (!readProtocolHeader())
             return;
-
-        cstate = ReadingGreeting;
-    }
-
-    if (cstate == ReadingGreeting) {
-        pingTimer.start();
-        pongTime.start();
-        cstate = ReadyForUse;
+cerr << "ok: " << cstate << endl;
+    } else 
+    if (cstate == WaitingForAuthorized) {
+        if (!readProtocolHeader())
+	    return;
+	cstate = ReadyForUse;
         emit readyForUse();
-std::cerr << "ReadingGreeting" << std::endl;
+cerr << "ok: " << cstate << endl;
+    } else
+    if (cstate == ReadyForUse ) {
+	while (canReadLine()) {
+	    processData();
+	};
+    } else {
+cerr << "error: " << cstate << endl;
+       exit(1); 
     }
+}
 
-    while (canReadLine()) {
-        processData();
-    };
+void Connection::setFailed()
+{
+cerr << "fail" << endl;
 }
 
 void Connection::sendPing()
 {
-    if (pongTime.elapsed() > PongTimeout) {
-        abort();
-        return;
+    if (!pongTimer.isActive()) {
+        pongTimer.start();
     }
-
     write("ping\n");
 }
 
 void Connection::setDisconnected()
 {
-    cstate = WaitingForGreeting;
-    std::cerr << "Connection::Disconnected!" << std::endl;
+std::cerr << "Connection::setDisconnected" << std::endl << std::endl;
+    cstate = Disconnected;
+    connectionTimer.start();
+    pingTimer.stop();
 }
 
-void Connection::sendGreetingMessage()
+void Connection::setupConnection()
 {
-    std::cerr << "connected!" << std::endl;
-    QByteArray data = "authorize\tgam3/ab12cd34\n";
+std::cerr << "Connection::setupConnection" << std::endl << std::endl;
     connectionTimer.stop();
     pingTimer.start();
-    if (write(data) == data.size())
-        isGreetingMessageSent = true;
+    cstate = WaitingForGreeting;
 }
 
 bool Connection::readProtocolHeader()
 {
+    if (!canReadLine()) {
+        return false;
+    }
     if (transferTimerId) {
         killTimer(transferTimerId);
         transferTimerId = 0;
@@ -135,15 +164,28 @@ bool Connection::readProtocolHeader()
     line.remove('\r');
 
     QStringList list = line.split("\t");
-    if (list[0] == "TTCP") {
-        float version = list[1].toFloat(0);
-	std::cerr << "version: " << version << std::endl;
-    }
-    if (list[0] == "notauthorized") {
-        exit(1);
-    }
-    if (list[0] == "authorized") {
-	std::cerr << "authorized: " << std::endl;
+    switch (cstate) {
+	case WaitingForGreeting:
+	    if (list[0] == "TTCP") {
+		float version = list[1].toFloat(0);
+		std::cerr << "version: " << version << std::endl;
+		sendAuthorize();
+		cstate = WaitingForAuthorized;
+	    }
+	    break;
+	case WaitingForAuthorized:
+	    if (list[0] == "notauthorized") {
+		exit(1);
+	    } else
+	    if (list[0] == "authorized") {
+		std::cerr << "authorized: " << std::endl;
+		cstate = ReadyForUse;
+	    } else {
+cerr << qPrintable(line) << endl;
+	    }
+	    break;
+        default:
+	    break;
     }
     return true;
 }
@@ -160,8 +202,11 @@ void Connection::processData()
 
     QStringList list = line.split("\t");
 
+    pingTimer.start();
+
     if (list[0] == "pong") {
-        pongTime.start();
+cerr << "pong" << endl;
+        pongTimer.stop();
     } else {
         emit newCommand(list);
     }
@@ -182,11 +227,19 @@ void Connection::connectionError(QAbstractSocket::SocketError ername)
 void Connection::reConnect()
 {
     std::cerr << "reconnect" << std::endl;
+
+    QSettings settings("Tasker", "tlist");
+    settings.beginGroup("Host");
+    const QString host = settings.value("host", "127.0.0.1").toString();
+    const qint16 port = settings.value("port", 8000).toInt();
+    const bool ssl = settings.value("ssl", true).toBool();
+    settings.endGroup();
+
+    cerr << qPrintable(host) << ":" << port << endl;
+
     connectionTimer.start();
 
-    QHostAddress senderIp("127.0.0.1");
-    quint16 senderPort = 8000;
-
-    connectToHost(senderIp, senderPort);
+    connectToHost(host, port);
 }
 
+/* eof */

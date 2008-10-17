@@ -75,10 +75,11 @@ private slots:
 private:
     void removeConnection(Connection *connection);
 
-    QString *name, *password;
-    QString const &user;
+    const QString &password;
+    const QString &user;
+    const QString &host;
     quint16 port;
-    bool ssl;
+    bool    ssl;
 
     Connection *connection;
 };

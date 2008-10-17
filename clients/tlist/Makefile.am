@@ -28,7 +28,8 @@ tlist_SOURCES = addproject.cpp \
 		qrc_systray.cpp \
 		qrc_tlist.cpp \
 		ui_auto_select.h \
-		ui_addproject.h
+		ui_addproject.h \
+		cmdline.c
 
 
 FORMS  = addproject.ui \
@@ -49,10 +50,12 @@ notes.h : ui_notes.h
 
 DIST          = tlist.pro
 
-CXXFLAGS += ${QT4_CFLAGS}
-CXXFLAGS += -I/usr/include/qt4/QtWebKit
+AM_CXXFLAGS = ${QT4_CFLAGS}
+AM_CXXFLAGS += -I/usr/include/qt4/QtWebKit
 
-LDFLAGS += ${QT4LIBS_LIBS}
+AM_LDFLAGS = ${QT4_LIBS}
+AM_LDFLAGS += -lQtWebKit
+
 
 ui_%.h :: %.ui
 	$(UIC) $< -o $@
@@ -66,6 +69,8 @@ qrc_systray.cpp: systray.qrc pics/active-icon-0.xpm
 qrc_tlist.cpp: tlist.qrc default.txt
 	/usr/bin/rcc -name tlist tlist.qrc -o qrc_tlist.cpp
 
+cmdline.c cmdline.h : tlist.ggo
+	gengetopt < tlist.ggo
 
 #rm -f moc_addproject.cpp moc_auto_select.cpp moc_connection.cpp moc_error.cpp moc_help.cpp moc_mainwindow.cpp moc_mytreeview.cpp moc_notes.cpp moc_setup.cpp moc_treemodel.cpp moc_ttcp.cpp
 #rm -f qrc_systray.cpp qrc_tlist.cpp

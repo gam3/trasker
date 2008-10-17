@@ -6,7 +6,8 @@ use Module::Build;
 
 my $builder = Module::Build->new(
     module_name   => 'Tasker',
-    dist_version => '0.01',
+    dist_version => '@VERSION@',
+    dist_abstract => 'Package and script for TTCP server', 
     license       => 'perl',
     requires => {
         'perl'          => '5.6.0',

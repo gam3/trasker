@@ -35,8 +35,11 @@ class Connection : public QSslSocket
 
 public:
     enum ConnectionState {
+        WaitingForConnection,
+	Disconnected,
         WaitingForGreeting,
-        ReadingGreeting,
+	ReadingGreeting,
+        WaitingForAuthorized,
         ReadyForUse
     };
     enum DataType {
@@ -61,13 +64,16 @@ signals:
 protected:
     void timerEvent(QTimerEvent *timerEvent);
 
+public slots:
+    void reConnect();
+
 private slots:
     void processReadyRead();
     void sendPing();
-    void sendGreetingMessage();
+    void setFailed();
+    void setupConnection();
     void setDisconnected();
     void connectionError(QAbstractSocket::SocketError);
-    void reConnect();
 
 private:
     int readDataIntoBuffer(int maxSize = MaxBufferSize);
@@ -75,12 +81,13 @@ private:
     bool readProtocolHeader();
     bool hasEnoughData();
     void processData();
+    void sendAuthorize();
 
     QString greetingMessage;
     QString username;
     QTimer connectionTimer;
     QTimer pingTimer;
-    QTime pongTime;
+    QTimer pongTimer;
     QByteArray buffer;
     ConnectionState cstate;
     DataType currentDataType;

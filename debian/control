@@ -1,9 +1,9 @@
 Source: tasker
 Section: unknown
 Priority: extra
-Maintainer: "G. Allen Morris III" <gam3@gam3.net>
+Maintainer: G. Allen Morris III <gam3@gam3.net>
 Build-Depends: debhelper (>= 7), autotools-dev
-Standards-Version: 3.7.3
+Standards-Version: 3.8.0
 Homepage: http://tasker.sf.net/
 
 Package: tasker-tlist

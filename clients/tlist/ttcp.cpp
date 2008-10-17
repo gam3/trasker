@@ -6,7 +6,7 @@
 #include "ttcp.h"
 #include "connection.h"
 
-TTCP::TTCP(const QString &host, quint16 port, bool ssl, const QString &userN, const QString &password) : user(userN)
+TTCP::TTCP(const QString &host_in, quint16 port_in, bool ssl_in, const QString &user_in, const QString &password_in) : user(user_in), password(password_in), host(host_in), port(port_in), ssl(ssl_in)
 {
     connection = new Connection(this);
 
@@ -16,7 +16,7 @@ std::cerr << "SSL" << std::endl;
 
     newConnection(connection);
 
-    connection->connectToHost(host, port);
+    connection->reConnect();
 }
 
 TTCP::~TTCP()
@@ -83,7 +83,6 @@ void TTCP::getauto(const int id)
 
 void TTCP::gettime(const int id)
 {
-    QByteArray cmd;
     if (connection->state() == QAbstractSocket::ConnectedState)
 	connection->write(QString("gettime %1 %2\n").arg(user).arg(id).toAscii());
 }

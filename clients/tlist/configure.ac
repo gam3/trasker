@@ -9,11 +9,11 @@ AC_CONFIG_HEADER([config.h])
 AM_INIT_AUTOMAKE
 
 # Checks for programs.
-AC_PROG_CXX
 AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_RANLIB
+AC_PROG_CXX
 
 ggl_host_type=linux
 
@@ -87,5 +87,5 @@ AC_C_INLINE
 AC_FUNC_ERROR_AT_LINE
 AC_HEADER_STDC
 
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([Makefile tlist.ggo])
 AC_OUTPUT
