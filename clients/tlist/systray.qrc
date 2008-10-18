@@ -1,0 +1,6 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+ <qresource prefix="/">
+  <file>pics/active-icon-0.xpm</file>
+ </qresource>
+</RCC>

@@ -29,6 +29,8 @@ tlist_SOURCES = addproject.cpp \
 		qrc_tlist.cpp \
 		ui_auto_select.h \
 		ui_addproject.h \
+		ui_mainwindow.h \
+		ui_setup.h \
 		cmdline.c
 
 
@@ -40,12 +42,12 @@ FORMS  = addproject.ui \
          notes.ui \
          setup.ui
 
-addproject.o : ui_addproject.h
-auto_select.o : ui_auto_select.h
-help.o : ui_help.h
-error.o : ui_error.h
+addproject.h : ui_addproject.h
+auto_select.h : ui_auto_select.h
+help.h : ui_help.h
+error.h : ui_error.h
 mainwindow.h : ui_mainwindow.h
-setup.o : ui_setup.h
+setup.h : ui_setup.h
 notes.h : ui_notes.h
 
 DIST          = tlist.pro
@@ -56,11 +58,15 @@ AM_CXXFLAGS += -I/usr/include/qt4/QtWebKit
 AM_LDFLAGS = ${QT4_LIBS}
 AM_LDFLAGS += -lQtWebKit
 
+connection.o : connection.h connection.cpp setup.h
+help.o : help.cpp help.h
+mainwindow.o : mainwindow.cpp mainwindow.h notes.h help.h setup.h auto_select.h addproject.h error.h
+main.o : mainwindow.h cmdline.h
 
-ui_%.h :: %.ui
+ui_%.h : %.ui
 	$(UIC) $< -o $@
 
-moc_%.cpp :: %.h
+moc_%.cpp : %.h
 	$(MOC) $< -o $@
 
 qrc_systray.cpp: systray.qrc pics/active-icon-0.xpm
