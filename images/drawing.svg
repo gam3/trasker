@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   version="1.0"
+   width="744.09448"
+   height="1052.3622"
+   id="svg2">
+  <defs
+     id="defs4" />
+  <g
+     id="layer1">
+    <text
+       x="0"
+       y="1042.3289"
+       transform="scale(1.0719554,0.9328746)"
+       id="text2385"
+       xml:space="preserve"
+       style="font-size:2072.7746582px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#00aa00;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Baekmuk Batang;-inkscape-font-specification:Baekmuk Batang"><tspan
+         x="0"
+         y="1042.3289"
+         id="tspan2387">s</tspan></text>
+    <flowRoot
+       id="flowRoot2389"
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans"><flowRegion
+         id="flowRegion2391"><rect
+           width="194.28572"
+           height="234.28572"
+           x="202.85715"
+           y="260.93362"
+           id="rect2393" /></flowRegion><flowPara
+         id="flowPara2395" /></flowRoot>    <path
+       d="M 302.85714,533.79068 L 302.85714,55.21926 L 320,55.21926 L 337.14285,55.21926 L 337.14285,533.79068 L 337.14285,1012.3622 L 320,1012.3622 L 302.85714,1012.3622 L 302.85714,533.79068 z"
+       id="path3196"
+       style="fill:#00aa00;fill-opacity:1" />
+    <path
+       d="M 405.71429,530.93361 L 405.71429,52.362183 L 422.85715,52.362183 L 440,52.362183 L 440,530.93361 L 440,1009.5051 L 422.85715,1009.5051 L 405.71429,1009.5051 L 405.71429,530.93361 z"
+       id="path3198"
+       style="fill:#00aa00;fill-opacity:1" />
+  </g>
+</svg>

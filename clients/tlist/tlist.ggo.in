@@ -1,0 +1,10 @@
+
+# Name of your program
+package "@PACKAGE@" # don't use package if you're using automake
+# Version of your program
+version "@VERSION@"   # don't use version if you're using automake
+
+# Options
+option  "setup"        - "Run setup on startup"        flag       off
+text "\nAn ending text."
+

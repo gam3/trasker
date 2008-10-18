@@ -2,7 +2,7 @@ PERL=/usr/bin/perl
 
 noinst_DATA = .made_test
 
-all-an: Build
+all-am: Build
 	./Build
 
 check: Build
@@ -19,6 +19,5 @@ CLEANFILES =
 clean-local:
 	rm -f Makefile.perl Makefile.perl.old Build
 
-#EXTRA_DIST = MANIFEST
-EXTRA_DIST = lib
-
+EXTRA_DIST = lib scripts examples cgi-bin t
+EXTRA_DIST += Doxyfile Build.PL Build.PL.in MANIFEST PerlDoxyfile README META.yml
