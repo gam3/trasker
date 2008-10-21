@@ -1,14 +1,14 @@
 use strict;
 
-use TTDB::User;
-use TTDB::Project;
-use TTDB::Auto;
+use Tasker::TTDB::User;
+use Tasker::TTDB::Project;
+use Tasker::TTDB::Auto;
 
 use Test::More tests => 1;
 
-our $proj = TTDB::Project->get(id => 2);
-our $user = TTDB::User->get(id => 1);
-our $auto = TTDB::Auto->get(
+our $proj = Tasker::TTDB::Project->get(id => 2);
+our $user = Tasker::TTDB::User->get(id => 1);
+our $auto = Tasker::TTDB::Auto->get(
     user => $user,
     class => 'testme', 
     desktop => 'testme', 

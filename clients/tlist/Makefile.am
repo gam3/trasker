@@ -11,6 +11,9 @@ tlist_SOURCES = addproject.cpp \
 		mytreeview.cpp \
 		notes.cpp \
 		setup.cpp \
+		timeedit.cpp \
+		timemodel.cpp \
+		timeitem.cpp \
 		treeitem.cpp \
 		treemodel.cpp \
 		ttcp.cpp \
@@ -23,6 +26,8 @@ tlist_SOURCES = addproject.cpp \
 		moc_mytreeview.cpp \
 		moc_notes.cpp \
 		moc_setup.cpp \
+		moc_timeedit.cpp \
+		moc_timemodel.cpp \
 		moc_treemodel.cpp \
 		moc_ttcp.cpp \
 		qrc_systray.cpp \
@@ -40,15 +45,17 @@ FORMS  = addproject.ui \
          help.ui \
          mainwindow.ui \
          notes.ui \
+	 timeedit.ui \
          setup.ui
 
 addproject.h : ui_addproject.h
 auto_select.h : ui_auto_select.h
-help.h : ui_help.h
 error.h : ui_error.h
+help.h : ui_help.h
 mainwindow.h : ui_mainwindow.h
-setup.h : ui_setup.h
 notes.h : ui_notes.h
+setup.h : ui_setup.h
+timeedit.h : ui_timeedit.h
 
 DIST          = tlist.pro
 
@@ -62,6 +69,7 @@ connection.o : connection.h connection.cpp setup.h
 help.o : help.cpp help.h
 mainwindow.o : mainwindow.cpp mainwindow.h notes.h help.h setup.h auto_select.h addproject.h error.h
 main.o : mainwindow.h cmdline.h
+timeedit.o : timeedit.cpp timeedit.h
 
 ui_%.h : %.ui
 	$(UIC) $< -o $@

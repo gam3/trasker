@@ -1,5 +1,30 @@
 #!@PERL@
 
+=head1 NAME
+
+ taskerd
+
+=head1 SYNOPSIS
+
+ taskerd --config /etc/tasker.conf
+
+=head1 DESCRIPTION
+
+ eg:
+   tskserver.pl
+   tskserver --server=tskserver
+
+=head1 OPTIONS
+
+ --versions   print Modules, Perl, OS, Program info
+ --debug 0    don't print debugging information (default)
+ --debug 1    print debugging information
+
+ --help      print Options and Arguments instead
+ --man       print complete man page
+
+=cut
+
 use strict;
 use POSIX ;
 use Socket;
@@ -7,6 +32,8 @@ use IO::Socket;
 use IO::Socket::SSL;
 use IO::Select;
 use Params::Validate qw (validate);
+
+use Tasker::Date;
 
 use Fcntl qw(F_GETFL F_SETFL O_NONBLOCK O_NDELAY);
 
@@ -74,42 +101,38 @@ sub get_user
     $user;
 }
 
+=head1 API
+
+The first step is that the server sends a version number;
+
+The client should then authorize the user.
+
+=cut
+
 our $cmd_hash = {
-    "authorize" => \&authorize,		# get authorization for client
+    "addauto"=> \&addauto,
     "addtask" => \&addtask,		# add a task for a user
+    "authorize" => \&authorize,		# get authorization for client
     "change" => \&change,		# change current project
     "clients" => \&clients,		# list clients
     "desktop" => \&desktop,
+    "getauto" => \&getauto,
     "gettime" => \&gettime,
     "help" => \&help,
-    "note" => \&note,
     "nop" => \&nop,
+    "note" => \&note,
+    "ping" => \&ping,
     "project" => \&project,
     "push" => \&xpush,
     "quit" => \&quit,
+    "setauto"=> \&setauto,
+    "times" => \&times,
     "tracker" => \&tracker,
     "track" => \&track,
-    "user" => \&user,
     "update" => \&update,
+    "user" => \&user,
     "xtracker" => \&xtracker,
-    "getauto" => \&getauto,
-    "setauto"=> \&setauto,
-    "addauto"=> \&addauto,
-    "ping" => \&ping,
 };
-
-sub help()
-{
-    my $client = shift;
-    print($client <<EOP);
-You may need to authorize before you can use the folloing commands:
-
-user\t{username}/{password}
-change\t{project id}
-track "user" [on|off]
-EOP
-    '';
-}
 
 sub nop
 {
@@ -180,6 +203,15 @@ sub authorize
 	}
     }
 }
+
+
+=head2 addtask 
+
+ addtask user projectId a user, parent_id name description
+
+Create a new task for the user.
+
+=cut
 
 sub addtask
 {
@@ -253,12 +285,70 @@ sub gettime
     undef;
 }
 
+sub help()
+{
+    my $client = shift;
+    print($client <<EOP);
+You may need to authorize before you can use the folloing commands:
+
+user\t{username}/{password}
+change\t{project id}
+track "user" [on|off]
+EOP
+    '';
+}
+
+=head2 quit 
+
+Have the server close the connection to the client
+
+  quit
+
+=cut
+
 sub quit
 {
     my $client = shift;
     print($client "Bye, bye.\n");
     'QUIT';
 }
+
+=head2 times
+
+ times user day
+
+=cut
+
+sub times
+{
+    my $client = shift;
+    my $data = shift;
+    my $userid = shift;
+    my $data = shift;
+
+    my $user = get_user($userid, $client);
+
+    my @times = $user->times(date => Tasker::Date->today());
+
+    for my $ts (@times) {
+	printf($client qq(timeslice\t%s\t%d\t%d\t%d\t%s\t%s\t%s\n),
+	    $userid,
+	    $ts->id,
+	    $ts->project_id,
+	    $ts->auto_id,
+	    '"' . $ts->from . '"',
+	    $ts->start_time->mysql,
+	    $ts->duration->mysql);
+    }
+}
+
+=head2 track 
+
+Follow the focus
+
+  track {user}
+
+=cut
 
 sub track
 {
@@ -325,6 +415,12 @@ sub getauto()
     '';
 }
 
+=head2 setauto 
+
+  addauto userid host class name role title desktop
+
+=cut
+
 sub setauto()
 {
     my $client = shift;
@@ -342,13 +438,6 @@ sub setauto()
     my $title = shift;
     my $desktop = shift;
 
-print STDERR "host $host\n";
-print STDERR "class $host\n";
-print STDERR "name $host\n";
-print STDERR "role $host\n";
-print STDERR "title $host\n";
-print STDERR "desktop $host\n";
-
     if (my $pid = $user->auto_set_project(
 		    host => $host,
 		    desktop => $desktop,
@@ -363,6 +452,12 @@ print "OK\n";
 print "FAIL\n";
     }
 }
+
+=head2 addauto 
+
+ addauto user projectId host class name role title desktop
+
+=cut
 
 sub addauto()
 {
@@ -398,6 +493,10 @@ sub addauto()
     print($client "accept_select\tOK\n");
 }
 
+=head2 tracker 
+
+=cut
+
 sub tracker
 {
     my $client = shift;
@@ -407,7 +506,7 @@ sub tracker
 
     my $user = get_user($userid, $client);
 
-    if (0) {
+    if (1) {
 	printf("%s %s dsk %s win %s host (%s) name (%s) class (%s) role (%s) title (%s)\n",
 	       $host1, $idle, $desktop, $window, $host, $name, $class, $role, $title);
     }
@@ -793,103 +892,50 @@ $0 = "taskerd";
 main;
 
 __END__
-=head1 NAME
 
- tskserver.pl
+=head2 authorize 
 
-=head1 SYNOPSIS
+=head2 change 
 
- tskserver.pl
+=head2 clients 
 
-=head1 DESCRIPTION
+=head2 desktop 
 
- asdf
-
- eg:
-   tskserver.pl
-   tskserver --server=tskserver
-
-=head1 OPTIONS
-
- --versions   print Modules, Perl, OS, Program info
- --debug 0    don't print debugging information (default)
- --debug 1    print debugging information
-
- --help      print Options and Arguments instead
- --man       print complete man page
-
-=head1 API
-
-The first step is that the server sends a version number;
-
-The client should then authorize the user.
-
-=over 
-
-=item addauto 
-
-  addauto userid  host class name role title desktop
-
-=item addtask 
-
-=item authorize 
-
-=item change 
-
-=item clients 
-
-=item desktop 
-
-=item getauto 
+=head2 getauto 
 
 [user project_id]
 
-=item gettime 
+=head2 gettime 
 
    gettime I<user> I<project_id>
 
-=item help 
+=head2 help 
 
-=item nop 
+=head2 nop 
 
 This echos I<string> if included, else it does nothing. 
 
   nop I<string>
 
-=item note
+=head2 note
 
 This addes a note to the database with the current time. It is attached
 to a project.  Project 0 being a global project.
 
   note I<user> I<project_id | 0> I<string>
 
-=item project 
+=head2 project 
 
-=item push 
+=head2 push 
 
-=item quit 
+=head2 setauto 
 
-Have the server close the connection to the client
 
-  quit
+=head2 update 
 
-=item setauto 
+=head2 user 
 
-=item track 
-
-Follow the focus
-
-  track {user}
-
-=item tracker 
-
-=item update 
-
-=item user 
-
-=item xtracker 
-
-=back
+=head2 xtracker 
 
 =head1 AUTHOR
 

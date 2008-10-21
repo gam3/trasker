@@ -53,10 +53,10 @@ sub time
     my $self = shift;
     if ((my @date) = ($self->{data}{time} =~ /(\d*):(\d*):(\d*)/)) {
 warn " @date ";        
-	return Date::Calc::MySQL->new([1], 0, 0, 0, @date);
+	return Tasker::Date->new([1], 0, 0, 0, @date);
     } else {
 warn '0';        
-        return Date::Calc::MySQL->new([1], 0, 0, 0, 0, 0, 0);
+        return Tasker::Date->new([1], 0, 0, 0, 0, 0, 0);
     }
 }
 
@@ -87,7 +87,7 @@ sub print
    print $self->active ? 'a' : 'b';
 }
 
-use Date::Calc::MySQL;
+use Tasker::Date;
 use Date::ICal;
 
 sub ical_start

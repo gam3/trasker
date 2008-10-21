@@ -278,6 +278,7 @@ SQL
 
         if ($rows == 1) {
             ($id, $current_project_id, $type, $old_rid) = ($sths->fetchrow_array);
+
             if ($project_id == $id) {
 #               warn("Not updating $id == $project_id");
                 $dbh->rollback;
@@ -697,6 +698,55 @@ SQL
     return bless({ %p, data => $data, date => $start }, 'Tasker::TTDB::Time');
 }
 
+sub times
+{
+    my $self = shift;
+    my %p = validate(@_, {
+        date => {
+	    isa => 'Tasker::Date',
+	},
+    });
+    my $dbh = get_dbh();
+    my $date_clause;
+    my @args = ();
+    if ($p{date}) {
+	$date_clause = <<EOP;
+and start_time < ? and end_time >= ?
+EOP
+        push(@args, ($p{date} + 1)->mysql);
+        push(@args, ($p{date} + 0)->mysql);
+    }
+
+    my $sth = $dbh->prepare(<<SQL);
+select timeslice.id,
+       users.name as user_name,
+       project.id as project_id,
+       project.name as project_name,
+       start_time,
+       end_time,
+       auto_id,
+       host,
+       'eof'
+  from timeslice, project, users
+ where users.id = timeslice.user_id
+   and project.id = project_id
+   $date_clause
+ order by start_time
+ limit 100
+SQL
+
+    $sth->execute(@args);
+
+    my @data;
+
+    require Tasker::TTDB::TimeSlice;
+
+    while (my $data = $sth->fetchrow_hashref()) {
+	push(@data, bless { data => $data, id => $data->{id} }, 'Tasker::TTDB::TimeSlice');
+    }
+
+    @data;
+}
 
 1;
 __END__
@@ -785,6 +835,10 @@ Return information about a give day for the user.
 Return information about a give range of days for the user.
 
 =item get_timeslices_for_day
+
+=item times
+
+Get the timeslices for a given period
 
 =back
 

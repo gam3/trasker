@@ -19,6 +19,7 @@ use Date::Calc::MySQL;
 sub new
 {
     my $class = shift;
+
     my %p = validate(@_, {
         note => 1,
         type => {
@@ -26,7 +27,6 @@ sub new
 	},
         time => {
 	    optional => 1,
-	    isa => "Date::Calc",
 	},
         user => {
 	    optional => 1,
@@ -38,7 +38,12 @@ sub new
 	},
 	user_id => 0,
 	project_id => 0,
+	id => 0,
     });
+    if (defined $p{time} && !ref($p{time})) {
+        require Tasker::Date;
+        $p{time} = Tasker::Date->new($p{time});
+    }
 
     bless { %p }, $class;
 }
@@ -61,7 +66,9 @@ sub get
 
     $sth->execute($p{id});
 
-    map({bless $_, 'Tasker::TTDB::Note'} @{$sth->fetchall_arrayref({})});
+#    map({bless $_, 'Tasker::TTDB::Note'} @{$sth->fetchall_arrayref({})});
+
+    return $class->new($sth->fetchrow_hashref());
 }
 
 sub create
@@ -74,7 +81,7 @@ sub create
 
     my $st;
 
-    my $st_id = $dbh->prepare(qq/select nextval('note_id_seq')/);
+    my $st_id = $dbh->prepare(qq/select nextval('notes_id_seq')/);
 
     my @extra = ();
 
@@ -89,15 +96,20 @@ sub create
     }
 
     eval {
-	$st->execute($self->type, $user_id, $project_id, $self->note, @extra);
+	$st->execute($self->type, $user_id, $project_id, $self->text, @extra);
     }; if ($@) {
 	$dbh->rollback;
 	die $@;
     } else {
 	$dbh->commit or die $dbh->errstr();
     }
+    $st->execute();
 
-    $self;
+    use Data::Dumper;
+    $st_id->execute();
+    $self->{id} = $st_id->fetchrow();
+
+    return $self;
 }
 
 sub time

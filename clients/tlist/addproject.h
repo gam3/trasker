@@ -18,7 +18,7 @@ public:
     void setProjectName(const QString &name);
 
 private slots:
-    void add_note();
+    void add_project();
     void show_help();
 private:
     TTCP *ttcp;

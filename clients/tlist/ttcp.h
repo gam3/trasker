@@ -43,6 +43,10 @@ public slots:
     //! Change the current project
     void setProject(int);
 
+    void getTimes(void);
+    void getTimes(QDate);
+    void getTimes(QDate, QDate);
+
 signals:
     void accept_note(QString name);
     void accept_project(QString name);
@@ -56,6 +60,7 @@ signals:
     void project(QString name, QString action);
     void settime(int project_id, QTime time, QTime atime);
     void update_all();
+    void add_timeslice( QString user, int timeclice_id, int project_id, int auto_id, QString from, QDateTime startTime, QTime duration);
 
 public:
     void sendMessage(const QString &message);

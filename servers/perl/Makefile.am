@@ -4,6 +4,7 @@ noinst_DATA = .made_test
 
 all-am: Build
 	./Build
+	./Build html
 
 check: Build
 	./Build test

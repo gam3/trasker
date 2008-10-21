@@ -101,21 +101,18 @@ void Connection::processReadyRead()
     if (cstate == WaitingForGreeting) {
         if (!readProtocolHeader())
             return;
-cerr << "ok: " << cstate << endl;
     } else 
     if (cstate == WaitingForAuthorized) {
         if (!readProtocolHeader())
 	    return;
 	cstate = ReadyForUse;
         emit readyForUse();
-cerr << "ok: " << cstate << endl;
     } else
     if (cstate == ReadyForUse ) {
 	while (canReadLine()) {
 	    processData();
 	};
     } else {
-cerr << "error: " << cstate << endl;
        exit(1); 
     }
 }
@@ -234,8 +231,6 @@ void Connection::reConnect()
     const qint16 port = settings.value("port", 8000).toInt();
     const bool ssl = settings.value("ssl", true).toBool();
     settings.endGroup();
-
-    cerr << qPrintable(host) << ":" << port << endl;
 
     connectionTimer.start();
 

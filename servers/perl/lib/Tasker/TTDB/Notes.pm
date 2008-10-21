@@ -23,16 +23,16 @@ sub new
     my %p = validate(@_, {
         date => {
 	    optional => 1,
-	    isa => 'Date::Calc::MySQL',
+	    isa => 'Tasker::Date',
 	},
 	today => 0,
         start_time => {
 	    optional => 1,
-	    isa => 'Date::Calc::MySQL',
+	    isa => 'Tasker::Date',
 	},
         end_time => {
 	    optional => 1,
-	    isa => 'Date::Calc::MySQL',
+	    isa => 'Tasker::Date',
 	},
 	project_ids => {
 	    optional => 1,

@@ -3,10 +3,10 @@ use strict;
 use Test::More tests => 4;
 
 BEGIN {
-    use_ok('TTDB::Projects');
+    use_ok('Tasker::TTDB::Projects');
 };
 
-my $projects = TTDB::Projects->get();
+my $projects = Tasker::TTDB::Projects->get();
 
 my $count;
 

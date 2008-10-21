@@ -126,6 +126,13 @@ sub user
     shift->{user};
 }
 
+sub project_id
+{
+    my $self = shift;
+ 
+    $self->{data}{project_id}
+}
+
 sub project
 {
     my $self = shift;
@@ -302,6 +309,18 @@ sub notes
         start_time => $self->start_time,
         end_time => $self->end_time,
     );
+}
+
+sub auto_id
+{
+    my $self = shift;
+    $self->{auto_id};
+}
+
+sub from
+{
+    my $self = shift;
+    $self->{from};
 }
 
 1;

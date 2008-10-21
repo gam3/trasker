@@ -12,6 +12,9 @@
 
 #include <iostream>
 
+using std::cerr;
+using std::endl;
+
 #include <QtGui>
 
 #include "mainwindow.h"
@@ -19,6 +22,7 @@
 #include "addproject.h"
 #include "auto_select.h"
 #include "error.h"
+#include "timeedit.h"
 
 #include "treemodel.h"
 #include "treeitem.h"
@@ -43,6 +47,7 @@ MainWindow::MainWindow(TTCP *ttcp, QWidget *parent)
     QIcon icon = QIcon(":/pics/active-icon-0.xpm");
 
     trayIconMenu->addAction(selectCurrentAction);
+    trayIconMenu->addAction(timeEditAction);
     trayIconMenu->addAction(minimizeAction);
     trayIconMenu->addAction(maximizeAction);
     trayIconMenu->addAction(restoreAction);
@@ -124,6 +129,9 @@ MainWindow::MainWindow(TTCP *ttcp, QWidget *parent)
     addTaskW = new AddProject();
     addAutoSelW = new AddAuto(ttcp);
     errorWin = new ErrorWindow(this);
+    timeEditWin = new TimeEdit(ttcp, this);
+    
+    connect(timeEditAction, SIGNAL(triggered()), timeEditWin, SLOT(myShow()));
 }
 
 #if defined (Q_WS_X11)
@@ -324,6 +332,8 @@ void MainWindow::exposeCurrentProject()
 
     const QModelIndex &item = model->getCurrentIndex();
 
+    show();
+
     view->scrollTo(item, QAbstractItemView::PositionAtCenter);
 }
 
@@ -374,6 +384,10 @@ void MainWindow::createActions()
     autoAction->setShortcut(tr("Ctrl+A"));
 
     connect(autoAction, SIGNAL(triggered()), this, SLOT(p_auto()));
+
+    timeEditAction = new QAction(tr("Edit Times"), this);
+
+    connect(timeEditAction, SIGNAL(triggered()), this, SLOT(timeEdit()));
 }
 
 void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason)
@@ -418,6 +432,7 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
     QMenu quickMenu;
 
     quickMenu.addAction(selectCurrentAction);
+    quickMenu.addAction(timeEditAction);
     quickMenu.addAction(minimizeAction);
     quickMenu.addAction(maximizeAction);
     quickMenu.addAction(restoreAction);
@@ -578,6 +593,13 @@ void MainWindow::p_auto()
 	addAutoSelW->setProjectName(projItem->getName());
 	addAutoSelW->show();
     }
+}
+
+void MainWindow::timeEdit()
+{
+    cerr << "This is not used" << endl;
+//   ttcp->gettime();
+//    timeEditWin->show();
 }
 
 Project *MainWindow::getProject(int projId) {

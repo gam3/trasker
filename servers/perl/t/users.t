@@ -3,9 +3,9 @@ use strict;
 use Test::More tests => 2;
 
 BEGIN {
-    use_ok('TTDB::Users');
+    use_ok('Tasker::TTDB::Users');
 };
 
-our $users = TTDB::Users->new();
+our $users = Tasker::TTDB::Users->new();
 
 is($users->entries(), 2, 'two users');

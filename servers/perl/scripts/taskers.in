@@ -1,0 +1,140 @@
+#!@PERL@
+use strict;                  # avoid d'oh! bugs
+use warnings;
+
+use Data::Dumper;
+use Config::Simple;
+
+use Tasker::Date;
+use Tasker::TTDB::Times;
+
+=head1 NAME
+
+taskers
+
+=head1 SYNOPSIS
+
+ taskers [cmd] 
+
+=head1 DESCRIPTION
+
+This is the server command line based program.
+
+=cut 
+
+use Getopt::Long;            # support options+arguments
+use Pod::Usage;              # avoid redundant &Usage()
+
+my $opt_debug   = 0;
+my ($opt_help, $opt_man, $opt_versions);
+my $conf_file   = "/etc/tasker.conf";
+
+GetOptions(
+  'debug=i'   => \$opt_debug,
+  'help!'     => \$opt_help,
+  'man!'      => \$opt_man,
+  'versions!' => \$opt_versions,
+  'conf=s'    => \$conf_file,
+) or pod2usage(-verbose => 1) && exit;
+
+#pod2usage(-verbose => 1) && exit if ($opt_debug !~ /^[01]$/);
+#pod2usage(-verbose => 1) && exit if defined $opt_help;
+#pod2usage(-verbose => 2) && exit if defined $opt_man;
+
+# Check this last to avoid parsing options as Places,
+#   and so don't override $opt_man verbose level
+
+our $command = shift @ARGV;
+
+#pod2usage(-verbose => 1) && exit unless $command;
+
+END {
+  if(defined $opt_versions) {
+    print
+      "\nModules, Perl, OS, Program info:\n",
+      "  Weather::Underground  $Weather::Underground::VERSION\n",
+      "  Pod::Usage            $Pod::Usage::VERSION\n",
+      "  Getopt::Long          $Getopt::Long::VERSION\n",
+      "  strict                $strict::VERSION\n",
+      "  Perl                  $]\n",
+      "  OS                    $^O\n",
+      "  wunderg.pl            \@VERSION\@\n",
+      "  $0\n",
+      "\n\n";
+  }
+}
+
+=head2 time
+
+=cut
+
+sub time
+{
+    my $dbh = get_dbh();
+
+    my $date = Tasker::Date->today();
+
+    my @times = Tasker::TTDB::Times->get(date => $date);
+
+    for $time (@times) {
+        print $time;
+    }
+}
+
+our $cmd_hash = {
+    "authorize" => \&authorize,		# get authorization for client
+    "addtask" => \&addtask,		# add a task for a user
+    "change" => \&change,		# change current project
+    "clients" => \&clients,		# list clients
+    "desktop" => \&desktop,
+    "gettime" => \&gettime,
+    "help" => \&help,
+    "note" => \&note,
+    "nop" => \&nop,
+    "project" => \&project,
+    "push" => \&xpush,
+    "quit" => \&quit,
+    "time" => \&time,
+    "tracker" => \&tracker,
+    "track" => \&track,
+    "user" => \&user,
+    "update" => \&update,
+    "xtracker" => \&xtracker,
+    "getauto" => \&getauto,
+    "setauto"=> \&setauto,
+    "addauto"=> \&addauto,
+
+};
+
+
+our %Config;
+
+eval {
+    Config::Simple->import_from($conf_file, \%Config);
+};
+
+print Dumper \%Config;
+
+use Tasker::TTDB::DBI qw (dbi_setup get_dbh);
+
+dbi_setup(
+    database => $Config{'Database.database'},
+    user => $Config{'Database.database'},
+    password => $Config{'Database.database'},
+    host => $Config{'Database.host'},
+);
+
+if (my $function = $cmd_hash->{$command}) {
+    my $action;
+    eval {
+	$function->(@ARGV);
+    };
+    if ($@) {
+	print "Error: ", $@;
+    }
+} else {
+    printf "unknown command $command\n";
+}
+
+__END__
+

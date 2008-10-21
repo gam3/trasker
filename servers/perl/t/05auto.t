@@ -2,9 +2,9 @@ use strict;
 
 use Test::More tests => 2;
 
-use TTDB::DBI qw (get_dbh);
+use Tasker::TTDB::DBI qw (get_dbh);
 
-use_ok('TTDB::Auto');
+use_ok('Tasker::TTDB::Auto');
 
 our $dbh = get_dbh;
 
@@ -14,26 +14,26 @@ $dbh->do(qq/SELECT setval('auto_id_seq', 1, false)/);
 
 $dbh->commit;
 
-TTDB::Auto->create(user_id => 1, project_id => 1, host => 'testme');
+Tasker::TTDB::Auto->create(user_id => 1, project_id => 1, host => 'testme');
 
-TTDB::Auto->create(user_id => 1, project_id => 1, name => 'testme');
+Tasker::TTDB::Auto->create(user_id => 1, project_id => 1, name => 'testme');
 
-TTDB::Auto->create(user_id => 1, project_id => 1, class => 'testme');
+Tasker::TTDB::Auto->create(user_id => 1, project_id => 1, class => 'testme');
 
-TTDB::Auto->create(user_id => 1, project_id => 1, role => 'testme');
+Tasker::TTDB::Auto->create(user_id => 1, project_id => 1, role => 'testme');
 
-TTDB::Auto->create(user_id => 1, project_id => 1, title => 'testme');
+Tasker::TTDB::Auto->create(user_id => 1, project_id => 1, title => 'testme');
 
-TTDB::Auto->create(user_id => 1, project_id => 1, desktop => 'testme');
+Tasker::TTDB::Auto->create(user_id => 1, project_id => 1, desktop => 'testme');
 
-TTDB::Auto->create(user_id => 1, project_id => 1,
+Tasker::TTDB::Auto->create(user_id => 1, project_id => 1,
 title => 'testme',
 role => 'testme',
 name => 'testme',
 class => 'testme',
 );
 
-TTDB::Auto->create(user_id => 1, project_id => 1,
+Tasker::TTDB::Auto->create(user_id => 1, project_id => 1,
 title => 'testme',
 role => 'testme',
 name => 'testme',
@@ -41,7 +41,7 @@ class => 'testme',
 desktop => 'testme'
 );
 
-TTDB::Auto->create(user_id => 1, project_id => 1,
+Tasker::TTDB::Auto->create(user_id => 1, project_id => 1,
 title => 'testme',
 role => 'testme',
 name => 'testme',
@@ -50,11 +50,11 @@ desktop => 'testme',
 host => 'testme'
 );
 
-TTDB::Auto->create(user_id => 1, project_id => 1,
+Tasker::TTDB::Auto->create(user_id => 1, project_id => 1,
 title => '% testme %',
 );
 
-my $a = TTDB::Auto->get(user_id => 1,
+my $a = Tasker::TTDB::Auto->get(user_id => 1,
     host => 'testme',
     name => 'testme',
     class => 'testme',
@@ -65,5 +65,5 @@ my $a = TTDB::Auto->get(user_id => 1,
 
 is($a->id, 9);
 
-TTDB::Auto->create(user_id => 1, project_id => 1, host => '%.test.net');
+Tasker::TTDB::Auto->create(user_id => 1, project_id => 1, host => '%.test.net');
 

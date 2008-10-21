@@ -3,10 +3,10 @@ use strict;
 use Test::More tests => 2;
 
 BEGIN {
-    use_ok('TTDB::Project');
+    use_ok('Tasker::TTDB::Project');
 };
 
-use TTDB::DBI qw (get_dbh);
+use Tasker::TTDB::DBI qw (get_dbh);
 
 our $dbh = get_dbh;
 
@@ -21,7 +21,7 @@ $dbh->do(qq/delete from user_project/) or die;
 $dbh->commit;
 
 eval {
-    TTDB::Project->new();
+    Tasker::TTDB::Project->new();
 };
 if ($@) {
     pass('no args');
@@ -29,15 +29,15 @@ if ($@) {
     fail('no args');
 }
 
-our $p1 = TTDB::Project->new(name => 'First', description => 'This is the first project');
+our $p1 = Tasker::TTDB::Project->new(name => 'First', description => 'This is the first project');
 
 $p1->create;
 
-our $p2 = TTDB::Project->new(name => '1.1', description => 'This is the first sub project', parent => $p1);
+our $p2 = Tasker::TTDB::Project->new(name => '1.1', description => 'This is the first sub project', parent => $p1);
 
 $p2->create;
 
-$p1 = TTDB::Project->new(name => 'Second', description => 'This is the second project');
+$p1 = Tasker::TTDB::Project->new(name => 'Second', description => 'This is the second project');
 
 $p1->create;
 

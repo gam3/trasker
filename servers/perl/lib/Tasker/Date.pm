@@ -1,8 +1,11 @@
 use strict;
+use warnings;
 
-package Date::Calc::MySQL;
+package Tasker::Date;
 
-use base 'Date::Calc::Object';
+use Date::Calc::Object;
+
+use base "Date::Calc::Object";
 
 use POSIX qw();
 
@@ -87,6 +90,5 @@ sub strftime
 }
 
 1;
+
 __END__
-
-

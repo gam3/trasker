@@ -1,15 +1,15 @@
 use strict;
 
 use Test::More tests => 2;
-use Date::Calc::MySQL;
-use TTDB::User;
+use Tasker::TTDB::User;
+use Tasker::Date;
 
 BEGIN {
-    use_ok('TTDB::Time');
+    use_ok('Tasker::TTDB::Time');
 };
 
-our $user_A = TTDB::User->get(user => 'bob');
+our $user_A = Tasker::TTDB::User->get(user => 'bob');
 
-my $time = $user_A->day(date => Date::Calc->today());
+my $time = $user_A->day(date => Tasker::Date->today());
 
 ok(1);

@@ -3,11 +3,11 @@ use strict;
 use Test::More tests => 9;
 
 BEGIN {
-    use_ok('TTDB::User');
+    use_ok('Tasker::TTDB::User');
 };
 
 eval {
-    TTDB::User->new();
+    Tasker::TTDB::User->new();
 };
 if ($@) {
     pass('no args');
@@ -15,8 +15,8 @@ if ($@) {
     fail('no args');
 }
 
-our $user_A = TTDB::User->get(user => 'bob');
-our $user_B = TTDB::User->get(id => $user_A->id());
+our $user_A = Tasker::TTDB::User->get(user => 'bob');
+our $user_B = Tasker::TTDB::User->get(id => $user_A->id());
 
 $user_A->set_current_project(project_id => 1, host => 'none');
 

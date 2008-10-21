@@ -36,6 +36,7 @@ class Notes;
 class AddProject;
 class AddAuto;
 class ErrorWindow;
+class TimeEdit;
 
 #include <QMenu>
 
@@ -78,6 +79,7 @@ public slots:
     void p_note();
     void p_auto();
     void p_task();
+    void timeEdit();
 
 private slots:
     void insertChild();
@@ -132,11 +134,13 @@ private:
     QAction *taskAction;
     QAction *autoAction;
     QAction *selectCurrentAction;
+    QAction *timeEditAction;
 
     Notes *addNoteW;
     AddProject *addTaskW;
     AddAuto *addAutoSelW;
     ErrorWindow *errorWin;
+    TimeEdit *timeEditWin;
 
     Project *getProject(int);
 

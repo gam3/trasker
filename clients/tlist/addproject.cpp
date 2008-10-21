@@ -26,7 +26,7 @@ void AddProject::setProjectName(const QString &name)
     Parent_Project->setText("'" + name + "'");
 }
 
-void AddProject::add_note()
+void AddProject::add_project()
 {
 }
 

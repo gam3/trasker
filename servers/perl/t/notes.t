@@ -3,25 +3,25 @@ use strict;
 use Test::More tests => 4;
 use Test::Exception;
 
-use Date::Calc::MySQL;
+use Tasker::Date;
 
 BEGIN {
-    use_ok('TTDB::Notes');
+    use_ok('Tasker::TTDB::Notes');
 };
 
-my $notes = TTDB::Notes->new();
+my $notes = Tasker::TTDB::Notes->new();
 
 $notes->entries;
 
-$notes = TTDB::Notes->new(today => 1);
+$notes = Tasker::TTDB::Notes->new(today => 1);
 
-is(scalar $notes->entries, 2, 'today');
+is(scalar $notes->entries, 3, 'today');
 
-$notes = TTDB::Notes->new(date => Date::Calc::MySQL->new(2006, 1, 1));
+$notes = Tasker::TTDB::Notes->new(date => Tasker::Date->new(2006, 1, 1));
 
 is(scalar $notes->entries, 0, '2006-01-01');
 
-$notes = TTDB::Notes->new(date => Date::Calc::MySQL->new(2006, 1, 02));
+$notes = Tasker::TTDB::Notes->new(date => Tasker::Date->new(2006, 1, 2));
 
 is(scalar $notes->entries, 0, '2006-01-02');
 

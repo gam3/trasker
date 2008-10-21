@@ -1,0 +1,12 @@
+Document: tasker
+Title: Debian tasker Manual
+Author: G. Allen Morris III
+Abstract: This manual describes what tasker is
+ and how it can be used to track your tasks.
+Section: unknown
+
+Format: pdf
+Files: /usr/share/doc/tasker/tasker.pdf.gz
+
+Format: HTML
+Index: /usr/share/doc/tasker/tasker.html
