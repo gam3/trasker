@@ -11,12 +11,10 @@ AM_INIT_AUTOMAKE
 dnl
 
 AC_PROG_PERL_VERSION(5.6.0)
-AC_PROG_PERL_MODULES(TTDB::DBI IO::Socket::SSL Params::Validate Net::TCPwrappers, ,AC_MSG_WARN(Need some Perl modules))
+AC_PROG_PERL_MODULES( IO::Socket::SSL Params::Validate Net::TCPwrappers, ,AC_MSG_WARN(Need some Perl modules))
 
-AC_PROG_PERL_MODULES(TTDB::User TTDB::Project, ,AC_MSG_WARN(Need some Perl modules))
+AC_ARG_VAR([BUILDFLAGS], [Flags passed to Build.PL])
 
-dnl
-
-AC_CONFIG_FILES([Makefile perl/Makefile perl/Build.PL perl/scripts/taskerd ])
+AC_CONFIG_FILES([Makefile perl/Makefile perl/Build.PL perl/scripts/taskerd perl/scripts/taskers ])
 
 AC_OUTPUT

@@ -22,7 +22,7 @@ use Carp qw (croak);
 
 use Tasker::TTDB::DBI qw (get_dbh dbi_setup);
 
-use Date::Calc::MySQL;
+use Tasker::Date;
 
 use Params::Validate qw( validate validate_pos SCALAR BOOLEAN HASHREF OBJECT );
 
@@ -235,8 +235,8 @@ sub week
     });
     my $date = $p{date};
 
-    my $start = Date::Calc::MySQL->new($date->date);
-    my $end = Date::Calc::MySQL->new(($date + 7)->date);
+    my $start = Tasker::Date->new($date->date);
+    my $end = Tasker::Date->new(($date + 7)->date);
 
     my @project_ids = ( $self->project->id );
     if ($p{all}) {
@@ -262,8 +262,8 @@ sub day
     my $date = $p{date};
 
 
-    my $start = Date::Calc::MySQL->new($date->date);
-    my $end = Date::Calc::MySQL->new(($date + 1)->date);
+    my $start = Tasker::Date->new($date->date);
+    my $end = Tasker::Date->new(($date + 1)->date);
 
     my @project_ids = ( $self->project->id );
 
@@ -277,8 +277,8 @@ sub day
 	uids => [ $self->user->id ],
 	pids => [ @project_ids ],
     );
-    my $duration = Date::Calc::MySQL->new($dur->{data}{time});
-    my $max = Date::Calc::MySQL->new(1, 0, 0, 0);
+    my $duration = Tasker::Date->new($dur->{data}{time});
+    my $max = Tasker::Date->new(1, 0, 0, 0);
 
 die 'bad duration' if $duration > $max;
     $dur;
@@ -290,7 +290,7 @@ sub get_time
     my $id = $self->project->id();
 
     if ($get_time->{'time'} && time - $get_time->{'time'} < 5) {
-	return $get_time->{data}{$id} || Date::Calc::MySQL->new([1], 0, 0, 0, 0,0,0);
+	return $get_time->{data}{$id} || Tasker::Date->new([1], 0, 0, 0, 0,0,0);
     }
 
     my $dbh = get_dbh();
@@ -314,14 +314,14 @@ SQL
     $get_time->{time} = time();
     while (my $row = $sth->fetchrow_arrayref) {
 	my $time = $row->[1];
-	my $ntime = Date::Calc::MySQL->new([1], 0, 0, 0, split(':', $time));
+	my $ntime = Tasker::Date->new([1], 0, 0, 0, split(':', $time));
 	if (defined($row->[0])) {
 	    $get_time->{data}{$row->[0]} = $ntime;
 	} else {
 	    $get_time->{data}{0} = $ntime;
 	}
     }
-    $get_time->{data}{$id} || Date::Calc::MySQL->new([1], 0, 0, 0, 0, 0, 0);
+    $get_time->{data}{$id} || Tasker::Date->new([1], 0, 0, 0, 0, 0, 0);
 }
 
 sub time

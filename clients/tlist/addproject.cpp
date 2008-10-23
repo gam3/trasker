@@ -13,21 +13,41 @@
  * \author G. Allen Morris III
  */
 
+#include <iostream>
+
+using std::cerr;
+using std::endl;
+
 #include "addproject.h"
 #include "ttcp.h"
+#include "project.h"
 
-AddProject::AddProject(QWidget *parent) : QDialog(parent)
+AddProject::AddProject(const TTCP *ttcp_in, QWidget *parent) : QDialog(parent), ttcp(ttcp_in)
 {
     setupUi(this);
+
+/*
+    connect(buttonOk, SIGNAL(clicked()), 
+            this, SLOT(add_project()));
+*/
 }
 
-void AddProject::setProjectName(const QString &name)
+void AddProject::setParentProject(const Project &parentProject_in)
 {
-    Parent_Project->setText("'" + name + "'");
+    parentProject = &parentProject_in;
+    Parent_Project->setText(parentProject->getName());
 }
 
 void AddProject::add_project()
 {
+    int id = parentProject->getId();
+    QString name(projectName->text());
+    QString desc(projectDescription->toPlainText());
+    projectName->setText("");
+    projectDescription->setPlainText("");
+    if (name.size()) {
+	ttcp->addtask(id, name, desc);
+    }
 }
 
 void AddProject::show_help()

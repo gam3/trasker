@@ -14,7 +14,7 @@ use Tasker::TTDB::DBI qw (get_dbh);
 
 use Params::Validate qw (validate);
 
-use Date::Calc::MySQL;
+use Tasker::Date;
 
 sub new
 {
@@ -41,7 +41,6 @@ sub new
 	id => 0,
     });
     if (defined $p{time} && !ref($p{time})) {
-        require Tasker::Date;
         $p{time} = Tasker::Date->new($p{time});
     }
 
@@ -172,7 +171,7 @@ sub date
 {
     my $self = shift;
 
-    Date::Calc::MySQL->new($self->{time});
+    Tasker::Date->new($self->{time});
 }
 
 sub text

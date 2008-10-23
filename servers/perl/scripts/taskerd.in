@@ -338,7 +338,7 @@ sub times
 	    $ts->auto_id,
 	    '"' . $ts->from . '"',
 	    $ts->start_time->mysql,
-	    $ts->duration->mysql);
+	    $ts->duration);
     }
 }
 

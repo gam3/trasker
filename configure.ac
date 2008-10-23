@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_INIT([tasker],[0.0.1],[tasker-bugs@gam3.net])
-AC_PREREQ(2.59)
+AC_PREREQ(2.61)
 AC_COPYRIGHT([Copyright (c) 2008 G. Allen Morris III])
 AC_CANONICAL_TARGET
 
@@ -51,17 +51,14 @@ if test "x$with_qt4" = "xyes" ; then
 fi
 AM_CONDITIONAL(HAVE_QT4, test "x$with_qt4" = "xyes")
 
-AC_ARG_ENABLE(debug, [AC_HELP_STRING([--enable-debug],
-        [compile with debugging support])], enable_debug=yes, enable_debug=no)
+AC_ARG_ENABLE(debug, [AS_HELP_STRING([--enable-debug],[compile with debugging support])], enable_debug=yes, enable_debug=no)
 
 if test "x$enable_debug" = "xyes" ; then
     AC_DEFINE(DEBUG, 1, [Define if debugging is enabled.])
 fi
 
 if test "x$with_perl" = "xyes" ; then
-    AC_CONFIG_FILES( [ servers/perl/Makefile ] )
-    AC_CONFIG_FILES( [ servers/perl/Build.PL ] )
-    AC_CONFIG_FILES( [ servers/perl/scripts/taskerd ] )
+    AC_CONFIG_SUBDIRS( servers )
 fi
 if test "x$with_x11" = "xyes" ; then
     AC_CONFIG_FILES( [ tasker-x11/configure.ac ] )

@@ -11,7 +11,7 @@ my $builder = Module::Build->new(
     requires => {
         'perl'          => '5.6.0',
     },
-    script_files => [ 'scripts/get_gaim' ],
+    script_files => [ 'scripts/tasker' ],
     build_requires => {
 	'Getopt::Long' => 0,
 	'Pod::Usage' => 0,

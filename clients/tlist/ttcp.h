@@ -40,6 +40,7 @@ public slots:
     void gettime(int projId);
     void getauto(int projId);
     void addnote(int projId, const QString &note) const;
+    void addtask(int parentId, const QString &name, const QString &desc) const;
     //! Change the current project
     void setProject(int);
 
@@ -60,7 +61,7 @@ signals:
     void project(QString name, QString action);
     void settime(int project_id, QTime time, QTime atime);
     void update_all();
-    void add_timeslice( QString user, int timeclice_id, int project_id, int auto_id, QString from, QDateTime startTime, QTime duration);
+    void add_timeslice( QString user, int timeclice_id, int project_id, int auto_id, QString from, QDateTime startTime, QString duration);
 
 public:
     void sendMessage(const QString &message);

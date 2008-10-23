@@ -96,7 +96,7 @@
     </item>
    </layout>
   </widget>
-  <widget class="QLineEdit" name="lineEdit1" >
+  <widget class="QLineEdit" name="projectName" >
    <property name="geometry" >
     <rect>
      <x>160</x>
@@ -122,7 +122,7 @@
     <bool>false</bool>
    </property>
    <property name="buddy" >
-    <cstring>lineEdit1</cstring>
+    <cstring>projectName</cstring>
    </property>
   </widget>
   <widget class="QLabel" name="textLabel4" >
@@ -157,7 +157,7 @@
     <bool>false</bool>
    </property>
    <property name="buddy" >
-    <cstring>plainTextEdit</cstring>
+    <cstring>projectDescription</cstring>
    </property>
   </widget>
   <widget class="QLabel" name="Parent_Project" >
@@ -189,7 +189,7 @@
     <bool>false</bool>
    </property>
   </widget>
-  <widget class="QPlainTextEdit" name="plainTextEdit" >
+  <widget class="QPlainTextEdit" name="projectDescription" >
    <property name="geometry" >
     <rect>
      <x>160</x>
@@ -203,8 +203,8 @@
  <layoutdefault spacing="6" margin="11" />
  <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
  <tabstops>
-  <tabstop>lineEdit1</tabstop>
-  <tabstop>plainTextEdit</tabstop>
+  <tabstop>projectName</tabstop>
+  <tabstop>projectDescription</tabstop>
   <tabstop>buttonOk</tabstop>
   <tabstop>buttonCancel</tabstop>
   <tabstop>buttonHelp</tabstop>
@@ -247,7 +247,7 @@
    <sender>buttonHelp</sender>
    <signal>clicked()</signal>
    <receiver>AddProject</receiver>
-   <slot>accept()</slot>
+   <slot>show_help()</slot>
    <hints>
     <hint type="sourcelabel" >
      <x>31</x>

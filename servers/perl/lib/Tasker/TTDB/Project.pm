@@ -15,7 +15,6 @@ package Tasker::TTDB::Project;
 use Tasker::TTDB::DBI qw (get_dbh);
 
 use Tasker::TTDB::Projects;
-use Date::Calc::MySQL;
 
 our $VERSION = '0.001';
 
@@ -322,7 +321,7 @@ sub get_time
     my $id = $self->id();
 
     if (time - $get_time->{time} < 1) {
-	return $get_time->{data}->{$id} || Date::Calc::MySQL->new([1], 0, 0, 0, 0,0,0);
+	return $get_time->{data}->{$id} || Tasker::Date->new([1], 0, 0, 0, 0,0,0);
     }
     $get_time->{data} = {};
 
@@ -364,11 +363,11 @@ SQL
     while (my $row = $sth->fetchrow_arrayref) {
 	my $time = $row->[1];
 
-	my $ntime = Date::Calc::MySQL->new([1], 0, 0, 0, split(':', $time));
+	my $ntime = Tasker::Date->new([1], 0, 0, 0, split(':', $time));
 	$get_time->{data}->{$row->[0]} = $ntime;
     }
     $get_time->{time} = time();
-    $get_time->{data}->{$id} || Date::Calc::MySQL->new([1], 0, 0, 0, 0, 0, 0);
+    $get_time->{data}->{$id} || Tasker::Date->new([1], 0, 0, 0, 0, 0, 0);
 }
 
 sub get_alltime
@@ -387,7 +386,7 @@ sub get_times
     my $id = $self->id();
 
     if (time - $get_time->{time} < 1) {
-	return $get_time->{data}->{$id} || Date::Calc::MySQL->new([1], 0, 0, 0, 0,0,0);
+	return $get_time->{data}->{$id} || Tasker::Date->new([1], 0, 0, 0, 0,0,0);
     }
 
     my $dbh = get_dbh();
@@ -406,11 +405,11 @@ SQL
 
     while (my $row = $sth->fetchrow_arrayref) {
 	my $time = $row->[1];
-	my $ntime = Date::Calc::MySQL->new([1], 0, 0, 0, split(':', $time));
+	my $ntime = Tasker::Date->new([1], 0, 0, 0, split(':', $time));
 	$get_time->{data}->{$row->[0]} = $ntime;
     }
     $get_time->{time} = time();
-    $get_time->{data}->{$id} || Date::Calc::MySQL->new([1], 0, 0, 0, 0, 0, 0);
+    $get_time->{data}->{$id} || Tasker::Date->new([1], 0, 0, 0, 0, 0, 0);
 }
 
 =item children_ids
@@ -509,7 +508,7 @@ sub notes
     my $self = shift;
     my %p = validate(@_, {
         date => {
-	   isa => [ qw(  Date::Calc::MySQL) ],
+	   isa => [ qw( Tasker::Date ) ],
 	},
 	all => 0,
     });

@@ -102,16 +102,16 @@ sub id
 sub start_time
 {
     my $self = shift;
-    require Date::Calc::MySQL;
+    require Tasker::Date;
 
-    Date::Calc::MySQL->new($self->{data}{start_time});
+    Tasker::Date->new($self->{data}{start_time});
 }
 
 sub end_time
 {
     my $self = shift;
 
-    $self->{data}{end_time} ? Date::Calc::MySQL->new($self->{data}{end_time}) : Date::Calc::MySQL->now();
+    $self->{data}{end_time} ? Tasker::Date->new($self->{data}{end_time}) : Tasker::Date->now();
 }
 
 sub duration
@@ -207,7 +207,7 @@ SQL
 
     $st->execute($start, $end, $user_id);
 
-    my @ids = map({ { %$_, start_time => Date::Calc::MySQL->new($_->{start_time}), end_time => Date::Calc::MySQL->new($_->{end_time}), } } @{$st->fetchall_arrayref({})});
+    my @ids = map({ { %$_, start_time => Tasker::Date->new($_->{start_time}), end_time => Tasker::Date->new($_->{end_time}), } } @{$st->fetchall_arrayref({})});
 
     my $ins = 0;
     for my $ts (@ids) {

@@ -126,12 +126,16 @@ MainWindow::MainWindow(TTCP *ttcp, QWidget *parent)
 
     addNoteW = new Notes(ttcp, this);
     connect(ttcp, SIGNAL(accept_note(const QString &)), addNoteW, SLOT(notesDone(const QString &)));
-    addTaskW = new AddProject();
-    addAutoSelW = new AddAuto(ttcp);
+    addTaskW = new AddProject(ttcp, this);
+    addAutoSelW = new AddAuto(ttcp, this);
     errorWin = new ErrorWindow(this);
     timeEditWin = new TimeEdit(ttcp, this);
     
     connect(timeEditAction, SIGNAL(triggered()), timeEditWin, SLOT(myShow()));
+
+    connect(ttcp, SIGNAL(connected()),
+            timeEditWin, SLOT(myShow()));
+
 }
 
 #if defined (Q_WS_X11)
@@ -574,7 +578,7 @@ void MainWindow::p_task()
     if (action) {
 	int projId =  qVariantValue<int>(action->data());
 	Project *projItem = getProject(projId);
-	addTaskW->setProjectName(projItem->getName());
+	addTaskW->setParentProject(*projItem);
 	addTaskW->show();
     }
 }

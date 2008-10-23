@@ -10,18 +10,20 @@
 #include "ui_addproject.h"
 
 class TTCP;
+class Project;
 
 class AddProject : public QDialog, private Ui::AddProject {
     Q_OBJECT
 public:
-    AddProject(QWidget *parent = 0);
-    void setProjectName(const QString &name);
+    AddProject(const TTCP *ttcp, QWidget *parent = 0);
+    void setParentProject(const Project &proj);
 
 private slots:
     void add_project();
     void show_help();
 private:
-    TTCP *ttcp;
+    const TTCP *ttcp;
+    const Project *parentProject;
 };
 
 #endif

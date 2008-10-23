@@ -12,7 +12,7 @@ if HAVE_QT4
 endif
 
 if HAVE_PERL
-    MAYBE_OPT += servers/perl
+    MAYBE_OPT += servers
 endif
  
 SUBDIRS = docs ${MAYBE_OPT}

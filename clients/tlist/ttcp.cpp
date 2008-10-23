@@ -74,6 +74,7 @@ void TTCP::readyForUse()
 QTime totime(QString timestring)
 {
     QStringList tlist = timestring.split(":");
+
     QTime time(tlist[0].toInt(), tlist[1].toInt(), tlist[2].toInt());
     return time;
 }
@@ -129,6 +130,19 @@ void TTCP::addnote(const int id, const QString &note) const
     s.replace("\n", "\\n");
     connection->write(QString("note\t%1\t%2\t%3\n").arg(user).arg(id).arg(s).toAscii());
 }
+void TTCP::addtask(int parentId, const QString &name, const QString &desc) const
+{
+    QString d(desc);
+    d.replace("\\", "\\\\");
+    d.replace("\t", "\\t");
+    d.replace("\n", "\\n");
+    QString n(name);
+    d.replace("\\", "\\\\");
+    d.replace("\t", "\\t");
+    d.replace("\n", "\\n");
+
+    connection->write(QString("addtask\t%1\t%2\t%3\t%4\n").arg(user).arg(parentId).arg(n).arg(d).toAscii());
+}
 
 void TTCP::setAuto(QString &host, QString &classN, QString &name, QString &role, QString &title, QString &desktop)
 {
@@ -141,7 +155,7 @@ void TTCP::newCommand(const QStringList &list)
 	emit add_entry(list[2], list[3].toInt(), list[4].toInt(), totime(list[5]),  totime(list[6]));
     } else if (list[0] == "timeslice") {
         if (list.size() == 8) {
-	    emit add_timeslice(list[1], list[2].toInt(), list[3].toInt(), list[4].toInt(), list[5], todatetime(list[6]), totime(list[7]));
+	    emit add_timeslice(list[1], list[2].toInt(), list[3].toInt(), list[4].toInt(), list[5], todatetime(list[6]), list[7]);
 	} else {
 	    cerr << "timeslice: wrong # of arguments " << list.size() << endl;
 	}

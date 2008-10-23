@@ -1,3 +1,9 @@
 
   xprop -f tkr_PROJECT 8t -set tkr_PROJECT {project}
 
+A client/server task tracking system.
+
+Tasker is a client/server based task and time tracking system. It has
+several tools that help you track the tasks that you are doing and has
+tools to allow you to create invoices from that data.
+
