@@ -81,6 +81,7 @@ sub entries
     }
 
     $sql .= ' order by time';
+    $sql .= ' limit 100';
 
     my $sth = $dbi->prepare($sql);
 
@@ -103,14 +104,7 @@ Tasker::TTDB::Notes - Perl interface to the tasker notes table
 
   use Tasker::TTDB::Notes;
 
-  $auto = Tasker::TTDB::Notes->new(user => $user);
-
-  $auto = Tasker::TTDB::Notes->create(
-      project_id => I<projectid>,
-      user_id => I<userid>,
-  );
-
-  $auto = Tasker::TTDB::Notes->get(user => $user, role => 'bob'):
+  $auto = Tasker::TTDB::Notes->entries(user => $user, role => 'bob'):
 
 =head1 DESCRIPTION
 

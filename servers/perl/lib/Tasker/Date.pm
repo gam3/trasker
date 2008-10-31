@@ -9,6 +9,28 @@ use base "Date::Calc::Object";
 
 use POSIX qw();
 
+=head1 NAME
+
+Tasker::Date - The time and date function for Tasker
+
+=head1 SYNOPSIS
+
+  use Tasker::Date;
+
+  $date = Tasker::Date->today();
+
+=head2 Constructors
+
+=head3 today($)
+
+=over
+
+return todays date.
+
+=back
+
+=cut
+
 sub today
 {
     shift->SUPER::today(@_);

@@ -144,8 +144,8 @@ SQL
     while (my $row = $st->fetchrow_hashref()) {
         push @ret, Tasker::TTDB::TimeSlice->new(
            %$row,
-           start_time => Date::Calc::MySQL->new($row->{start_time}),
-           end_time => Date::Calc::MySQL->new($row->{end_time}),
+           start_time => Tasker::Date->new($row->{start_time}),
+           end_time => Tasker::Date->new($row->{end_time}),
         );
     }
 
@@ -594,7 +594,7 @@ sub day
     die 'need a date' if ($p{date}->is_long);
 
     my $day = $p{date};
-    my $start = Date::Calc::MySQL->new($day->date, 0,0,0);
+    my $start = Tasker::Date->new($day->date, 0,0,0);
 
     my $dbh = get_dbh();
 
@@ -652,9 +652,9 @@ sub days
     die 'need a date' if ($p{end}->is_long);
 
     my $day = $p{start};
-    my $start = Date::Calc::MySQL->new($day->date, 0,0,0);
+    my $start = Tasker::Date->new($day->date, 0,0,0);
     $day = $p{end};
-    my $end = Date::Calc::MySQL->new($day->date, 0,0,0);
+    my $end = Tasker::Date->new($day->date, 0,0,0);
 
     my $dbh = get_dbh();
 

@@ -36,6 +36,8 @@ MainWindow::MainWindow(TTCP *ttcp, QWidget *parent)
 {
     setupUi(this);
 
+    recentMenuClean = false;
+
     readSettings();
 
     createActions();
@@ -132,10 +134,6 @@ MainWindow::MainWindow(TTCP *ttcp, QWidget *parent)
     timeEditWin = new TimeEdit(ttcp, this);
     
     connect(timeEditAction, SIGNAL(triggered()), timeEditWin, SLOT(myShow()));
-
-    connect(ttcp, SIGNAL(connected()),
-            timeEditWin, SLOT(myShow()));
-
 }
 
 #if defined (Q_WS_X11)
@@ -264,6 +262,9 @@ void MainWindow::updateActions()
             statusBar()->showMessage(tr("Position: (%1,%2) in top level").arg(row).arg(column));
     }
 }
+
+/*
+ */
 
 void MainWindow::setCurrent(int id)
 {
@@ -411,18 +412,20 @@ void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason)
         break;
     case QSystemTrayIcon::MiddleClick:
         {
-	    QMenu *quickMenu = new QMenu;
+	    QMenu *recentMenu = new QMenu;
 
-	    int numRecentFiles = qMin(recent_projects.size(), 10);
+            if (!recentMenuClean) {
+		int numRecentFiles = qMin(recent_projects.size(), 10);
 
-            for (int i = 0; i < numRecentFiles; ++i) {
-	        TreeItem *item = view->model()->getItem(recent_projects[i]);
-		quickMenu->addAction(item->getName());
-	    }
+		for (int i = 0; i < numRecentFiles; ++i) {
+		    TreeItem *item = view->model()->getItem(recent_projects[i]);
+		    recentMenu->addAction(item->getName());
+		}
 
-	    quickMenu->addSeparator();
-	    quickMenu->addAction("Hello");
-	    quickMenu->exec( QCursor::pos() );
+		recentMenu->addSeparator();
+		recentMenu->addAction("Hello");
+            }
+	    recentMenu->exec( QCursor::pos() );
 	}
         break;
     default:
@@ -497,6 +500,7 @@ bool MainWindow::visible()
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
+    cerr << "MainWindow::closeEvent" << endl;
     if (1) {
         writeSettings();
         event->accept();
@@ -601,9 +605,6 @@ void MainWindow::p_auto()
 
 void MainWindow::timeEdit()
 {
-    cerr << "This is not used" << endl;
-//   ttcp->gettime();
-//    timeEditWin->show();
 }
 
 Project *MainWindow::getProject(int projId) {

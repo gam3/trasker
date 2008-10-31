@@ -1,4 +1,5 @@
 use strict;
+use warnings;
 
 ## @file
 ## The Auto object package
@@ -13,6 +14,13 @@ use strict;
 # The Auto object contains information that is used to auto select the
 # project that is being worked on from information gleaned from the user interface.
 #
+
+=head1 NAME
+
+Tasker::TTDB::Auto - Perl interface to the tasker auto table
+
+=cut
+
 package Tasker::TTDB::Auto;
 
 use Tasker::TTDB::DBI qw (get_dbh);
@@ -23,6 +31,37 @@ use Tasker::TTDB::Project;
 use Params::Validate;
 
 use Carp qw (croak);
+
+=head1 SYNOPSIS
+
+  use Tasker::TTDB::Auto;
+
+  $auto = Tasker::TTDB::Auto->new(user => $user);
+
+  $auto = Tasker::TTDB::Auto->create(
+      project_id => I<projectid>,
+      user_id => I<userid>,
+  );
+
+  $auto = Tasker::TTDB::Auto->get(user => $user, role => 'bob'):
+
+=head1 Constructor
+
+=head2 get($, @args)
+
+Find a auto entry for the give arguments.
+
+ Tasker::Tasker::TTDB::Auto->get(
+     user => $user,
+     host => '%',
+     name => '%',
+     class => '%',
+     role => '%',
+     title => '%',
+     desktop => '%',
+ )
+
+=cut
 
 sub get
 {
@@ -40,7 +79,7 @@ sub get
     my $dbh = get_dbh;
 
     croak(q(Can't have both user and user_id)) if (defined $p{user} && defined $p{user_id});
-    croak(q(Must have an user or user_id)) if (!defined $p{user} && !defined $p{user_id});
+    croak(q(Must have a user or user_id)) if (!defined $p{user} && !defined $p{user_id});
 
     if (my $user = $p{user}) {
         $p{user_id} = $user->id;
@@ -81,6 +120,10 @@ SQL
 
     return bless { %$data }, $class;
 }
+
+=head3 new
+
+=cut
 
 sub new
 {
@@ -136,6 +179,10 @@ sub new
 
     return bless { %p }, $class;
 }
+
+=head3 new
+
+=cut
 
 sub create
 {
@@ -301,28 +348,6 @@ sub delete
     }
 }
 
-1;
-__END__
-
-=head1 NAME
-
-Tasker::TTDB::Auto - Perl interface to the tasker auto table
-
-=head1 SYNOPSIS
-
-  use Tasker::TTDB::Auto;
-
-  $auto = Tasker::TTDB::Auto->new(user => $user);
-
-  $auto = Tasker::TTDB::Auto->create(
-      project_id => I<projectid>,
-      user_id => I<userid>,
-  );
-
-  $auto = Tasker::TTDB::Auto->get(user => $user, role => 'bob'):
-
-=head2 Constructor
-
 =over
 
 =item new
@@ -372,6 +397,12 @@ This will delete the object from the database.
 =item title
 
 =back
+
+=cut
+
+1;
+__END__
+
 
 =head1 DESCRIPTION
 

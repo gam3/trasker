@@ -427,6 +427,19 @@ sub get_notes
     )->entries;
 }
 
+sub get_selects
+{
+    my $self = shift;
+    require Tasker::TTDB::Autos;
+    my %p = validate(@_, {
+    });
+
+    Tasker::TTDB::Autos->new(
+	user_ids => [ $self->user->id ],
+	project_ids => [ $self->project->id ],
+    )->entries;
+}
+
 sub add_task
 {
     my $self = shift;
@@ -628,6 +641,10 @@ The rate of pay for the project/user
 =item get_notes
 
 Get the notes for a user/project
+
+=item get_selects
+
+Get the selects for a user/project
 
 =back
 

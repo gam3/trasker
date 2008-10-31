@@ -1,4 +1,4 @@
 
-SUBDIRS = perl
 
+SUBDIRS = perl
 

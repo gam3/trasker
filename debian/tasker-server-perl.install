@@ -1,5 +1,6 @@
 usr/bin/taskerd
 usr/share/man/man1/taskerd.1p
+usr/share/man/man3/Tasker::Date.3pm
 usr/share/man/man3/Tasker::TTDB::Auto.3pm
 usr/share/man/man3/Tasker::TTDB::DBI.3pm
 usr/share/man/man3/Tasker::TTDB::Note.3pm
@@ -12,6 +13,7 @@ usr/share/man/man3/Tasker::TTDB::TimeSlice.3pm
 usr/share/man/man3/Tasker::TTDB::User.3pm
 usr/share/man/man3/Tasker::TTDB::UserProject.3pm
 usr/share/man/man3/Tasker::TTDB::UserProjects.3pm
+usr/share/perl5/Tasker/Date.pm
 usr/share/perl5/Tasker/TTDB
 usr/share/perl5/Tasker/TTDB/Auto.pm
 usr/share/perl5/Tasker/TTDB/DBI.pm

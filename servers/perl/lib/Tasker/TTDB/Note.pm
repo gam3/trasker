@@ -111,6 +111,13 @@ sub create
     return $self;
 }
 
+sub id
+{
+    my $self = shift;
+
+    $self->{id};
+}
+
 sub time
 {
     my $self = shift;

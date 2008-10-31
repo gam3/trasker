@@ -145,7 +145,10 @@ private:
     Project *getProject(int);
 
     /// A list of recently used projects
+    QMenu *recentMenu;
+    bool recentMenuClean;
     QList<int> recent_projects;
+    QAction *recentProjectActions[10];
 };
 
 #endif
