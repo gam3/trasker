@@ -4,6 +4,8 @@ use Module::Build;
 
 # Tasker version @VERSION@
 
+# @pkgvdatadir@
+
 my $builder = Module::Build->new(
     module_name   => 'Tasker',
     dist_version => '@VERSION@',

@@ -1,3 +1,9 @@
+tasker (0.0.2) unstable; urgency=low
+
+  * Added create database scripts and other code needed to install Tasker
+
+ -- G. Allen Morris III <gam3@gam3.net>  Tue, 14 Oct 2008 16:48:21 -0400
+
 tasker (0.0.1) unstable; urgency=low
 
   * Initial release

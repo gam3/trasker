@@ -16,3 +16,5 @@ tasker : tasker.texi
 
 tasker.html : tasker.texi
 	texi2html $<
+
+CLEANFILES = tasker/*.html

@@ -68,7 +68,8 @@ if test "x$with_qt4" = "xyes" ; then
     AC_CONFIG_SUBDIRS( clients/tlist )
 fi
 
-AC_CONFIG_FILES([ Makefile docs/Makefile ])
+AC_CONFIG_FILES([ Makefile docs/configure.ac ])
+AC_CONFIG_SUBDIRS( docs )
 
 AC_OUTPUT
 

@@ -2,140 +2,71 @@
 -- PostgreSQL database dump
 --
 
-SET client_encoding = 'UNICODE';
+SET client_encoding = 'UTF8';
 SET check_function_bodies = false;
+SET client_min_messages = warning;
 
-SET SESSION AUTHORIZATION 'gam3';
+--
+-- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: postgres
+--
+
+COMMENT ON SCHEMA public IS 'Standard public schema';
+
+
+--
+-- Name: plpgsql; Type: PROCEDURAL LANGUAGE; Schema: -; Owner: 
+--
+
+CREATE PROCEDURAL LANGUAGE plpgsql;
+
 
 SET search_path = public, pg_catalog;
 
---
--- TOC entry 27 (OID 212354)
--- Name: plpgsql_call_handler(); Type: FUNC PROCEDURAL LANGUAGE; Schema: public; Owner: gam3
---
+SET default_tablespace = '';
 
-CREATE FUNCTION plpgsql_call_handler() RETURNS language_handler
-    AS '$libdir/plpgsql', 'plpgsql_call_handler'
-    LANGUAGE c;
-
-
-SET SESSION AUTHORIZATION DEFAULT;
+SET default_with_oids = false;
 
 --
--- TOC entry 26 (OID 212355)
--- Name: plpgsql; Type: PROCEDURAL LANGUAGE; Schema: public; Owner: 
---
-
-CREATE TRUSTED PROCEDURAL LANGUAGE plpgsql HANDLER plpgsql_call_handler;
-
-
-SET SESSION AUTHORIZATION 'postgres';
-
---
--- TOC entry 4 (OID 2200)
--- Name: public; Type: ACL; Schema: -; Owner: postgres
---
-
-REVOKE ALL ON SCHEMA public FROM PUBLIC;
-GRANT ALL ON SCHEMA public TO PUBLIC;
-
-
-SET SESSION AUTHORIZATION 'gam3';
-
---
--- TOC entry 5 (OID 26068)
--- Name: auto_id_seq; Type: SEQUENCE; Schema: public; Owner: gam3
---
-
-CREATE SEQUENCE auto_id_seq
-    INCREMENT BY 1
-    NO MAXVALUE
-    NO MINVALUE
-    CACHE 1;
-
-
---
--- TOC entry 6 (OID 26076)
--- Name: notes_id_seq; Type: SEQUENCE; Schema: public; Owner: gam3
---
-
-CREATE SEQUENCE notes_id_seq
-    INCREMENT BY 1
-    NO MAXVALUE
-    NO MINVALUE
-    CACHE 1;
-
-
---
--- TOC entry 7 (OID 26088)
--- Name: project_id_seq; Type: SEQUENCE; Schema: public; Owner: gam3
---
-
-CREATE SEQUENCE project_id_seq
-    INCREMENT BY 1
-    NO MAXVALUE
-    NO MINVALUE
-    CACHE 1;
-
-
---
--- TOC entry 10 (OID 26090)
--- Name: project_hide_constraint_table; Type: TABLE; Schema: public; Owner: gam3
---
-
-CREATE TABLE project_hide_constraint_table (
-    hide character varying(3) NOT NULL
-);
-
-
---
--- TOC entry 8 (OID 26108)
--- Name: timeslice_id_seq; Type: SEQUENCE; Schema: public; Owner: gam3
---
-
-CREATE SEQUENCE timeslice_id_seq
-    INCREMENT BY 1
-    NO MAXVALUE
-    NO MINVALUE
-    CACHE 1;
-
-
---
--- TOC entry 11 (OID 26110)
--- Name: timeslice_temporary_constraint_table; Type: TABLE; Schema: public; Owner: gam3
---
-
-CREATE TABLE timeslice_temporary_constraint_table (
-    "temporary" character varying(9) NOT NULL
-);
-
-
---
--- TOC entry 12 (OID 96421)
--- Name: auto; Type: TABLE; Schema: public; Owner: gam3
+-- Name: auto; Type: TABLE; Schema: public; Owner: tasker; Tablespace: 
 --
 
 CREATE TABLE auto (
-    id integer DEFAULT nextval('auto_id_seq'::text) NOT NULL,
+    id integer DEFAULT nextval(('auto_id_seq'::text)::regclass) NOT NULL,
     project_id integer,
     user_id integer,
     host character varying(40),
     name character varying(30),
     "class" character varying(30),
-    role character varying(30) DEFAULT '%'::character varying,
+    "role" character varying(30) DEFAULT '%'::character varying,
     title character varying(100),
     desktop character varying(30),
     presidence integer
 );
 
 
+ALTER TABLE public.auto OWNER TO tasker;
+
 --
--- TOC entry 13 (OID 96444)
--- Name: notes; Type: TABLE; Schema: public; Owner: gam3
+-- Name: billable_info; Type: TABLE; Schema: public; Owner: tasker; Tablespace: 
+--
+
+CREATE TABLE billable_info (
+    id integer NOT NULL,
+    project_id integer,
+    name character varying(60),
+    address text,
+    default_rate money
+);
+
+
+ALTER TABLE public.billable_info OWNER TO tasker;
+
+--
+-- Name: notes; Type: TABLE; Schema: public; Owner: tasker; Tablespace: 
 --
 
 CREATE TABLE notes (
-    id integer DEFAULT nextval('notes_id_seq'::text) NOT NULL,
+    id integer DEFAULT nextval(('notes_id_seq'::text)::regclass) NOT NULL,
     "time" timestamp without time zone,
     "type" integer DEFAULT 1,
     user_id integer DEFAULT 0 NOT NULL,
@@ -144,13 +75,14 @@ CREATE TABLE notes (
 );
 
 
+ALTER TABLE public.notes OWNER TO tasker;
+
 --
--- TOC entry 14 (OID 107044)
--- Name: project; Type: TABLE; Schema: public; Owner: gam3
+-- Name: project; Type: TABLE; Schema: public; Owner: tasker; Tablespace: 
 --
 
 CREATE TABLE project (
-    id integer DEFAULT nextval('project_id_seq'::text) NOT NULL,
+    id integer DEFAULT nextval(('project_id_seq'::text)::regclass) NOT NULL,
     parent_id integer,
     name character varying(30),
     user_id integer,
@@ -159,13 +91,25 @@ CREATE TABLE project (
 );
 
 
+ALTER TABLE public.project OWNER TO tasker;
+
 --
--- TOC entry 15 (OID 107097)
--- Name: timeslice; Type: TABLE; Schema: public; Owner: gam3
+-- Name: project_hide_constraint_table; Type: TABLE; Schema: public; Owner: tasker; Tablespace: 
+--
+
+CREATE TABLE project_hide_constraint_table (
+    hide character varying(3) NOT NULL
+);
+
+
+ALTER TABLE public.project_hide_constraint_table OWNER TO tasker;
+
+--
+-- Name: timeslice; Type: TABLE; Schema: public; Owner: tasker; Tablespace: 
 --
 
 CREATE TABLE timeslice (
-    id integer DEFAULT nextval('timeslice_id_seq'::text) NOT NULL,
+    id integer DEFAULT nextval(('timeslice_id_seq'::text)::regclass) NOT NULL,
     user_id integer,
     project_id integer,
     start_time timestamp without time zone,
@@ -178,9 +122,21 @@ CREATE TABLE timeslice (
 );
 
 
+ALTER TABLE public.timeslice OWNER TO tasker;
+
 --
--- TOC entry 16 (OID 118297)
--- Name: user_project; Type: TABLE; Schema: public; Owner: gam3
+-- Name: timeslice_temporary_constraint_table; Type: TABLE; Schema: public; Owner: tasker; Tablespace: 
+--
+
+CREATE TABLE timeslice_temporary_constraint_table (
+    "temporary" character varying(9) NOT NULL
+);
+
+
+ALTER TABLE public.timeslice_temporary_constraint_table OWNER TO tasker;
+
+--
+-- Name: user_project; Type: TABLE; Schema: public; Owner: tasker; Tablespace: 
 --
 
 CREATE TABLE user_project (
@@ -189,21 +145,123 @@ CREATE TABLE user_project (
 );
 
 
+ALTER TABLE public.user_project OWNER TO tasker;
+
 --
--- TOC entry 17 (OID 118334)
--- Name: users; Type: TABLE; Schema: public; Owner: gam3
+-- Name: users; Type: TABLE; Schema: public; Owner: tasker; Tablespace: 
 --
 
 CREATE TABLE users (
-    id integer DEFAULT nextval('users_id_seq'::text) NOT NULL,
+    id integer DEFAULT nextval(('users_id_seq'::text)::regclass) NOT NULL,
     name character varying(50),
     fullname character varying(50)
 );
 
 
+ALTER TABLE public.users OWNER TO tasker;
+
 --
--- TOC entry 9 (OID 178291)
--- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: gam3
+-- Name: _group_concat(text, text); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION _group_concat(text, text) RETURNS text
+    AS $_$SELECT CASE WHEN $2 IS NULL THEN $1 WHEN $1 IS NULL THEN $2 ELSE $1 || ',' || $2 END;$_$
+    LANGUAGE sql IMMUTABLE;
+
+
+ALTER FUNCTION public._group_concat(text, text) OWNER TO postgres;
+
+--
+-- Name: plpgsql_call_handler(); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION plpgsql_call_handler() RETURNS language_handler
+    AS '$libdir/plpgsql', 'plpgsql_call_handler'
+    LANGUAGE c;
+
+
+ALTER FUNCTION public.plpgsql_call_handler() OWNER TO postgres;
+
+--
+-- Name: group_concat(text); Type: AGGREGATE; Schema: public; Owner: postgres
+--
+
+CREATE AGGREGATE group_concat (
+    BASETYPE = text,
+    SFUNC = _group_concat,
+    STYPE = text
+);
+
+
+ALTER AGGREGATE public.group_concat(text) OWNER TO postgres;
+
+--
+-- Name: auto_id_seq; Type: SEQUENCE; Schema: public; Owner: tasker
+--
+
+CREATE SEQUENCE auto_id_seq
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.auto_id_seq OWNER TO tasker;
+
+--
+-- Name: billable_info_id_seq; Type: SEQUENCE; Schema: public; Owner: tasker
+--
+
+CREATE SEQUENCE billable_info_id_seq
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.billable_info_id_seq OWNER TO tasker;
+
+--
+-- Name: notes_id_seq; Type: SEQUENCE; Schema: public; Owner: tasker
+--
+
+CREATE SEQUENCE notes_id_seq
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.notes_id_seq OWNER TO tasker;
+
+--
+-- Name: project_id_seq; Type: SEQUENCE; Schema: public; Owner: tasker
+--
+
+CREATE SEQUENCE project_id_seq
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.project_id_seq OWNER TO tasker;
+
+--
+-- Name: timeslice_id_seq; Type: SEQUENCE; Schema: public; Owner: tasker
+--
+
+CREATE SEQUENCE timeslice_id_seq
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.timeslice_id_seq OWNER TO tasker;
+
+--
+-- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: tasker
 --
 
 CREATE SEQUENCE users_id_seq
@@ -214,57 +272,17 @@ CREATE SEQUENCE users_id_seq
     CACHE 1;
 
 
---
--- TOC entry 28 (OID 212364)
--- Name: _group_concat(text, text); Type: FUNCTION; Schema: public; Owner: gam3
---
-
-CREATE FUNCTION _group_concat(text, text) RETURNS text
-    AS 'SELECT CASE WHEN $2 IS NULL THEN $1 WHEN $1 IS NULL THEN $2 ELSE $1 || '','' || $2 END;'
-    LANGUAGE sql IMMUTABLE;
-
+ALTER TABLE public.users_id_seq OWNER TO tasker;
 
 --
--- TOC entry 29 (OID 212365)
--- Name: group_concat(text); Type: AGGREGATE; Schema: public; Owner: gam3
+-- Name: id; Type: DEFAULT; Schema: public; Owner: tasker
 --
 
-CREATE AGGREGATE group_concat (
-    BASETYPE = text,
-    SFUNC = _group_concat,
-    STYPE = text
-);
+ALTER TABLE billable_info ALTER COLUMN id SET DEFAULT nextval('billable_info_id_seq'::regclass);
 
 
 --
--- TOC entry 22 (OID 212366)
--- Name: uk_notes_time_user; Type: INDEX; Schema: public; Owner: gam3
---
-
-CREATE UNIQUE INDEX uk_notes_time_user ON notes USING btree ("time", note);
-
-
---
--- TOC entry 18 (OID 26092)
--- Name: project_hide_constraint_table_pkey; Type: CONSTRAINT; Schema: public; Owner: gam3
---
-
-ALTER TABLE ONLY project_hide_constraint_table
-    ADD CONSTRAINT project_hide_constraint_table_pkey PRIMARY KEY (hide);
-
-
---
--- TOC entry 19 (OID 26112)
--- Name: timeslice_temporary_constraint_table_pkey; Type: CONSTRAINT; Schema: public; Owner: gam3
---
-
-ALTER TABLE ONLY timeslice_temporary_constraint_table
-    ADD CONSTRAINT timeslice_temporary_constraint_table_pkey PRIMARY KEY ("temporary");
-
-
---
--- TOC entry 20 (OID 96425)
--- Name: auto_pkey; Type: CONSTRAINT; Schema: public; Owner: gam3
+-- Name: auto_pkey; Type: CONSTRAINT; Schema: public; Owner: tasker; Tablespace: 
 --
 
 ALTER TABLE ONLY auto
@@ -272,8 +290,7 @@ ALTER TABLE ONLY auto
 
 
 --
--- TOC entry 21 (OID 96452)
--- Name: notes_pkey; Type: CONSTRAINT; Schema: public; Owner: gam3
+-- Name: notes_pkey; Type: CONSTRAINT; Schema: public; Owner: tasker; Tablespace: 
 --
 
 ALTER TABLE ONLY notes
@@ -281,8 +298,15 @@ ALTER TABLE ONLY notes
 
 
 --
--- TOC entry 23 (OID 107050)
--- Name: project_pkey; Type: CONSTRAINT; Schema: public; Owner: gam3
+-- Name: project_hide_constraint_table_pkey; Type: CONSTRAINT; Schema: public; Owner: tasker; Tablespace: 
+--
+
+ALTER TABLE ONLY project_hide_constraint_table
+    ADD CONSTRAINT project_hide_constraint_table_pkey PRIMARY KEY (hide);
+
+
+--
+-- Name: project_pkey; Type: CONSTRAINT; Schema: public; Owner: tasker; Tablespace: 
 --
 
 ALTER TABLE ONLY project
@@ -290,8 +314,7 @@ ALTER TABLE ONLY project
 
 
 --
--- TOC entry 24 (OID 107104)
--- Name: timeslice_pkey; Type: CONSTRAINT; Schema: public; Owner: gam3
+-- Name: timeslice_pkey; Type: CONSTRAINT; Schema: public; Owner: tasker; Tablespace: 
 --
 
 ALTER TABLE ONLY timeslice
@@ -299,8 +322,15 @@ ALTER TABLE ONLY timeslice
 
 
 --
--- TOC entry 25 (OID 118337)
--- Name: user_pkey; Type: CONSTRAINT; Schema: public; Owner: gam3
+-- Name: timeslice_temporary_constraint_table_pkey; Type: CONSTRAINT; Schema: public; Owner: tasker; Tablespace: 
+--
+
+ALTER TABLE ONLY timeslice_temporary_constraint_table
+    ADD CONSTRAINT timeslice_temporary_constraint_table_pkey PRIMARY KEY ("temporary");
+
+
+--
+-- Name: user_pkey; Type: CONSTRAINT; Schema: public; Owner: tasker; Tablespace: 
 --
 
 ALTER TABLE ONLY users
@@ -308,8 +338,94 @@ ALTER TABLE ONLY users
 
 
 --
--- TOC entry 32 (OID 107052)
--- Name: project_hide_constraint; Type: FK CONSTRAINT; Schema: public; Owner: gam3
+-- Name: uk_notes_time_user; Type: INDEX; Schema: public; Owner: tasker; Tablespace: 
+--
+
+CREATE UNIQUE INDEX uk_notes_time_user ON notes USING btree ("time", note);
+
+
+--
+-- Name: fk_auto_project_id; Type: FK CONSTRAINT; Schema: public; Owner: tasker
+--
+
+ALTER TABLE ONLY auto
+    ADD CONSTRAINT fk_auto_project_id FOREIGN KEY (project_id) REFERENCES project(id);
+
+
+--
+-- Name: fk_auto_user_id; Type: FK CONSTRAINT; Schema: public; Owner: tasker
+--
+
+ALTER TABLE ONLY auto
+    ADD CONSTRAINT fk_auto_user_id FOREIGN KEY (user_id) REFERENCES users(id);
+
+
+--
+-- Name: fk_notes_project_id; Type: FK CONSTRAINT; Schema: public; Owner: tasker
+--
+
+ALTER TABLE ONLY notes
+    ADD CONSTRAINT fk_notes_project_id FOREIGN KEY (project_id) REFERENCES project(id);
+
+
+--
+-- Name: fk_notes_user_id; Type: FK CONSTRAINT; Schema: public; Owner: tasker
+--
+
+ALTER TABLE ONLY notes
+    ADD CONSTRAINT fk_notes_user_id FOREIGN KEY (user_id) REFERENCES users(id);
+
+
+--
+-- Name: fk_timeslice_auto_id; Type: FK CONSTRAINT; Schema: public; Owner: tasker
+--
+
+ALTER TABLE ONLY timeslice
+    ADD CONSTRAINT fk_timeslice_auto_id FOREIGN KEY (auto_id) REFERENCES auto(id);
+
+
+--
+-- Name: fk_timeslice_project_id; Type: FK CONSTRAINT; Schema: public; Owner: tasker
+--
+
+ALTER TABLE ONLY timeslice
+    ADD CONSTRAINT fk_timeslice_project_id FOREIGN KEY (project_id) REFERENCES project(id);
+
+
+--
+-- Name: fk_timeslice_revert_to; Type: FK CONSTRAINT; Schema: public; Owner: tasker
+--
+
+ALTER TABLE ONLY timeslice
+    ADD CONSTRAINT fk_timeslice_revert_to FOREIGN KEY (revert_to) REFERENCES timeslice(id);
+
+
+--
+-- Name: fk_timeslice_user_id; Type: FK CONSTRAINT; Schema: public; Owner: tasker
+--
+
+ALTER TABLE ONLY timeslice
+    ADD CONSTRAINT fk_timeslice_user_id FOREIGN KEY (user_id) REFERENCES users(id);
+
+
+--
+-- Name: fk_user_project_project_id; Type: FK CONSTRAINT; Schema: public; Owner: tasker
+--
+
+ALTER TABLE ONLY user_project
+    ADD CONSTRAINT fk_user_project_project_id FOREIGN KEY (project_id) REFERENCES project(id);
+
+
+--
+-- Name: fk_user_project_user_id; Type: FK CONSTRAINT; Schema: public; Owner: tasker
+--
+
+ALTER TABLE ONLY user_project
+    ADD CONSTRAINT fk_user_project_user_id FOREIGN KEY (user_id) REFERENCES users(id);
+
+
+--
+-- Name: project_hide_constraint; Type: FK CONSTRAINT; Schema: public; Owner: tasker
 --
 
 ALTER TABLE ONLY project
@@ -317,57 +433,173 @@ ALTER TABLE ONLY project
 
 
 --
--- TOC entry 35 (OID 107106)
--- Name: timeslice_temporary_constraint; Type: FK CONSTRAINT; Schema: public; Owner: gam3
+-- Name: timeslice_temporary_constraint; Type: FK CONSTRAINT; Schema: public; Owner: tasker
 --
 
 ALTER TABLE ONLY timeslice
-    ADD CONSTRAINT timeslice_temporary_constraint FOREIGN KEY ("temporary") REFERENCES timeslice_temporary_constraint_table("temporary");
+    ADD CONSTRAINT timeslice_temporary_constraint FOREIGN KEY (temporary) REFERENCES timeslice_temporary_constraint_table(temporary);
 
 
 --
--- TOC entry 33 (OID 118343)
--- Name: fk_timeslice_user; Type: FK CONSTRAINT; Schema: public; Owner: gam3
+-- Name: public; Type: ACL; Schema: -; Owner: postgres
 --
 
-ALTER TABLE ONLY timeslice
-    ADD CONSTRAINT fk_timeslice_user FOREIGN KEY (user_id) REFERENCES users(id);
-
-
---
--- TOC entry 34 (OID 118347)
--- Name: fk_timeslice_project; Type: FK CONSTRAINT; Schema: public; Owner: gam3
---
-
-ALTER TABLE ONLY timeslice
-    ADD CONSTRAINT fk_timeslice_project FOREIGN KEY (project_id) REFERENCES project(id);
+REVOKE ALL ON SCHEMA public FROM PUBLIC;
+REVOKE ALL ON SCHEMA public FROM postgres;
+GRANT ALL ON SCHEMA public TO postgres;
+GRANT ALL ON SCHEMA public TO PUBLIC;
 
 
 --
--- TOC entry 30 (OID 118351)
--- Name: fk_notes_project; Type: FK CONSTRAINT; Schema: public; Owner: gam3
+-- Name: auto; Type: ACL; Schema: public; Owner: tasker
 --
 
-ALTER TABLE ONLY notes
-    ADD CONSTRAINT fk_notes_project FOREIGN KEY (project_id) REFERENCES project(id);
+REVOKE ALL ON TABLE auto FROM PUBLIC;
+REVOKE ALL ON TABLE auto FROM tasker;
+GRANT INSERT,SELECT,UPDATE,DELETE,REFERENCES,TRIGGER ON TABLE auto TO tasker;
+GRANT INSERT,SELECT,UPDATE,DELETE,REFERENCES,TRIGGER ON TABLE auto TO gam3;
 
 
 --
--- TOC entry 31 (OID 118355)
--- Name: fk_notes_user; Type: FK CONSTRAINT; Schema: public; Owner: gam3
+-- Name: billable_info; Type: ACL; Schema: public; Owner: tasker
 --
 
-ALTER TABLE ONLY notes
-    ADD CONSTRAINT fk_notes_user FOREIGN KEY (user_id) REFERENCES users(id);
+REVOKE ALL ON TABLE billable_info FROM PUBLIC;
+REVOKE ALL ON TABLE billable_info FROM tasker;
+GRANT INSERT,SELECT,UPDATE,DELETE,REFERENCES,TRIGGER ON TABLE billable_info TO tasker;
 
-
-SET SESSION AUTHORIZATION 'postgres';
 
 --
--- TOC entry 3 (OID 2200)
--- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: postgres
+-- Name: notes; Type: ACL; Schema: public; Owner: tasker
 --
 
-COMMENT ON SCHEMA public IS 'Standard public schema';
+REVOKE ALL ON TABLE notes FROM PUBLIC;
+REVOKE ALL ON TABLE notes FROM tasker;
+GRANT INSERT,SELECT,UPDATE,DELETE,REFERENCES,TRIGGER ON TABLE notes TO tasker;
+GRANT INSERT,SELECT,UPDATE,DELETE,REFERENCES,TRIGGER ON TABLE notes TO gam3;
 
+
+--
+-- Name: project; Type: ACL; Schema: public; Owner: tasker
+--
+
+REVOKE ALL ON TABLE project FROM PUBLIC;
+REVOKE ALL ON TABLE project FROM tasker;
+GRANT INSERT,SELECT,UPDATE,DELETE,REFERENCES,TRIGGER ON TABLE project TO tasker;
+GRANT INSERT,SELECT,UPDATE,DELETE,REFERENCES,TRIGGER ON TABLE project TO gam3;
+
+
+--
+-- Name: project_hide_constraint_table; Type: ACL; Schema: public; Owner: tasker
+--
+
+REVOKE ALL ON TABLE project_hide_constraint_table FROM PUBLIC;
+REVOKE ALL ON TABLE project_hide_constraint_table FROM tasker;
+GRANT INSERT,SELECT,UPDATE,DELETE,REFERENCES,TRIGGER ON TABLE project_hide_constraint_table TO tasker;
+GRANT INSERT,SELECT,UPDATE,DELETE,REFERENCES,TRIGGER ON TABLE project_hide_constraint_table TO gam3;
+
+
+--
+-- Name: timeslice; Type: ACL; Schema: public; Owner: tasker
+--
+
+REVOKE ALL ON TABLE timeslice FROM PUBLIC;
+REVOKE ALL ON TABLE timeslice FROM tasker;
+GRANT INSERT,SELECT,UPDATE,DELETE,REFERENCES,TRIGGER ON TABLE timeslice TO tasker;
+GRANT INSERT,SELECT,UPDATE,DELETE,REFERENCES,TRIGGER ON TABLE timeslice TO gam3;
+
+
+--
+-- Name: timeslice_temporary_constraint_table; Type: ACL; Schema: public; Owner: tasker
+--
+
+REVOKE ALL ON TABLE timeslice_temporary_constraint_table FROM PUBLIC;
+REVOKE ALL ON TABLE timeslice_temporary_constraint_table FROM tasker;
+GRANT INSERT,SELECT,UPDATE,DELETE,REFERENCES,TRIGGER ON TABLE timeslice_temporary_constraint_table TO tasker;
+GRANT INSERT,SELECT,UPDATE,DELETE,REFERENCES,TRIGGER ON TABLE timeslice_temporary_constraint_table TO gam3;
+
+
+--
+-- Name: user_project; Type: ACL; Schema: public; Owner: tasker
+--
+
+REVOKE ALL ON TABLE user_project FROM PUBLIC;
+REVOKE ALL ON TABLE user_project FROM tasker;
+GRANT INSERT,SELECT,UPDATE,DELETE,REFERENCES,TRIGGER ON TABLE user_project TO tasker;
+GRANT INSERT,SELECT,UPDATE,DELETE,REFERENCES,TRIGGER ON TABLE user_project TO gam3;
+
+
+--
+-- Name: users; Type: ACL; Schema: public; Owner: tasker
+--
+
+REVOKE ALL ON TABLE users FROM PUBLIC;
+REVOKE ALL ON TABLE users FROM tasker;
+GRANT INSERT,SELECT,UPDATE,DELETE,REFERENCES,TRIGGER ON TABLE users TO tasker;
+GRANT INSERT,SELECT,UPDATE,DELETE,REFERENCES,TRIGGER ON TABLE users TO gam3;
+GRANT SELECT ON TABLE users TO PUBLIC;
+
+
+--
+-- Name: auto_id_seq; Type: ACL; Schema: public; Owner: tasker
+--
+
+REVOKE ALL ON TABLE auto_id_seq FROM PUBLIC;
+REVOKE ALL ON TABLE auto_id_seq FROM tasker;
+GRANT SELECT,UPDATE ON TABLE auto_id_seq TO tasker;
+GRANT SELECT,UPDATE ON TABLE auto_id_seq TO gam3;
+
+
+--
+-- Name: billable_info_id_seq; Type: ACL; Schema: public; Owner: tasker
+--
+
+REVOKE ALL ON TABLE billable_info_id_seq FROM PUBLIC;
+REVOKE ALL ON TABLE billable_info_id_seq FROM tasker;
+GRANT SELECT,UPDATE ON TABLE billable_info_id_seq TO tasker;
+
+
+--
+-- Name: notes_id_seq; Type: ACL; Schema: public; Owner: tasker
+--
+
+REVOKE ALL ON TABLE notes_id_seq FROM PUBLIC;
+REVOKE ALL ON TABLE notes_id_seq FROM tasker;
+GRANT SELECT,UPDATE ON TABLE notes_id_seq TO tasker;
+GRANT SELECT,UPDATE ON TABLE notes_id_seq TO gam3;
+
+
+--
+-- Name: project_id_seq; Type: ACL; Schema: public; Owner: tasker
+--
+
+REVOKE ALL ON TABLE project_id_seq FROM PUBLIC;
+REVOKE ALL ON TABLE project_id_seq FROM tasker;
+GRANT SELECT,UPDATE ON TABLE project_id_seq TO tasker;
+GRANT SELECT,UPDATE ON TABLE project_id_seq TO gam3;
+
+
+--
+-- Name: timeslice_id_seq; Type: ACL; Schema: public; Owner: tasker
+--
+
+REVOKE ALL ON TABLE timeslice_id_seq FROM PUBLIC;
+REVOKE ALL ON TABLE timeslice_id_seq FROM tasker;
+GRANT SELECT,UPDATE ON TABLE timeslice_id_seq TO tasker;
+GRANT SELECT,UPDATE ON TABLE timeslice_id_seq TO gam3;
+
+
+--
+-- Name: users_id_seq; Type: ACL; Schema: public; Owner: tasker
+--
+
+REVOKE ALL ON TABLE users_id_seq FROM PUBLIC;
+REVOKE ALL ON TABLE users_id_seq FROM tasker;
+GRANT SELECT,UPDATE ON TABLE users_id_seq TO tasker;
+GRANT SELECT,UPDATE ON TABLE users_id_seq TO gam3;
+
+
+--
+-- PostgreSQL database dump complete
+--
 

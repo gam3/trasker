@@ -1,22 +1,80 @@
-PERL=/usr/bin/perl
+## Process this file with automake to create Makefile.in
 
-all-local:  Build
-	./Build
-	
-check-local: Build
-	./Build test
+## Copyright (C) 2008  G. Allen Morris III
 
-clean-local:
-	rm -f Makefile.perl Makefile.perl.old Build
-	rm -rf _build blib
+## This program is free software; you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation; either version 2, or (at your option)
+## any later version.
 
-EXTRA_DIST = Doxyfile Build.PL.in PerlDoxyfile README META.yml MANIFEST
-EXTRA_DIST += lib t
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
 
-Build: Build.PL
-	$(PERL) $< ${BUILDFLAGS}
+## You should have received a copy of the GNU General Public License
+## along with this program; if not, write to the Free Software
+## Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+## 02110-1301, USA.
 
-install-exec-local:
-	./Build destdir=${DESTDIR} create_packlist=0 install
+#SUBDIRS = tests
 
+perllibdir = $(pkgvdatadir)/Tasker
+
+bin_SCRIPTS = \
+    scripts/taskerd \
+    scripts/get_gaim \
+    scripts/merge \
+    scripts/taskers
+
+dist_perllib_DATA = \
+    lib/Tasker.pm \
+    lib/Tasker/TTDB/Notes.pm \
+    lib/Tasker/TTDB/Note.pm \
+    lib/Tasker/TTDB/User.pm \
+    lib/Tasker/TTDB/Auto.pm \
+    lib/Tasker/TTDB/UserProjects.pm \
+    lib/Tasker/TTDB/Times.pm \
+    lib/Tasker/TTDB/TimeSlice.pm \
+    lib/Tasker/TTDB/Project.pm \
+    lib/Tasker/TTDB/Users.pm \
+    lib/Tasker/TTDB/DBI.pm \
+    lib/Tasker/TTDB/UserProject.pm \
+    lib/Tasker/TTDB/Time.pm \
+    lib/Tasker/TTDB/Projects.pm \
+    lib/Tasker/TTDB.pm \
+    lib/Tasker/Date.pm
+
+nodist_perllib_DATA =
+
+CLEANFILES = $(nodist_perllib_DATA)
+
+## We can't use configure to do the substitution here; we must do it
+## by hand.  We use a funny notation here to avoid configure
+## substitutions in our text.
+do_subst = in=`echo $@ | sed 's/\.[^.]*$$//'`; sed \
+  -e 's,[@]APIVERSION[@],$(APIVERSION),g' \
+  -e 's,[@]PACKAGE[@],$(PACKAGE),g' \
+  -e 's,[@]PERL[@],$(PERL),g' \
+  -e 's,[@]SHELL[@],$(SHELL),g' \
+  -e 's,[@]VERSION[@],$(VERSION),g' \
+  -e "s,[@]configure_input[@],Generated from $$in.in; do not edit by hand.,g" \
+  -e 's,[@]datadir[@],$(datadir),g'
+
+## This file depends on Makefile so it is rebuilt if $(VERSION),
+## $(datadir) or other do_subst'ituted variables change.
+## Use chmod a-w to prevent people from editing the wrong file by accident.
+#Config.pm: Config.in Makefile
+#        rm -f Config.tmp Config.pm
+#        $(do_subst) $(srcdir)/Config.in >Config.tmp
+#        chmod +x Config.tmp
+#        chmod a-w Config.tmp
+#        mv -f Config.tmp Config.pm
+
+TESTS = \
+   t/00setup.t
+
+EXTRA_DIST = $(bin_SCRIPTS) $(TESTS)
+
+XFAIL_TESTS = bob
 

@@ -769,6 +769,8 @@ The following commands are used to track the actions of a user or resource.
 
 =head3 change 
 
+=over
+
 =item change {user} {projectId}
 
 Change the current project for user to projectid. 
@@ -776,6 +778,8 @@ Change the current project for user to projectid.
 This sets the default project for the user. This will clear the
 project stack. This is normally used by a user interface to change the
 current project.
+
+=back
 
 =cut
 
@@ -798,7 +802,11 @@ sub change
 
 =head3 tracker 
 
+=over
+
 =item tracker {user} {host} {idle} {desktop} {window} {host} {name} {class} {role} {title} {from_id}
+
+=back
 
 =cut
 
