@@ -138,7 +138,7 @@
     <string comment="This is replaced with the project name." >The project</string>
    </property>
    <property name="text" >
-    <string>Project</string>
+    <string>xProject</string>
    </property>
    <property name="wordWrap" >
     <bool>false</bool>

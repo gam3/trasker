@@ -41,6 +41,7 @@ public slots:
     void getauto(int projId);
     void addnote(int projId, const QString &note) const;
     void addtask(int parentId, const QString &name, const QString &desc) const;
+    void addauto(const int id, const QString &host, const QString &classN, const QString &name, const QString &role, const QString &title, const QString &desktop) const;
     //! Change the current project
     void setProject(int);
 

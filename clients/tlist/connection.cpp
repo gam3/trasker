@@ -202,7 +202,6 @@ void Connection::processData()
     pingTimer.start();
 
     if (list[0] == "pong") {
-cerr << "pong" << endl;
         pongTimer.stop();
     } else {
         emit newCommand(list);

@@ -11,11 +11,13 @@
 
 class QProcess;
 class TTCP;
+class Project;
 
 class AddAuto : public QDialog, private Ui::AddAuto {
     Q_OBJECT
 public:
     AddAuto(TTCP *, QWidget *parent = 0);
+    void setProject(const Project &proj);
     void setProjectName(const QString &name);
 
 private slots:
@@ -25,9 +27,13 @@ private slots:
 
     void read();
 
+public slots:
+    void autoDone(QString Check);
+
 private:
     QProcess *process;
     TTCP *ttcp;
+    const Project *project;
 };
 
 #endif

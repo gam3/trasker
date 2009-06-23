@@ -130,6 +130,7 @@ void TTCP::addnote(const int id, const QString &note) const
     s.replace("\n", "\\n");
     connection->write(QString("note\t%1\t%2\t%3\n").arg(user).arg(id).arg(s).toAscii());
 }
+
 void TTCP::addtask(int parentId, const QString &name, const QString &desc) const
 {
     QString d(desc);
@@ -142,6 +143,14 @@ void TTCP::addtask(int parentId, const QString &name, const QString &desc) const
     d.replace("\n", "\\n");
 
     connection->write(QString("addtask\t%1\t%2\t%3\t%4\n").arg(user).arg(parentId).arg(n).arg(d).toAscii());
+}
+
+void TTCP::addauto(const int id, const QString &host, const QString &classN, const QString &name, const QString &role, const QString &title, const QString &desktop) const
+{
+
+    cerr << "asdf" << endl;
+    connection->write(QString("addauto\t%1\t%2\t%3\t%4\t%5\t%6\t%7\t%8\n").arg(user).arg(id).arg(host).arg(classN).arg(name).arg(role).arg(title).arg(desktop).toAscii());
+    cerr << "sdfa" << endl;
 }
 
 void TTCP::setAuto(QString &host, QString &classN, QString &name, QString &role, QString &title, QString &desktop)
@@ -179,6 +188,7 @@ cerr << qPrintable(list[0]) << endl;
     } else if (list[0] == "accept_task") {
 	emit accept_project(list[1]);
     } else if (list[0] == "accept_select") {
+cerr << qPrintable(list[0]) << " -> " << qPrintable(list[1]) << endl;
 	emit accept_select(list[1]);
     } else {
 	printf("TTCP Unknown: '%s'/%d\n", qPrintable(list[0]), list.size() - 1);

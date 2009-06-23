@@ -331,7 +331,7 @@
     </property>
    </item>
   </widget>
-  <widget class="QLabel" name="Project" >
+  <widget class="QLabel" name="projectName" >
    <property name="geometry" >
     <rect>
      <x>20</x>

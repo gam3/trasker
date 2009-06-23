@@ -130,6 +130,7 @@ MainWindow::MainWindow(TTCP *ttcp, QWidget *parent)
     connect(ttcp, SIGNAL(accept_note(const QString &)), addNoteW, SLOT(notesDone(const QString &)));
     addTaskW = new AddProject(ttcp, this);
     addAutoSelW = new AddAuto(ttcp, this);
+    connect(ttcp, SIGNAL(accept_select(const QString &)), addAutoSelW, SLOT(autoDone(const QString &)));
     errorWin = new ErrorWindow(this);
     timeEditWin = new TimeEdit(ttcp, this);
     
@@ -599,6 +600,7 @@ void MainWindow::p_auto()
 	Project *projItem = getProject(projId);
 
 	addAutoSelW->setProjectName(projItem->getName());
+	addAutoSelW->setProject(*projItem);
 	addAutoSelW->show();
     }
 }

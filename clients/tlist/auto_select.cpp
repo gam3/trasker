@@ -16,6 +16,7 @@
 #include <iostream>
 
 #include "auto_select.h"
+#include "project.h"
 #include "ttcp.h"
 
 #include <QProcess>
@@ -26,9 +27,15 @@ AddAuto::AddAuto(TTCP *ttcp, QWidget *parent) : QDialog(parent)
     this->ttcp = ttcp;
 }
 
+void AddAuto::setProject(const Project &proj)
+{
+    projectName->setText(proj.getName());
+    project = &proj;
+}
+
 void AddAuto::setProjectName(const QString &name)
 {
-    Project->setText(name);
+    projectName->setText(name);
 }
 
 void AddAuto::grabClicked()
@@ -48,12 +55,24 @@ void AddAuto::grabClicked()
 
 void AddAuto::setAuto()
 {
+    int id = project->getId();
+    QString host(Host->text());
+    QString class_name(Class->text());
+    QString name(Name->text());
+    QString role(Role->text());
+    QString title(Title->text());
+    QString desktop(Desktop->currentText() + " W ");
 
-std::cerr << "bob" << std::endl;
+    std::cerr << "setAuto" << std::endl;
+
+    ttcp->addauto( id, host, class_name, name, role, title, desktop );
+
+    std::cerr << "exit setAuto" << std::endl;
 }
 
 void AddAuto::buttonHelp_clicked()
 {
+    std::cerr << "help" << std::endl;	
 }
 
 void AddAuto::read()
@@ -96,5 +115,11 @@ void AddAuto::read()
 	}
     }
 }
+
+void AddAuto::autoDone(QString check)
+{
+    hide();
+};
+
 
 /* eof */
