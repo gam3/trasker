@@ -87,13 +87,11 @@ void Connection::timerEvent(QTimerEvent *timerEvent)
 void Connection::sendAuthorize()
 {
     QSettings settings("Tasker", "tlist");
-    settings.beginGroup("Host");
-    const QString host = settings.value("host", "127.0.0.1").toString();
-    const qint16 port = settings.value("port", 8000).toInt();
-    const bool ssl = settings.value("ssl", true).toBool();
+    settings.beginGroup("User");
+    const QString user = settings.value("user", "guest").toString();
+    const QString password = settings.value("password", "guest").toString();
     settings.endGroup();
-
-    write(QByteArray("authorize\tgam3/testme\n"));
+    write(QString("authorize\t%1/%2\n").arg(user).arg(password).toAscii());
 }
 
 void Connection::processReadyRead()
@@ -172,13 +170,16 @@ bool Connection::readProtocolHeader()
 	    break;
 	case WaitingForAuthorized:
 	    if (list[0] == "notauthorized") {
-		exit(1);
+                std::cerr << "Authorization failed!" << std::endl;
+//FIXME Need to pop the setup window
+                exit(1);
+                sendAuthorize();
+                cstate = WaitingForAuthorized;
 	    } else
 	    if (list[0] == "authorized") {
-		std::cerr << "authorized: " << std::endl;
 		cstate = ReadyForUse;
 	    } else {
-cerr << qPrintable(line) << endl;
+                cerr << qPrintable(line) << endl;
 	    }
 	    break;
         default:
