@@ -116,7 +116,8 @@ servers/perl/scripts/taskerd.pl
 servers/perl/scripts/taskers
 servers/perl/temp
 servers/tasker-server-0.0.1.tar.gz
-tasker-0.0.2.tar.gz
+tasker-*.tar.gz
+tasker-*.tar.bz2
 tasker-x11/COPYING
 tasker-x11/INSTALL
 tasker-x11/Makefile
