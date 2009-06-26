@@ -98,6 +98,7 @@ select *
    and ? like role
    and ? like title
    and ? like desktop
+   and enabled
    order by presidence desc
    limit 1
 SQL
