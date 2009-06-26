@@ -56,18 +56,18 @@ void AddAuto::grabClicked()
 void AddAuto::setAuto()
 {
     int id = project->getId();
-    QString host(Host->text());
-    QString class_name(Class->text());
-    QString name(Name->text());
-    QString role(Role->text());
-    QString title(Title->text());
-    QString desktop(Desktop->currentText() + " W ");
 
-    std::cerr << "setAuto" << std::endl;
+// Being checked causes a wild card.  Empty string is wildcard
+//BUG you can't match an empty string!
+
+    QString host(checkBox_host->isChecked() ? "" : Host->text());
+    QString class_name(checkBox_class->isChecked() ? "" : Class->text());
+    QString name(checkBox_name->isChecked() ? "" : Name->text());
+    QString role(checkBox_role->isChecked() ? "" : Role->text());
+    QString title(checkBox_title->isChecked() ? "" : Title->text());
+    QString desktop(checkBox_desktop->isChecked() ? "" : Desktop->currentText());
 
     ttcp->addauto( id, host, class_name, name, role, title, desktop );
-
-    std::cerr << "exit setAuto" << std::endl;
 }
 
 void AddAuto::buttonHelp_clicked()
