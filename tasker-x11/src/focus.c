@@ -496,7 +496,8 @@ static struct option long_options[] = {
     {"pid", 1, NULL, 'P'},
     {"port", 1, NULL, 'p'},
     {"server", 1, NULL, 's'},
-    {"user", 0, NULL, 'u'},
+    {"user", 1, NULL, 'u'},
+    {"login", 1, NULL, 'L'},
     {"verbose", 0, NULL, 'v'},
     {"version", 0, NULL, 'V'},
     {0, 0, 0, 0}
@@ -524,6 +525,7 @@ void usage(char *name)
 		      " -v --verbose               display more information.\n"
 		      " -P --pid {file}            use other than default pid file.\n"
 		      " -l --log {file}            use other than default log file.\n"
+		      " -L --login {u/p}           the authorization string.\n"
 		      " -h --home {path}           use this instead of $HOME for log and pid files.\n"
 		      "\n"
 		      " -? --help     display this help and exit\n"
@@ -579,6 +581,19 @@ void parse_command_line(int argc, char **argv, struct cmdlineopt *opt)
 		log_file = optarg;
 	    } else {
 		usage(argv[0]);
+	    }
+	    break;
+	case 'L':
+	    if (optarg != NULL) {
+		char *ptr;
+//		user = optarg;
+                for (ptr = optarg; *ptr; ptr++) {
+		    printf("%p %c\n", ptr, *ptr);
+		    *ptr = '*';
+		}
+	    } else {
+		usage(argv[0]);
+		exit(0);
 	    }
 	    break;
 	case 's':
@@ -807,16 +822,19 @@ void loop(int rfd, long idletime, char **desktops, int desktopcnt)
 	    char *ptr;
 	    char buffer[1024];
 	    count = -1;
-
 	    ptr = fgets(buffer, 1024, frfd);
+
 	    if (ptr == NULL) {
 		if (errno == 0) {
+		    /* we do not get here until there is a write */
 		    frfd = NULL;
 		    rfd = -1;
 		    fprintf(stderr, "Disconected\n");
 		} else if (errno != EAGAIN) {
 		    perror("Error reading socket");
-		}
+		} /* else {
+		     We got an EAGAIN
+		} */
 	    } else {
 		buffer[strlen(buffer) - 1] = '\0';
 		printf("buffer: %s\n", buffer);
