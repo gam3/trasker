@@ -233,8 +233,8 @@ sub create
         $sth_id = $dbh->prepare("select currval('auto_id_seq')");
     }
     my $sth = $dbh->prepare(<<SQL);
-insert into auto (project_id, user_id, host, name, class, role, title, desktop, presidence)
-          values (         ?,       ?,    ?,    ?,     ?,    ?,     ?,       ?,          ?)
+insert into auto (project_id, user_id, host, name, class, role, title, desktop, presidence, enabled)
+          values (         ?,       ?,    ?,    ?,     ?,    ?,     ?,       ?,          ?, TRUE)
 SQL
 
     $sth->execute(
