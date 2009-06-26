@@ -19,7 +19,7 @@ TreeModel::TreeModel(QObject *parent)
     : QAbstractItemModel(parent)
 {
     rootItem = new TreeItem();
-
+    currentItem = NULL;
     connect(&timer, SIGNAL(timeout()),
             this, SLOT(update_timer()));
     timer.setSingleShot(0);
@@ -67,7 +67,7 @@ QVariant TreeModel::data(const QModelIndex &index, int role) const
     }
     if (role == Qt::TextColorRole)
 	return QVariant();
-    if (role == Qt::DecorationRole)
+    if (role == Qt::DecorationRole) {
         if (index.column() == 0) {
 	    if (item == currentItem) {
 		return QIcon(":/pics/active-icon-0.xpm");
@@ -77,6 +77,7 @@ QVariant TreeModel::data(const QModelIndex &index, int role) const
 	} else {
 	    return QVariant();
 	}
+    }
     if (role == Qt::FontRole)
 	return QVariant();
     if (role == Qt::TextAlignmentRole)
@@ -292,7 +293,7 @@ void TreeModel::add_entry(QString name, int id, int pid, const QTime time, const
         item = getItem(QModelIndex());
         parentIndex = QModelIndex();
     }
-/// FIXME
+//FIXME
     if (parents[id]) {
        return;
     }
