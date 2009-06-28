@@ -45,11 +45,11 @@ main(int argc, char *argv[])
 
     QSettings settings("Tasker", "tlist");
     settings.beginGroup("User");
-    const QString user = settings.value("user", "").toString();
-    const QString password = settings.value("password", "").toString();
+    const QString user = settings.value("user", "gam3").toString();
+    const QString password = settings.value("password", "ab12cd34").toString();
     settings.endGroup();
     settings.beginGroup("Host");
-    const QString host = settings.value("password", "127.0.0.1").toString();
+    const QString host = settings.value("host", "frenchy").toString();
     const qint16 port = settings.value("port", 8000).toInt();
     const bool ssl = settings.value("ssl", true).toBool();
     settings.endGroup();

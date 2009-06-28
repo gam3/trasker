@@ -72,7 +72,7 @@ void AddAuto::setAuto()
 
 void AddAuto::buttonHelp_clicked()
 {
-    std::cerr << "help" << std::endl;	
+//    std::cerr << "help" << std::endl;
 }
 
 void AddAuto::read()

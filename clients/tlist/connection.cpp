@@ -18,9 +18,6 @@
 static const int PongTimeout =   5 * 1000;
 static const int PingInterval =  2 * 1000;
 
-using std::cerr;
-using std::endl;
-
 Connection::Connection(QObject *parent)
     : QSslSocket(parent)
 {
@@ -61,7 +58,7 @@ QString Connection::name() const
 
 void Connection::setGreetingMessage(const QString &message)
 {
-std::cerr << "setGreetingMessage" << std::endl;
+//std::cerr << "setGreetingMessage" << std::endl;
     greetingMessage = message;
 }
 
@@ -117,7 +114,7 @@ void Connection::processReadyRead()
 
 void Connection::setFailed()
 {
-cerr << "fail" << endl;
+//cerr << "fail" << endl;
 }
 
 void Connection::sendPing()
@@ -130,7 +127,7 @@ void Connection::sendPing()
 
 void Connection::setDisconnected()
 {
-std::cerr << "Connection::setDisconnected" << std::endl << std::endl;
+//std::cerr << "Connection::setDisconnected" << std::endl << std::endl;
     cstate = Disconnected;
     connectionTimer.start();
     pingTimer.stop();
@@ -138,7 +135,7 @@ std::cerr << "Connection::setDisconnected" << std::endl << std::endl;
 
 void Connection::setupConnection()
 {
-std::cerr << "Connection::setupConnection" << std::endl << std::endl;
+//std::cerr << "Connection::setupConnection" << std::endl << std::endl;
     connectionTimer.stop();
     pingTimer.start();
     cstate = WaitingForGreeting;
@@ -163,14 +160,14 @@ bool Connection::readProtocolHeader()
 	case WaitingForGreeting:
 	    if (list[0] == "TTCP") {
 		float version = list[1].toFloat(0);
-		std::cerr << "version: " << version << std::endl;
+                //std::cerr << "version: " << version << std::endl;
 		sendAuthorize();
 		cstate = WaitingForAuthorized;
 	    }
 	    break;
 	case WaitingForAuthorized:
 	    if (list[0] == "notauthorized") {
-                std::cerr << "Authorization failed!" << std::endl;
+                //std::cerr << "Authorization failed!" << std::endl;
 //FIXME Need to pop the setup window
                 exit(1);
                 sendAuthorize();
@@ -179,7 +176,7 @@ bool Connection::readProtocolHeader()
 	    if (list[0] == "authorized") {
 		cstate = ReadyForUse;
 	    } else {
-                cerr << qPrintable(line) << endl;
+                //cerr << qPrintable(line) << endl;
 	    }
 	    break;
         default:
@@ -212,22 +209,22 @@ void Connection::processData()
 void Connection::connectionError(QAbstractSocket::SocketError ername)
 {
     if (ername == QAbstractSocket::RemoteHostClosedError) {
-	std::cerr << "connectionError disconnect" << std::endl;
+        //std::cerr << "connectionError disconnect" << std::endl;
 	connectionTimer.start();
     } else if (ername == QAbstractSocket::ConnectionRefusedError) { 
 	connectionTimer.start();
     } else {
-	std::cerr << "connectionError FATAL " << ername << std::endl;
+        //std::cerr << "connectionError FATAL " << ername << std::endl;
     }
 }
 
 void Connection::reConnect()
 {
-    std::cerr << "reconnect" << std::endl;
+//    std::cerr << "reconnect" << std::endl;
 
     QSettings settings("Tasker", "tlist");
     settings.beginGroup("Host");
-    const QString host = settings.value("host", "127.0.0.1").toString();
+    const QString host = settings.value("host", "172.16.126.10").toString();
     const qint16 port = settings.value("port", 8000).toInt();
     const bool ssl = settings.value("ssl", true).toBool();
     settings.endGroup();

@@ -8,8 +8,6 @@
 **
 ****************************************************************************/
 
-#define Q_WS_X11
-
 #include <iostream>
 
 using std::cerr;
@@ -159,7 +157,7 @@ void MainWindow::x11()
 
 MainWindow::~MainWindow()
 {
-    std::cerr << "delete" << std::endl;
+    //std::cerr << "delete" << std::endl;
 }
 
 void MainWindow::insertChild()
@@ -305,26 +303,28 @@ void MainWindow::myHide()
     savePos = pos();
     hide();
 }
-
-#include <X11/Xlib.h>
-#include <X11/Xatom.h>
-#include <QX11Info>
+#if defined (Q_WS_X11)
+# include <X11/Xlib.h>
+# include <X11/Xatom.h>
+# include <QX11Info>
 
 namespace x11 {
 void wmMessage(Window win, long type, long l0, long l1, long l2, long l3, long l4);
 }
-
+#endif
 void MainWindow::myShow()
 {
     if (visible_flag) {
-	std::cerr << "visible" << std::endl;
+        //std::cerr << "visible" << std::endl;
 	return;
     }
     if (isVisible()) {
 	activateWindow();
+#if defined (Q_WS_X11)
         const QX11Info x11Info;
 	static Atom NET_ACTIVE_WINDOW = XInternAtom(QX11Info::display(), "_NET_ACTIVE_WINDOW", False);
 	x11::wmMessage(winId(), NET_ACTIVE_WINDOW, 2, CurrentTime, 0, 0, 0);
+#endif
     } else {
 	resize(saveSize);
 	move(savePos);
@@ -409,7 +409,7 @@ void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason)
 	}
         break;
     case QSystemTrayIcon::DoubleClick:
-	std::cerr << "a" << std::endl;
+        //std::cerr << "a" << std::endl;
         break;
     case QSystemTrayIcon::MiddleClick:
         {
@@ -430,7 +430,7 @@ void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason)
 	}
         break;
     default:
-	std::cerr << "Mouse " << reason << std::endl;
+        //std::cerr << "Mouse " << reason << std::endl;
         break;
     }
 }
@@ -468,6 +468,7 @@ void MainWindow::writeSettings()
     settings.setValue("size", size());
 }
 
+#if defined (Q_WS_X11)
 bool MainWindow::x11Event(XEvent *event)
 {
     switch (event->type) {
@@ -493,7 +494,7 @@ bool MainWindow::x11Event(XEvent *event)
     
     return false;
 }
-
+#endif
 bool MainWindow::visible()
 {
     return visible_flag;
@@ -501,7 +502,7 @@ bool MainWindow::visible()
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    cerr << "MainWindow::closeEvent" << endl;
+    //cerr << "MainWindow::closeEvent" << endl;
     if (1) {
         writeSettings();
         event->accept();
@@ -551,7 +552,7 @@ void MainWindow::startProject()
 
     if (action) {
 	int projId =  qVariantValue<int>(action->data());
-	std::cerr << projId << std::endl;
+        //std::cerr << projId << std::endl;
 	emit changeProjectTo( projId );
     }
 }

@@ -2,7 +2,7 @@
 # 
 # #####################################################################
 
-MAKEFILE = qmakefile
+#MAKEFILE = qmakefile
 TEMPLATE = app
 DEPENDPATH += .
 INCLUDEPATH += .

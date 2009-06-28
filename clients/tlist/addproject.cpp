@@ -15,9 +15,6 @@
 
 #include <iostream>
 
-using std::cerr;
-using std::endl;
-
 #include "addproject.h"
 #include "ttcp.h"
 #include "project.h"

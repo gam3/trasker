@@ -46,7 +46,7 @@ void TimeEdit::myShow()
     ttcp->getTimes();
     view->model()->revert();
 
-    cerr << "TimeEdit::myShow()" << endl;
+    //cerr << "TimeEdit::myShow()" << endl;
 
     show();
 }
@@ -57,7 +57,7 @@ void TimeEdit::timeSlice(QString user,
 			 int auto_id,
 			 QString from, QDateTime startTime, QTime duration)
 {
-    cerr << "got one" << endl;
+    //cerr << "got one" << endl;
 }
 
 

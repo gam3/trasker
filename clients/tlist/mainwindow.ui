@@ -1,7 +1,8 @@
-<ui version="4.0" >
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
  <class>MainWindow</class>
- <widget class="QMainWindow" name="MainWindow" >
-  <property name="geometry" >
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
@@ -9,101 +10,103 @@
     <height>468</height>
    </rect>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>Editable Tree Model</string>
   </property>
-  <widget class="QWidget" name="centralwidget" >
-   <property name="geometry" >
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>573</width>
-     <height>445</height>
-    </rect>
-   </property>
-   <layout class="QVBoxLayout" >
-    <property name="spacing" >
+  <property name="statusTip">
+   <string comment="asdf" extracomment="This is a status tip."/>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout">
+    <property name="spacing">
      <number>0</number>
     </property>
-    <property name="margin" >
+    <property name="margin">
      <number>0</number>
     </property>
     <item>
-     <widget class="MyTreeView" name="view" >
-      <property name="alternatingRowColors" >
+     <widget class="MyTreeView" name="view">
+      <property name="alternatingRowColors">
        <bool>true</bool>
       </property>
-      <property name="selectionBehavior" >
+      <property name="selectionBehavior">
        <enum>QAbstractItemView::SelectRows</enum>
       </property>
-      <property name="horizontalScrollMode" >
+      <property name="horizontalScrollMode">
        <enum>QAbstractItemView::ScrollPerPixel</enum>
       </property>
-      <property name="animated" >
+      <property name="animated">
        <bool>false</bool>
       </property>
-      <property name="allColumnsShowFocus" >
+      <property name="allColumnsShowFocus">
        <bool>true</bool>
       </property>
      </widget>
     </item>
    </layout>
   </widget>
-  <widget class="QStatusBar" name="statusbar" >
-   <property name="geometry" >
-    <rect>
-     <x>0</x>
-     <y>445</y>
-     <width>573</width>
-     <height>23</height>
-    </rect>
+  <widget class="QStatusBar" name="statusbar">
+   <property name="toolTip">
+    <string comment="asdf" extracomment="This is a tool tip."/>
+   </property>
+   <property name="statusTip">
+    <string extracomment="This is a status tip."/>
+   </property>
+   <property name="whatsThis">
+    <string extracomment="What is this?"/>
+   </property>
+   <property name="accessibleName">
+    <string extracomment="two"/>
+   </property>
+   <property name="accessibleDescription">
+    <string extracomment="one"/>
    </property>
   </widget>
-  <action name="exitAction" >
-   <property name="text" >
+  <action name="exitAction">
+   <property name="text">
     <string>E&amp;xit</string>
    </property>
-   <property name="shortcut" >
+   <property name="shortcut">
     <string>Ctrl+Q</string>
    </property>
   </action>
-  <action name="insertRowAction" >
-   <property name="text" >
+  <action name="insertRowAction">
+   <property name="text">
     <string>Insert Row</string>
    </property>
-   <property name="shortcut" >
+   <property name="shortcut">
     <string>Ctrl+I, R</string>
    </property>
   </action>
-  <action name="removeRowAction" >
-   <property name="text" >
+  <action name="removeRowAction">
+   <property name="text">
     <string>Remove Row</string>
    </property>
-   <property name="shortcut" >
+   <property name="shortcut">
     <string>Ctrl+R, R</string>
    </property>
   </action>
-  <action name="insertColumnAction" >
-   <property name="text" >
+  <action name="insertColumnAction">
+   <property name="text">
     <string>Insert Column</string>
    </property>
-   <property name="shortcut" >
+   <property name="shortcut">
     <string>Ctrl+I, C</string>
    </property>
   </action>
-  <action name="removeColumnAction" >
-   <property name="text" >
+  <action name="removeColumnAction">
+   <property name="text">
     <string>Remove Column</string>
    </property>
-   <property name="shortcut" >
+   <property name="shortcut">
     <string>Ctrl+R, C</string>
    </property>
   </action>
-  <action name="insertChildAction" >
-   <property name="text" >
+  <action name="insertChildAction">
+   <property name="text">
     <string>Insert Child</string>
    </property>
-   <property name="shortcut" >
+   <property name="shortcut">
     <string>Ctrl+N</string>
    </property>
   </action>
@@ -115,8 +118,6 @@
    <header>mytreeview.h</header>
   </customwidget>
  </customwidgets>
- <resources>
-  <include location="tlist.qrc" />
- </resources>
+ <resources/>
  <connections/>
 </ui>

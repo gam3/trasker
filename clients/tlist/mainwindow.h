@@ -119,9 +119,9 @@ private:
     void writeSettings();
 
     void closeEvent(QCloseEvent *);
-
+#if X11
     bool x11Event(XEvent *xe);
-
+#endif
     bool hidden_flag;
     bool visible_flag;
     TTCP *ttcp;
