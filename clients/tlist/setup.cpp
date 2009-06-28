@@ -54,7 +54,7 @@ void Setup::saveData()
     passwordEdit->setText(password);
 
     emit setup(host, port, ssl, user, password);
-std::cerr << "Setup::saveData()" << std::endl;
+
     hide();
 }
 
