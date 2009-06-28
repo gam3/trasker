@@ -9,9 +9,6 @@
 
 #include <iostream>
 
-using std::cerr;
-using std::endl;
-
 #include <QtGlobal>
 #include <QtGui>
 

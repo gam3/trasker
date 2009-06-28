@@ -92,7 +92,7 @@ QVariant TreeModel::data(const QModelIndex &index, int role) const
 	return QString("StatusTip %1").arg("a");
 
     if (role != Qt::DisplayRole && role != Qt::EditRole) {
-	std::cerr << "Role: " << role << std::endl;
+        //std::cerr << "Role: " << role << std::endl;
     }
     if (role != Qt::DisplayRole && role != Qt::EditRole)
         return QVariant();
@@ -217,7 +217,6 @@ bool TreeModel::setData(const QModelIndex &index, const QVariant &value,
 
 bool TreeModel::setRow(const QModelIndex &index, const QString &name, int id, int pid, const QTime &time, const QTime &atime)
 {
-std::cerr << "TreeModel::setRow" << std::endl;
     return false;
 }
 

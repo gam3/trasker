@@ -3,9 +3,6 @@
 
 #include <iostream>
 
-using std::cerr;
-using std::endl;
-
 #include "ttcp.h"
 #include "connection.h"
 
@@ -14,7 +11,7 @@ TTCP::TTCP(const QString &host_in, quint16 port_in, bool ssl_in, const QString &
     connection = new Connection(this);
 
     if (ssl) {
-cerr << "SSL" << endl;
+//cerr << "SSL" << endl;
     }
 
     newConnection(connection);
@@ -24,7 +21,6 @@ cerr << "SSL" << endl;
 
 TTCP::~TTCP()
 {
-    cerr << "delete TTCP" << endl;
 }
 
 void TTCP::sendMessage(const QString &message)
@@ -125,6 +121,7 @@ void TTCP::getTimes(const QDate, const QDate)
 void TTCP::addnote(const int id, const QString &note) const
 {
     QString s(note);
+    qWarning("addnote ");
     s.replace("\\", "\\\\");
     s.replace("\t", "\\t");
     s.replace("\n", "\\n");
@@ -147,10 +144,7 @@ void TTCP::addtask(int parentId, const QString &name, const QString &desc) const
 
 void TTCP::addauto(const int id, const QString &host, const QString &classN, const QString &name, const QString &role, const QString &title, const QString &desktop) const
 {
-
-    cerr << "asdf" << endl;
     connection->write(QString("addauto\t%1\t%2\t%3\t%4\t%5\t%6\t%7\t%8\n").arg(user).arg(id).arg(host).arg(classN).arg(name).arg(role).arg(title).arg(desktop).toAscii());
-    cerr << "sdfa" << endl;
 }
 
 void TTCP::setAuto(QString &host, QString &classN, QString &name, QString &role, QString &title, QString &desktop)
@@ -166,7 +160,7 @@ void TTCP::newCommand(const QStringList &list)
         if (list.size() == 8) {
 	    emit add_timeslice(list[1], list[2].toInt(), list[3].toInt(), list[4].toInt(), list[5], todatetime(list[6]), list[7]);
 	} else {
-	    cerr << "timeslice: wrong # of arguments " << list.size() << endl;
+            qWarning("timeslice: wrong # of arguments %d", list.size());
 	}
     } else if (list[0] == "current") {
 	emit current(list[2].toInt());
@@ -183,15 +177,14 @@ void TTCP::newCommand(const QStringList &list)
 	    printf("Error in update_time\n");
 	}
     } else if (list[0] == "accept_note") {
-cerr << qPrintable(list[0]) << endl;
+        qWarning("%s %s", qPrintable(list[0]), qPrintable(list[1]));
 	emit accept_note(list[1]);
     } else if (list[0] == "accept_task") {
 	emit accept_project(list[1]);
     } else if (list[0] == "accept_select") {
-cerr << qPrintable(list[0]) << " -> " << qPrintable(list[1]) << endl;
 	emit accept_select(list[1]);
     } else {
-	printf("TTCP Unknown: '%s'/%d\n", qPrintable(list[0]), list.size() - 1);
+        printf("TTCP Unknown: '%s'/%d\n", qPrintable(list[0]), list.size() - 1);
     }
 }
 
