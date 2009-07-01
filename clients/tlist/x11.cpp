@@ -1,4 +1,4 @@
-
+#if defined(X11)
 #include <QX11Info>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
@@ -37,3 +37,4 @@ void wmMessage(Window win, long type, long l0, long l1, long l2, long l3, long l
 
 }
 
+#endif
