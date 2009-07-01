@@ -301,6 +301,8 @@ void MainWindow::myHide()
 {
     saveSize = size();
     savePos = pos();
+    std::cerr << "hide" << std::endl;
+    visible_flag = false;
     hide();
 }
 #if defined (Q_WS_X11)
@@ -326,6 +328,7 @@ void MainWindow::myShow()
 	x11::wmMessage(winId(), NET_ACTIVE_WINDOW, 2, CurrentTime, 0, 0, 0);
 #endif
     } else {
+        std::cerr << "show" << std::endl;
 	resize(saveSize);
 	move(savePos);
 	showNormal();
@@ -403,7 +406,7 @@ void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason)
 	if (visible()) {
 	    visible_flag = false;
 	    hidden_flag = true;
-	    hide();
+            myHide();
 	} else {
 	    myShow();
 	}
@@ -453,8 +456,10 @@ void MainWindow::readSettings()
 {
     QSettings settings("Tasker", "tlist");
 
+    settings.beginGroup("mainwindow");
     QPoint pos = settings.value("pos", QPoint(-1, -1)).toPoint();
     QSize size = settings.value("size", QSize(573, 468)).toSize();
+    settings.endGroup();
     move(pos);
     savePos = pos;
     resize(size);
@@ -464,8 +469,13 @@ void MainWindow::readSettings()
 void MainWindow::writeSettings()
 {
     QSettings settings("Tasker", "tlist");
+    settings.beginGroup("mainwindow");
     settings.setValue("pos", pos());
     settings.setValue("size", size());
+    settings.endGroup();
+
+    saveSize = size();
+    savePos = pos();
 }
 
 #if defined (Q_WS_X11)
@@ -504,6 +514,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 {
     //cerr << "MainWindow::closeEvent" << endl;
     if (1) {
+	visible_flag = false;
         writeSettings();
         event->accept();
     } else {
