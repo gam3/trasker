@@ -21,12 +21,12 @@ extern "C" {
 
 #ifndef CMDLINE_PARSER_PACKAGE
 /** @brief the program name */
-#define CMDLINE_PARSER_PACKAGE "tlist"
+#define CMDLINE_PARSER_PACKAGE PACKAGE
 #endif
 
 #ifndef CMDLINE_PARSER_VERSION
 /** @brief the program version */
-#define CMDLINE_PARSER_VERSION "0.0.1"
+#define CMDLINE_PARSER_VERSION VERSION
 #endif
 
 /** @brief Where the command line options are stored */
@@ -36,10 +36,16 @@ struct gengetopt_args_info
   const char *version_help; /**< @brief Print version and exit help description.  */
   int setup_flag;	/**< @brief Run setup on startup (default=off).  */
   const char *setup_help; /**< @brief Run setup on startup help description.  */
+  char ** show_arg;	/**< @brief Open widow on startup (default='_none_').  */
+  char ** show_orig;	/**< @brief Open widow on startup original value given at command line.  */
+  unsigned int show_min; /**< @brief Open widow on startup's minimum occurreces */
+  unsigned int show_max; /**< @brief Open widow on startup's maximum occurreces */
+  const char *show_help; /**< @brief Open widow on startup help description.  */
 
   unsigned int help_given ;	/**< @brief Whether help was given.  */
   unsigned int version_given ;	/**< @brief Whether version was given.  */
   unsigned int setup_given ;	/**< @brief Whether setup was given.  */
+  unsigned int show_given ;	/**< @brief Whether show was given.  */
 
 } ;
 
@@ -161,6 +167,8 @@ void cmdline_parser_free (struct gengetopt_args_info *args_info);
  */
 int cmdline_parser_required (struct gengetopt_args_info *args_info,
   const char *prog_name);
+
+extern char *cmdline_parser_show_values[] ;	/**< @brief Possible values for show.  */
 
 
 #ifdef __cplusplus
