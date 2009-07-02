@@ -6,8 +6,7 @@
 TEMPLATE = app
 DEPENDPATH += .
 INCLUDEPATH += .
-CONFIG += qt \
-    debug
+CONFIG += qt
 QT += network \
     webkit
 

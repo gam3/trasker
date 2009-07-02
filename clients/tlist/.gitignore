@@ -16,3 +16,4 @@ ui_mainwindow.h
 ui_notes.h
 ui_setup.h
 ui_timeedit.h
+*.o
