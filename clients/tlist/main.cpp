@@ -14,10 +14,11 @@
 #include <QApplication>
 #include <QSystemTrayIcon>
 
-#include "mainwindow.h"
+#include "projects.h"
 #include "ttcp.h"
 #include "settings.h"
 #include "setup.h"
+#include "alerts.h"
 
 #include "cmdline.h"
 
@@ -45,12 +46,12 @@ main(int argc, char *argv[])
 
     QSettings settings("Tasker", "tlist");
     settings.beginGroup("User");
-    const QString user = settings.value("user", "gam3").toString();
-    const QString password = settings.value("password", "ab12cd34").toString();
+    const QString user = settings.value("user", "guest").toString();
+    const QString password = settings.value("password", "guest").toString();
     settings.endGroup();
     settings.beginGroup("Host");
-    const QString host = settings.value("host", "frenchy").toString();
-    const qint16 port = settings.value("port", 8000).toInt();
+    const QString host = settings.value("host", "localhost").toString();
+    const qint16 port = settings.value("port", 8001).toInt();
     const bool ssl = settings.value("ssl", true).toBool();
     settings.endGroup();
 
@@ -61,8 +62,14 @@ main(int argc, char *argv[])
     TTCP *ttcp = new TTCP(host, port, ssl, user, password);
 
     MainWindow window(ttcp);
+    Alerts alerts(ttcp);
 
-    window.show();
+    for (char **str = args_info.show_arg; *str; str++) {
+        if (!strcmp(*str, "project")) {
+	    window.show();
+	}
+    }
+
     return app.exec();
 }
 
