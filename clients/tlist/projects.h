@@ -7,7 +7,7 @@
 **
 ****************************************************************************/
 
-/*! \file mainwindow.h
+/*! \file projects.h
  *  \brief The Main Window Object for tlist.
  *
  *  This is the window that lists all the available projects that
@@ -21,7 +21,8 @@
 #include <QModelIndex>
 #include <QSystemTrayIcon>
 
-#include "ui_mainwindow.h"
+#include "ui_projects.h"
+
 
 class QAction;
 class QTreeView;
@@ -32,6 +33,7 @@ class QListViewItem;
 class Project;
 
 class TTCP;
+class Alerts;
 class Notes;
 class AddProject;
 class AddAuto;
@@ -97,7 +99,9 @@ private slots:
 private:
     void createActions();
 
+#if defined (Q_WS_X11)
     void x11();
+#endif
 
     MyPopupMenu it_menu;
     MyPopupMenu bg_menu;
@@ -119,12 +123,13 @@ private:
     void writeSettings();
 
     void closeEvent(QCloseEvent *);
-#if X11
+#if defined (Q_WS_X11)
     bool x11Event(XEvent *xe);
 #endif
     bool hidden_flag;
     bool visible_flag;
     TTCP *ttcp;
+    Alerts *alert;
 
 private:
     QMenu *popup;

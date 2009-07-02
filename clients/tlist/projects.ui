@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Editable Tree Model</string>
+   <string>Project Tree</string>
   </property>
   <property name="statusTip">
    <string comment="asdf" extracomment="This is a status tip."/>

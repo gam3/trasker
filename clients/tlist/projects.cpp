@@ -10,12 +10,10 @@
 
 #include <iostream>
 
-using std::cerr;
-using std::endl;
-
+#include <QtCore>
 #include <QtGui>
 
-#include "mainwindow.h"
+#include "projects.h"
 #include "notes.h"
 #include "addproject.h"
 #include "auto_select.h"
@@ -28,11 +26,13 @@ using std::endl;
 class Project : public TreeItem {};
 
 #include "ttcp.h"
+#include "alerts.h"
 
 MainWindow::MainWindow(TTCP *ttcp, QWidget *parent)
     : QMainWindow(parent)
 {
     setupUi(this);
+    setWindowFlags( windowFlags() & ~Qt::WindowMinimizeButtonHint );
 
     recentMenuClean = false;
 
@@ -69,6 +69,7 @@ MainWindow::MainWindow(TTCP *ttcp, QWidget *parent)
     view->setColumnWidth(1, 100);
     view->hideColumn(2);
     header->setMovable(false);
+
 
     /*! \sa
      * MyTreeView::popMenu()
@@ -157,7 +158,6 @@ void MainWindow::x11()
 
 MainWindow::~MainWindow()
 {
-    //std::cerr << "delete" << std::endl;
 }
 
 void MainWindow::insertChild()
@@ -294,14 +294,13 @@ void MainWindow::setCurrent(int id)
 void MainWindow::menu( const QModelIndex &/* index */ )
 {
 //    TreeModel *model = (TreeModel *)view->model();
-    std::cerr << "mouse" << std::endl;
+    qWarning("mouse");
 }
 
 void MainWindow::myHide()
 {
     saveSize = size();
     savePos = pos();
-    std::cerr << "hide" << std::endl;
     visible_flag = false;
     hide();
 }
@@ -317,7 +316,6 @@ void wmMessage(Window win, long type, long l0, long l1, long l2, long l3, long l
 void MainWindow::myShow()
 {
     if (visible_flag) {
-        //std::cerr << "visible" << std::endl;
 	return;
     }
     if (isVisible()) {
@@ -328,7 +326,6 @@ void MainWindow::myShow()
 	x11::wmMessage(winId(), NET_ACTIVE_WINDOW, 2, CurrentTime, 0, 0, 0);
 #endif
     } else {
-        std::cerr << "show" << std::endl;
 	resize(saveSize);
 	move(savePos);
 	showNormal();
@@ -412,7 +409,6 @@ void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason)
 	}
         break;
     case QSystemTrayIcon::DoubleClick:
-        //std::cerr << "a" << std::endl;
         break;
     case QSystemTrayIcon::MiddleClick:
         {
@@ -433,7 +429,7 @@ void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason)
 	}
         break;
     default:
-        //std::cerr << "Mouse " << reason << std::endl;
+        qWarning("Mouse unknown reason %d", reason);
         break;
     }
 }
