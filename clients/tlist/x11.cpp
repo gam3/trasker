@@ -1,4 +1,4 @@
-
+#if defined(X11)
 #include <QX11Info>
 #if defined (Q_WS_X11)
 #include <X11/Xlib.h>
