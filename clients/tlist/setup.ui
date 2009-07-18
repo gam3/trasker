@@ -13,12 +13,108 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
+  <widget class="QWidget" name="widget_2" native="true">
+   <property name="geometry">
+    <rect>
+     <x>9</x>
+     <y>9</y>
+     <width>375</width>
+     <height>195</height>
+    </rect>
+   </property>
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0">
+     <widget class="QLabel" name="label">
+      <property name="text">
+       <string>User name</string>
+      </property>
+      <property name="buddy">
+       <cstring>userEdit</cstring>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="0">
+     <widget class="QLabel" name="label_2">
+      <property name="text">
+       <string>Password</string>
+      </property>
+      <property name="buddy">
+       <cstring>passwordEdit</cstring>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="0">
+     <widget class="QCheckBox" name="remPass">
+      <property name="text">
+       <string>Remember Password</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="0">
+     <widget class="QLabel" name="label_3">
+      <property name="text">
+       <string>Host</string>
+      </property>
+      <property name="buddy">
+       <cstring>hostEdit</cstring>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QLineEdit" name="userEdit"/>
+    </item>
+    <item row="3" column="1">
+     <widget class="QLineEdit" name="passwordEdit">
+      <property name="echoMode">
+       <enum>QLineEdit::Password</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="1">
+     <widget class="QLineEdit" name="hostEdit"/>
+    </item>
+    <item row="6" column="0">
+     <widget class="QCheckBox" name="useSSL">
+      <property name="text">
+       <string>Use SSL</string>
+      </property>
+     </widget>
+    </item>
+    <item row="6" column="1">
+     <widget class="QCheckBox" name="nonStandard">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="text">
+       <string>use non-standard port</string>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="1">
+     <widget class="QLineEdit" name="portEdit">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="0">
+     <widget class="QLabel" name="label_4">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="text">
+       <string>Port</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
   <widget class="QPushButton" name="done">
    <property name="geometry">
     <rect>
-     <x>130</x>
+     <x>160</x>
      <y>220</y>
-     <width>131</width>
+     <width>75</width>
      <height>28</height>
     </rect>
    </property>
@@ -28,146 +124,12 @@
      <verstretch>0</verstretch>
     </sizepolicy>
    </property>
+   <property name="layoutDirection">
+    <enum>Qt::RightToLeft</enum>
+   </property>
    <property name="text">
-    <string>OK</string>
+    <string>Save</string>
    </property>
-  </widget>
-  <widget class="QWidget" name="widget_2" native="true">
-   <property name="geometry">
-    <rect>
-     <x>9</x>
-     <y>9</y>
-     <width>400</width>
-     <height>207</height>
-    </rect>
-   </property>
-   <widget class="QCheckBox" name="remPass">
-    <property name="geometry">
-     <rect>
-      <x>100</x>
-      <y>80</y>
-      <width>158</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Remember Password</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_4">
-    <property name="geometry">
-     <rect>
-      <x>59</x>
-      <y>141</y>
-      <width>26</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Port</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="hostEdit">
-    <property name="geometry">
-     <rect>
-      <x>100</x>
-      <y>110</y>
-      <width>283</width>
-      <height>24</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="userEdit">
-    <property name="geometry">
-     <rect>
-      <x>100</x>
-      <y>20</y>
-      <width>283</width>
-      <height>24</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>20</y>
-      <width>69</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>User name</string>
-    </property>
-    <property name="buddy">
-     <cstring>userEdit</cstring>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_2">
-    <property name="geometry">
-     <rect>
-      <x>11</x>
-      <y>50</y>
-      <width>71</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Password</string>
-    </property>
-    <property name="buddy">
-     <cstring>passwordEdit</cstring>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="passwordEdit">
-    <property name="geometry">
-     <rect>
-      <x>100</x>
-      <y>50</y>
-      <width>283</width>
-      <height>24</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QCheckBox" name="useSSL">
-    <property name="geometry">
-     <rect>
-      <x>100</x>
-      <y>170</y>
-      <width>79</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Use SSL</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_3">
-    <property name="geometry">
-     <rect>
-      <x>56</x>
-      <y>110</y>
-      <width>29</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Host</string>
-    </property>
-    <property name="buddy">
-     <cstring>hostEdit</cstring>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="portEdit">
-    <property name="geometry">
-     <rect>
-      <x>100</x>
-      <y>140</y>
-      <width>283</width>
-      <height>24</height>
-     </rect>
-    </property>
-   </widget>
   </widget>
  </widget>
  <resources/>
