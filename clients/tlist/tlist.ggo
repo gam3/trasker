@@ -1,18 +1,11 @@
 
 # Name of your program
-#package "tlist" # don't use package if you're using automake
+package "tlist" # don't use package if you're using automake
 # Version of your program
-#version "0.0.1"   # don't use version if you're using automake
-
-usage "tlist"
+version "0.0.1"   # don't use version if you're using automake
 
 # Options
-option  "setup"        s "Run setup on startup"        flag       off
-option  "show"         - "Open widow on startup"
-	values="project","timeedit","_none_"
-	default="_none_"
-	multiple
-	optional
-
-text "\n"
+option  "show"     - "Run setup on startup"        optional string multiple
+option  "setup"        - "Run setup on startup"        flag       off
+text "\nAn ending text."
 

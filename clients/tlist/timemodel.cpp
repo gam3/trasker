@@ -56,6 +56,9 @@ QVariant TimeModel::data(const QModelIndex &index, int role) const
 
     int id = ids[index.row()];
     TimeItem *item = timelist[id];
+    if (role == Qt::EditRole) {
+        qWarning("edit");
+    }
 
     if (role == Qt::DisplayRole) {
 	switch (index.column()) {
@@ -64,7 +67,7 @@ QVariant TimeModel::data(const QModelIndex &index, int role) const
 	  case 1:
 	    return item->datetime();
 	  case 2:
-	    return item->duration();
+            return item->duration();
 	  case 3:
 	    return item->project();
 	  default:
@@ -80,11 +83,11 @@ QVariant TimeModel::headerData(int section, Qt::Orientation orientation, int rol
 	if (orientation == Qt::Horizontal) {
 	    switch (section) {
 	      case 0:
-		return QString("One");
+                return QString("Hidden");
 	      case 1:
-		return QString("Two");
+                return QString("Started");
 	      case 2:
-		return QString("Three");
+                return QString("Duration");
 	      case 3:
 		return QString("Project");
 	    }
@@ -103,7 +106,6 @@ void TimeModel::timeSlice(QString user,
 {
     TimeItem *item;
 
-
     beginInsertRows(QModelIndex(), 0, ids.size());
     ids.append(timeclice_id);
     item = new TimeItem(user, timeclice_id, project_id, auto_id, from, startTime, duration);
@@ -112,6 +114,25 @@ void TimeModel::timeSlice(QString user,
     endInsertRows();
 
     refreshTimer.start();
-//    cerr << timeclice_id << ":" << ids.size() << endl;
+}
+
+
+bool TimeModel::setDate( const QModelIndex & index, const QVariant & value, int role )
+{
+    return false;
+}
+
+Qt::ItemFlags TimeModel::flags( const QModelIndex& index ) const
+{
+    Qt::ItemFlags flag = Qt::NoItemFlags;
+    switch (index.column()) {
+    case 3:
+        flag |= Qt::ItemIsEditable | Qt::ItemIsEnabled;
+	break;
+    default:
+        flag |= Qt::ItemIsEnabled;
+        break;
+    }
+    return flag;
 }
 

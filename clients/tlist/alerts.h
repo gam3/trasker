@@ -21,6 +21,7 @@ public:
 public slots:
     void add(QString text);
     void update();
+    void update(int);
 private slots:
     void show_help();
 private:

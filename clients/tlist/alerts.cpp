@@ -24,19 +24,26 @@ Alerts::Alerts(const TTCP *ttcp_in, QWidget *parent) : QDialog(parent)
     setupUi(this);
     this->ttcp = ttcp_in;
 
-    connect(ttcp, SIGNAL(alert_message( const QString &)),
+    connect(ttcp, SIGNAL(alert_message(int, const QString &)),
             this, SLOT(add( const QString &)));
 
-    timer = new QTimer(this);
+    connect(ttcp, SIGNAL(alert_end_message(int)),
+            this, SLOT(update(int)));
+
+    timer = new QTimer(this);http://www.facebook.com/n/?inbox/readmessage.php&t=1125024129045&mid=cb24bcG1fc778bfG2225565G0
+
     connect(timer, SIGNAL(timeout()), this, SLOT(update()));
     timer->start(1000);
-    qWarning("xxx");
+}
 
-
+void Alerts::update(int x)
+{
+    qWarning("done");
 }
 
 void Alerts::update()
 {
+    show();
     qWarning("update");
 }
 

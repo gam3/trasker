@@ -2,11 +2,30 @@
 #include <iostream>
 
 #include <QCheckBox>
+#include <QSettings>
 #include "setup.h"
 
 Setup::Setup(QWidget * parent):QDialog (parent)
 {
     setupUi(this);
+
+    QSettings settings("Tasker", "tlist");
+
+    settings.beginGroup("Host");
+    hostEdit->setText(settings.value("host").toString());
+    portEdit->setText(settings.value("port").toString());
+    bool x = settings.value("ssl").toBool();
+    if (x) {
+	useSSL->setCheckState(Qt::Checked);
+    } else {
+	useSSL->setCheckState(Qt::Unchecked);
+    }
+    settings.endGroup();
+
+    settings.beginGroup("User");
+    userEdit->setText(settings.value("user").toString());
+    passwordEdit->setText(settings.value("password").toString());
+    settings.endGroup();
 }
 
 Setup::Setup(const QString & host, const quint16 & port, const bool & ssl,
@@ -25,7 +44,6 @@ Setup::Setup(const QString & host, const quint16 & port, const bool & ssl,
 	useSSL->setCheckState(Qt::Checked);
 }
 
-#include <QSettings>
 
 void Setup::saveData()
 {
@@ -58,4 +76,25 @@ void Setup::saveData()
     hide();
 }
 
-/* eof */
+void Setup::on_done_clicked()
+{
+    QString host = hostEdit->text();
+    QString user = userEdit->text();
+    QString password = passwordEdit->text();
+    qint16 port = portEdit->text().toInt();
+    bool ssl = useSSL->isChecked();
+
+    emit setup(host, port, ssl, user, password);
+    close();
+}
+
+void Setup::on_useSSL_clicked(bool checked)
+{
+    portEdit->setText(checked ? "8001" : "8000");
+}
+
+void Setup::on_nonStandard_clicked(bool checked)
+{
+    label_4->setEnabled(checked);
+    portEdit->setEnabled(checked);
+}

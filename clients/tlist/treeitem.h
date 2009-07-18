@@ -46,6 +46,9 @@ public:
     QString getName() const;
 
     void set_times(QTime time, QTime atime);
+    void inc_times();
+    void inc_time();
+    void inc_atime();
 
 private:
     QList<TreeItem*> childItems;

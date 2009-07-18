@@ -48,6 +48,9 @@ public:
     int rowCount(const QModelIndex & parent = QModelIndex())const;
     int columnCount(const QModelIndex & parent = QModelIndex())const;
 
+    bool setDate( const QModelIndex & index, const QVariant & value, int role = Qt::EditRole );
+    Qt::ItemFlags flags( const QModelIndex& index ) const;
+
 public slots:
     void timeSlice (QString user,
     int timeclice_id,

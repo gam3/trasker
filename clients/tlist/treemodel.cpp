@@ -92,7 +92,7 @@ QVariant TreeModel::data(const QModelIndex &index, int role) const
 	return QString("StatusTip %1").arg("a");
 
     if (role != Qt::DisplayRole && role != Qt::EditRole) {
-        //std::cerr << "Role: " << role << std::endl;
+        qWarning("Role: %d", role);
     }
     if (role != Qt::DisplayRole && role != Qt::EditRole)
         return QVariant();
@@ -232,11 +232,21 @@ bool TreeModel::setHeaderData(int section, Qt::Orientation orientation,
 void TreeModel::update_timer()
 {
     if (currentItem) {
-	for (TreeItem *item = currentItem; item; item = item->parent()) {
-	    if (item->getId()) {
-	        emit get_time(item->getId());
-	    }
-	}
+        if (0) {
+            for (TreeItem *item = currentItem; item; item = item->parent()) {
+                if (item->getId()) {
+                    emit get_time(item->getId());
+                }
+            }
+        } else {
+            currentItem->inc_time();
+            for (TreeItem *item = currentItem; item; item = item->parent()) {
+                if (item->getId()) {
+                    item->inc_atime();
+                    emit dataChanged(createIndex(0, 0, item), createIndex(0, 2, item));
+                }
+            }
+        }
     }
 }
 

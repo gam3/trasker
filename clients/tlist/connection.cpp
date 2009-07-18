@@ -49,6 +49,9 @@ Connection::Connection(QObject *parent)
 
     QObject::connect(this, SIGNAL(error(QAbstractSocket::SocketError)),
                      this, SLOT(connectionError(QAbstractSocket::SocketError)));
+
+    QObject::connect(this, SIGNAL(sslErrors(const QList<QSslError> &)),
+                     this, SLOT(mySslErrors(const QList<QSslError> &)));
 }
 
 QString Connection::name() const
@@ -58,7 +61,6 @@ QString Connection::name() const
 
 void Connection::setGreetingMessage(const QString &message)
 {
-//std::cerr << "setGreetingMessage" << std::endl;
     greetingMessage = message;
 }
 
@@ -114,7 +116,7 @@ void Connection::processReadyRead()
 
 void Connection::setFailed()
 {
-//cerr << "fail" << endl;
+    qWarning("fail");
 }
 
 void Connection::sendPing()
@@ -127,15 +129,13 @@ void Connection::sendPing()
 
 void Connection::setDisconnected()
 {
-//std::cerr << "Connection::setDisconnected" << std::endl << std::endl;
     cstate = Disconnected;
-    connectionTimer.start();
+//    connectionTimer.start();
     pingTimer.stop();
 }
 
 void Connection::setupConnection()
 {
-//std::cerr << "Connection::setupConnection" << std::endl << std::endl;
     connectionTimer.stop();
     pingTimer.start();
     cstate = WaitingForGreeting;
@@ -159,16 +159,15 @@ bool Connection::readProtocolHeader()
     switch (cstate) {
 	case WaitingForGreeting:
 	    if (list[0] == "TTCP") {
-		float version = list[1].toFloat(0);
-                //std::cerr << "version: " << version << std::endl;
+                float version = list[1].toFloat(0);
+                qWarning("version: %f", version);
 		sendAuthorize();
 		cstate = WaitingForAuthorized;
 	    }
 	    break;
 	case WaitingForAuthorized:
 	    if (list[0] == "notauthorized") {
-                //std::cerr << "Authorization failed!" << std::endl;
-//FIXME Need to pop the setup window
+///FIXME Need to pop the setup window
                 exit(1);
                 sendAuthorize();
                 cstate = WaitingForAuthorized;
@@ -176,7 +175,7 @@ bool Connection::readProtocolHeader()
 	    if (list[0] == "authorized") {
 		cstate = ReadyForUse;
 	    } else {
-                //cerr << qPrintable(line) << endl;
+                qWarning("Unknown responce: %s", qPrintable(line));
 	    }
 	    break;
         default:
@@ -209,29 +208,45 @@ void Connection::processData()
 void Connection::connectionError(QAbstractSocket::SocketError ername)
 {
     if (ername == QAbstractSocket::RemoteHostClosedError) {
-        //std::cerr << "connectionError disconnect" << std::endl;
 	connectionTimer.start();
     } else if (ername == QAbstractSocket::ConnectionRefusedError) { 
 	connectionTimer.start();
     } else {
-        //std::cerr << "connectionError FATAL " << ername << std::endl;
+        qWarning("connection Error FATAL %d", ername);
+        connectionTimer.stop();
+        exit(1);
     }
 }
 
 void Connection::reConnect()
 {
-//    std::cerr << "reconnect" << std::endl;
-
     QSettings settings("Tasker", "tlist");
     settings.beginGroup("Host");
-    const QString host = settings.value("host", "172.16.126.10").toString();
-    const qint16 port = settings.value("port", 8000).toInt();
+    const QString host = settings.value("host", "127.0.0.1").toString();
+    const qint16 port = settings.value("port", 8001).toInt();
     const bool ssl = settings.value("ssl", true).toBool();
+    const QString certpath = settings.value("certpath", "/etc/tasker/cacert.pem").toString();
     settings.endGroup();
 
     connectionTimer.start();
+    if (ssl) {
+        foreach (QSslCertificate cert, QSslCertificate::fromPath(certpath)) {
+             qDebug() << cert.issuerInfo(QSslCertificate::Organization);
+///FIX certs need to be install at object create
+        }
+        connectToHostEncrypted(host, port);
+    } else {
+        connectToHost(host, port);
+    }
+}
 
-    connectToHost(host, port);
+void Connection::mySslErrors(const QList<QSslError> &errors)
+{
+    ignoreSslErrors();
+    foreach (QSslError error, errors) {
+///FIX this should be an alert.
+qDebug() << "a " << error;
+    }
 }
 
 /* eof */

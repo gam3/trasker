@@ -74,6 +74,7 @@ private slots:
     void setupConnection();
     void setDisconnected();
     void connectionError(QAbstractSocket::SocketError);
+    void mySslErrors(const QList<QSslError> &errors);
 
 private:
     int readDataIntoBuffer(int maxSize = MaxBufferSize);

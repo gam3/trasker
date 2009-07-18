@@ -173,4 +173,19 @@ void TreeItem::set_times(QTime time, QTime atime)
     this->atime = atime;
 }
 
+void TreeItem::inc_times()
+{
+    this->time = this->time.addSecs(1);
+    this->atime = this->atime.addSecs(1);
+}
+
+void TreeItem::inc_time()
+{
+    this->time = this->time.addSecs(1);
+}
+
+void TreeItem::inc_atime()
+{
+    this->atime = this->atime.addSecs(1);
+}
 /* eof */

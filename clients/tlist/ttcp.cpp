@@ -10,10 +10,6 @@ TTCP::TTCP(const QString &host_in, quint16 port_in, bool ssl_in, const QString &
 {
     connection = new Connection(this);
 
-    if (ssl) {
-//cerr << "SSL" << endl;
-    }
-
     newConnection(connection);
 
     connection->reConnect();
@@ -183,6 +179,10 @@ void TTCP::newCommand(const QStringList &list)
 	emit accept_project(list[1]);
     } else if (list[0] == "accept_select") {
 	emit accept_select(list[1]);
+    } else if (list[0] == "alert") {
+        emit alert_message(list[1].toInt(), list[2]);
+    } else if (list[0] == "alert_end") {
+        emit alert_end_message(list[1].toInt());
     } else {
         printf("TTCP Unknown: '%s'/%d\n", qPrintable(list[0]), list.size() - 1);
     }

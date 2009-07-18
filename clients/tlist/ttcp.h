@@ -54,15 +54,17 @@ signals:
     void accept_project(QString name);
     void accept_select(QString name);
     void add_entry(QString user, int project_id, int parent_project_id, QTime time, QTime atime);
+    void add_timeslice( QString user, int timeclice_id, int project_id, int auto_id, QString from, QDateTime startTime, QString duration);
+    void alert_end_message(int alert_id);
+    void alert_message(int alert_id, QString text);
+    void connected();
     void current(int project_id);
     void disable(int project_id);
     void disconnected();
-    void connected();
     void error(QString error_string);
     void project(QString name, QString action);
     void settime(int project_id, QTime time, QTime atime);
     void update_all();
-    void add_timeslice( QString user, int timeclice_id, int project_id, int auto_id, QString from, QDateTime startTime, QString duration);
 
 public:
     void sendMessage(const QString &message);

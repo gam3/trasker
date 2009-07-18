@@ -1,8 +1,5 @@
 #include <iostream>
 
-using std::cerr;
-using std::endl;
-
 #include "timeedit.h"
 
 #include "timemodel.h"
@@ -22,10 +19,10 @@ ttcp(ttcp_in)
     view->setModel(model);
 
     view->setSortingEnabled(true);
-    view->setSelectionBehavior(QAbstractItemView::SelectRows);
+//    view->setSelectionBehavior(QAbstractItemView::SelectRows);
     view->horizontalHeader()->setStretchLastSection(true);
     view->verticalHeader()->hide();
-    view->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    view->setEditTriggers(QAbstractItemView::SelectedClicked);
     view->setSelectionMode(QAbstractItemView::SingleSelection);
 
     connect(ttcp,
@@ -38,6 +35,7 @@ ttcp(ttcp_in)
 
 TimeEdit::~TimeEdit()
 {
+
 }
 
 void TimeEdit::myShow()
@@ -46,18 +44,7 @@ void TimeEdit::myShow()
     ttcp->getTimes();
     view->model()->revert();
 
-    //cerr << "TimeEdit::myShow()" << endl;
-
     show();
-}
-
-void TimeEdit::timeSlice(QString user,
-			 int timeclice_id,
-			 int project_id,
-			 int auto_id,
-			 QString from, QDateTime startTime, QTime duration)
-{
-    //cerr << "got one" << endl;
 }
 
 

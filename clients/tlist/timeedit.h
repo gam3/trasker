@@ -25,11 +25,6 @@
 
 class TimeEdit:public QMainWindow, private Ui::TimeEdit {
     Q_OBJECT public slots:void myShow(void);
-    void timeSlice(QString user,
-		   int timeclice_id,
-		   int project_id,
-		   int auto_id,
-		   QString from, QDateTime startTime, QTime duration);
 
   public:
     TimeEdit(TTCP * ttcp, QWidget * parent = 0);
