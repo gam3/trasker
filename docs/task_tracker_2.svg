@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="744.09448819"
+   height="1052.3622047"
+   id="svg2"
+   sodipodi:version="0.32"
+   inkscape:version="0.46"
+   sodipodi:docname="task_tracker_2.svg"
+   inkscape:output_extension="org.inkscape.output.svg.inkscape">
+  <defs
+     id="defs4">
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="0 : 526.18109 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_z="744.09448 : 526.18109 : 1"
+       inkscape:persp3d-origin="372.04724 : 350.78739 : 1"
+       id="perspective10" />
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     gridtolerance="10000"
+     guidetolerance="10"
+     objecttolerance="10"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.88295239"
+     inkscape:cx="340.09685"
+     inkscape:cy="520.28918"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     showguides="true"
+     inkscape:snap-global="true"
+     inkscape:guide-bbox="true"
+     inkscape:window-width="738"
+     inkscape:window-height="1153"
+     inkscape:window-x="856"
+     inkscape:window-y="0">
+    <inkscape:grid
+       type="xygrid"
+       id="grid2427" />
+    <sodipodi:guide
+       orientation="0,1"
+       position="342.0343,729.37115"
+       id="guide2431" />
+    <sodipodi:guide
+       orientation="1,0"
+       position="231.04304,526.64221"
+       id="guide2433" />
+    <sodipodi:guide
+       orientation="1,0"
+       position="459.82094,476.8094"
+       id="guide2435" />
+    <sodipodi:guide
+       orientation="1,0"
+       position="420.18121,645.56142"
+       id="guide2437" />
+    <sodipodi:guide
+       orientation="1,0"
+       position="278.61072,679.53834"
+       id="guide2439" />
+    <sodipodi:guide
+       orientation="1,0"
+       position="309.18994,622.91015"
+       id="guide2441" />
+    <sodipodi:guide
+       orientation="1,0"
+       position="348.82968,707.85244"
+       id="guide2443" />
+    <sodipodi:guide
+       orientation="0,1"
+       position="275.21303,783.73422"
+       id="guide2445" />
+    <sodipodi:guide
+       orientation="0,1"
+       position="368.08327,838.09729"
+       id="guide2447" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <text
+       xml:space="preserve"
+       style="font-size:64px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:DejaVu Serif;-inkscape-font-specification:DejaVu Serif"
+       x="231.04305"
+       y="214.26489"
+       id="text2383"><tspan
+         sodipodi:role="line"
+         id="tspan2385"
+         x="231.04305"
+         y="214.26489">Task</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:64px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#ff0000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:DejaVu Serif;-inkscape-font-specification:DejaVu Serif"
+       x="231.04305"
+       y="268.62796"
+       id="text2387"><tspan
+         sodipodi:role="line"
+         id="tspan2389"
+         x="231.04305"
+         y="268.62796">Tracker</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:64px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#0000ff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:DejaVu Serif;-inkscape-font-specification:DejaVu Serif"
+       x="232.1756"
+       y="324.12357"
+       id="text2391"><tspan
+         sodipodi:role="line"
+         id="tspan2393"
+         x="232.1756"
+         y="324.12357">T</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:64px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#ff0000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:DejaVu Serif;-inkscape-font-specification:DejaVu Serif"
+       x="278.61072"
+       y="322.99103"
+       id="text2395"><tspan
+         sodipodi:role="line"
+         id="tspan2397"
+         x="278.61072"
+         y="322.99103">r</tspan></text>
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot2403"
+       style="fill:black;stroke:none;stroke-opacity:1;stroke-width:1px;stroke-linejoin:miter;stroke-linecap:butt;fill-opacity:1;font-family:Bitstream Vera Sans;font-style:normal;font-weight:normal;font-size:40px"><flowRegion
+         id="flowRegion2405"><rect
+           id="rect2407"
+           width="56.628197"
+           height="53.230503"
+           x="342.0343"
+           y="370.55872" /></flowRegion><flowPara
+         id="flowPara2409"></flowPara></flowRoot>    <text
+       xml:space="preserve"
+       style="font-size:64px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#0000ff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:DejaVu Serif;-inkscape-font-specification:DejaVu Serif"
+       x="309.18994"
+       y="322.99103"
+       id="text2411"
+       inkscape:transform-center-x="6.7953834"
+       inkscape:transform-center-y="7.9279473"><tspan
+         sodipodi:role="line"
+         id="tspan2413"
+         x="309.18994"
+         y="322.99103">a</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:64px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#000080;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:DejaVu Serif;-inkscape-font-specification:DejaVu Serif"
+       x="348.82968"
+       y="322.99103"
+       id="text2415"><tspan
+         sodipodi:role="line"
+         id="tspan2417"
+         x="348.82968"
+         y="322.99103">s</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:64px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#0000ff;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:DejaVu Serif;-inkscape-font-specification:DejaVu Serif"
+       x="381.07681"
+       y="322.99103"
+       id="text2419"><tspan
+         sodipodi:role="line"
+         id="tspan2421"
+         x="381.07681"
+         y="322.99103">k</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:64px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#ff0000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:DejaVu Serif;-inkscape-font-specification:DejaVu Serif"
+       x="420.18121"
+       y="322.99103"
+       id="text2423"><tspan
+         sodipodi:role="line"
+         id="tspan2425"
+         x="420.18121"
+         y="322.99103">er</tspan></text>
+  </g>
+</svg>
