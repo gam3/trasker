@@ -230,10 +230,6 @@ void Connection::reConnect()
 
     connectionTimer.start();
     if (ssl) {
-        foreach (QSslCertificate cert, QSslCertificate::fromPath(certpath)) {
-             qDebug() << cert.issuerInfo(QSslCertificate::Organization);
-///FIX certs need to be install at object create
-        }
         connectToHostEncrypted(host, port);
     } else {
         connectToHost(host, port);

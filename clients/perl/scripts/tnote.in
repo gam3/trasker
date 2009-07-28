@@ -1,0 +1,220 @@
+#!/usr/bin/perl
+
+use strict;
+use POSIX ;
+use Socket;
+use IO::Socket;
+use IO::Socket::SSL qw(debug0);
+use IO::Select;
+use Fcntl qw(F_GETFL F_SETFL O_NONBLOCK O_NDELAY);
+
+use Getopt::Long;            # support options+arguments
+use Pod::Usage;              # avoid redundant &Usage()
+
+my $done=0;
+my $select;
+my $server;
+my $sslserver;
+my $connections=0;
+
+sub nonblock {
+    my $socket = shift;
+    my $flags;
+
+    return unless $socket;
+
+    $flags = fcntl($socket, F_GETFL, 0)
+        or print STDERR "Can't get flags for socket: $!\n";
+    fcntl($socket, F_SETFL, $flags | O_NONBLOCK)
+        or print STDERR "Can't make socket nonblocking: $!\n";
+}
+
+################################################################################
+
+our $hash = {};
+our $user_hash = {};
+our $datahash = {};
+
+our $time_count;
+
+our $opt_list = 0;
+our $opt_project = "0";
+
+our $opt_debug;
+our $opt_help;
+
+our $opt_man;
+our $opt_versions;
+
+our $opt_server;
+our $opt_port;
+
+our $password;
+our $user;
+
+our $config_file = $ENV{HOME} . '/.config/Tasker/user.conf';
+
+our $server = 'localhost';
+our $port   = '8001';
+
+use Fcntl qw(F_GETFL F_SETFL O_NONBLOCK O_NDELAY);
+
+sub main
+{
+    my $server = IO::Socket::SSL->new(
+        PeerAddr => $server,
+        PeerPort => $port,
+        Proto    => 'tcp',
+        (
+            SSL_use_cert => 1,
+            SSL_cert_file => '/etc/tasker/cert.pem',
+            SSL_key_file => '/etc/tasker/key.pem',
+        ) x!! 0,
+        (
+            SSL_verify_mode => 0x01,
+            SSL_ca_file => '/etc/tasker/cacert.pem',
+        ) x!! 0,
+    );
+
+    warn "I encountered a problem: ".IO::Socket::SSL::errstr() unless $server;
+
+    nonblock($server);
+    nonblock(\*STDIN);
+
+    if ($server) {
+        my $state = "connect";
+        my $old_state = "";
+        $select = IO::Select->new();
+
+        $select->add($server);
+        while (1) {
+            foreach my $reader ($select->can_read(1)) {
+                if ($server == $reader) {
+                    my $data;
+                    my $rv = $server->read($data, POSIX::BUFSIZ, 0);
+                    unless (defined($rv) && length $data) {
+                        printf("close\n");
+                        exit(0);
+                    }
+		    chomp $data;
+		    print "State: $state\n" if ($state ne $old_state);
+		    $old_state = $state;
+		    print "Data: $data\n";
+		    if ($data =~ /^TTCP\t0.01/) {
+print "Authorizing\n";
+                        print $server join("\t", qw(authorize), $password), "\n";
+		        $state = 'start';
+		    } elsif ($state eq "start") {
+		        if ($data =~ /^authorized\s([a-zA-Z0-9]+)/) {
+			    $state = "authorized";
+			}
+                    } elsif ($state eq 'authorized') {
+                        $state = 'done';
+                    } elsif ($state eq 'waiting for response') {
+			if ($data =~ /error/) {
+			    print "Bummer\n";
+			    return 1;
+			} elsif ($data =~ /accept/) {
+			    print "Great\n";
+			    return 0;
+			}
+                    } else {
+			print "Unknown state: $state\n";
+			exit;
+                    }
+                } else {
+                    warn "unknown reader\n";
+                }
+            }
+            if ($state eq "authorized") {
+                if ($opt_project) {
+		    if ($opt_project =~ /^\d+/) {
+			printf("note\t%s\t%d\t%s\n", $user, $opt_project, 'This is a note.');
+			printf($server "note\t%s\t%d\t%s\n", $user, $opt_project, 'This is a note.');
+		    } else {
+		        print "bad project";
+		        exit(1);
+		    }
+                } elsif ($opt_list) {
+                    print join("\t", qw(note gam3 0), "A note"), "\n";
+                } else {
+                    print join("\t", qw(note gam3 0), "A note"), "\n";
+                    print $server join("\t", qw(note gam3 0), "A note"), "\n";
+                }
+                $state = "waiting for response";
+            }
+        }
+    } else {
+        warn "I encountered a problem: ", IO::Socket::SSL::errstr();
+    }
+    print("DONE\n");
+}
+
+
+GetOptions(
+    'config=s'  => \$config_file,
+    'server=s'  => \$opt_server,
+    'port=i'    => \$opt_port,
+    'debug=i'   => \$opt_debug,
+    'help!'     => \$opt_help,
+    'man!'      => \$opt_man,
+    'versions!' => \$opt_versions,
+    'list!'     => \$opt_list,
+    'projects'  => \$opt_project,
+) or pod2usage(-verbose => 1) && exit;
+
+#pod2usage(-verbose => 1) && exit if ($opt_debug !~ /^[01]$/);
+pod2usage(-verbose => 1) && exit if defined $opt_help;
+pod2usage(-verbose => 2) && exit if defined $opt_man;
+
+if ($config_file) {
+   open(CONFIG, "$config_file") or die qq(Could not open config file "$config_file".);
+   while (<CONFIG>) {
+       if (m/user=([A-Za-z0-9-]+)/) {
+           $user = $1;
+       }
+       if (m|password=([A-Za-z0-9-][A-Za-z0-9-/]+)|) {
+           $password = $1;
+       }
+       if (m/host=([A-Za-z0-9-]+)/) {
+           $server = $1;
+       }
+       if (m/port=([0-9]+)/) {
+           $port = $1;
+       }
+   }
+}
+
+main;
+
+__END__
+=head1 NAME
+
+ tnote.pl
+
+=head1 SYNOPSIS
+
+ tnote.pl [--user {user}] [note_file]
+
+=head1 DESCRIPTION
+
+
+=head1 OPTIONS
+
+ --user {user}  set the user of the note.
+ --project {project|number|regular expresion}
+ --list
+
+ --versions     print Modules, Perl, OS, Program info
+ --debug 0      don't print debugging information (default)
+ --debug 1      print debugging information
+
+ --help         print Options and Arguments instead
+ --man          print complete man page
+
+=head1 AUTHOR
+
+G. Allen Morris III <gam3@gam3.net>
+
+=cut
+

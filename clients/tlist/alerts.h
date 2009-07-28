@@ -19,7 +19,7 @@ public:
     void setParentProject(const Project &proj);
     QTimer *timer;
 public slots:
-    void add(QString text);
+    void add(int id, QString, QString);
     void update();
     void update(int);
 private slots:

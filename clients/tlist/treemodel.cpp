@@ -302,8 +302,9 @@ void TreeModel::add_entry(QString name, int id, int pid, const QTime time, const
         item = getItem(QModelIndex());
         parentIndex = QModelIndex();
     }
-//FIXME
+
     if (parents[id]) {
+       qWarning("reload of \"entry\" (%d).", id);
        return;
     }
 

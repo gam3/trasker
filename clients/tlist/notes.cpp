@@ -35,6 +35,7 @@ void Notes::show_help()
 
 void Notes::notesDone(QString check)
 {
+    Q_UNUSED(check);
     hide();
 };
 

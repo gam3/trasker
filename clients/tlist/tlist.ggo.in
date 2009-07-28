@@ -5,6 +5,7 @@ package "@PACKAGE@" # don't use package if you're using automake
 version "@VERSION@"   # don't use version if you're using automake
 
 # Options
-option  "setup"        - "Run setup on startup"        flag       off
+option  "show"         - "Show windo 'name' on startup"        string multiple optional
+option  "setup"        - "Run setup on startup"                flag       off
 text "\nAn ending text."
 

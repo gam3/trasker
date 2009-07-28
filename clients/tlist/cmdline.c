@@ -27,14 +27,14 @@
 
 const char *gengetopt_args_info_purpose = "";
 
-const char *gengetopt_args_info_usage = "Usage: tlist [OPTIONS]...";
+const char *gengetopt_args_info_usage = "Usage: @PACKAGE@ [OPTIONS]...";
 
 const char *gengetopt_args_info_description = "";
 
 const char *gengetopt_args_info_help[] = {
   "  -h, --help         Print help and exit",
   "  -V, --version      Print version and exit",
-  "      --show=STRING  Run setup on startup",
+  "      --show=STRING  Show windo 'name' on startup",
   "      --setup        Run setup on startup  (default=off)",
   "\nAn ending text.",
     0
@@ -804,7 +804,7 @@ cmdline_parser_internal (
 
 
         case 0:	/* Long option with no short option */
-          /* Run setup on startup.  */
+          /* Show windo 'name' on startup.  */
           if (strcmp (long_options[option_index].name, "show") == 0)
           {
 

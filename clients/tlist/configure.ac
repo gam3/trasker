@@ -6,8 +6,6 @@ AC_INIT(tlist, [0.0.1], [gam3@gam3.com])
 AC_CONFIG_SRCDIR([mainwindow.h])
 AC_CONFIG_HEADER([config.h])
 
-AM_INIT_AUTOMAKE
-
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_INSTALL

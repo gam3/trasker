@@ -47,7 +47,9 @@ void AddAuto::grabClicked()
 
     process->start("winselect");
 
-    process->waitForFinished();
+    if (!process->waitForFinished()) {
+        qWarning("process error");
+    }
 
     delete process;
     process = NULL;
@@ -118,6 +120,7 @@ void AddAuto::read()
 
 void AddAuto::autoDone(QString check)
 {
+    Q_UNUSED(check);
     hide();
 };
 

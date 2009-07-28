@@ -64,7 +64,7 @@ main(int argc, char *argv[])
     MainWindow window(ttcp);
     Alerts alerts(ttcp);
 
-    for (int i = 0; i < args_info.show_given; ++i) {
+    for (unsigned int i = 0; i < args_info.show_given; ++i) {
 	for (char **str = args_info.show_arg; *str; str++) {
 	    if (!strcmp(args_info.show_arg[i], "project")) {
 		window.show();

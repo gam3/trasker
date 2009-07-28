@@ -21,17 +21,17 @@ extern "C" {
 
 #ifndef CMDLINE_PARSER_PACKAGE
 /** @brief the program name (used for printing errors) */
-#define CMDLINE_PARSER_PACKAGE "tlist"
+#define CMDLINE_PARSER_PACKAGE "@PACKAGE@"
 #endif
 
 #ifndef CMDLINE_PARSER_PACKAGE_NAME
 /** @brief the complete program name (used for help and version) */
-#define CMDLINE_PARSER_PACKAGE_NAME "tlist"
+#define CMDLINE_PARSER_PACKAGE_NAME "@PACKAGE@"
 #endif
 
 #ifndef CMDLINE_PARSER_VERSION
 /** @brief the program version */
-#define CMDLINE_PARSER_VERSION "0.0.1"
+#define CMDLINE_PARSER_VERSION "@VERSION@"
 #endif
 
 /** @brief Where the command line options are stored */
@@ -39,11 +39,11 @@ struct gengetopt_args_info
 {
   const char *help_help; /**< @brief Print help and exit help description.  */
   const char *version_help; /**< @brief Print version and exit help description.  */
-  char ** show_arg;	/**< @brief Run setup on startup.  */
-  char ** show_orig;	/**< @brief Run setup on startup original value given at command line.  */
-  unsigned int show_min; /**< @brief Run setup on startup's minimum occurreces */
-  unsigned int show_max; /**< @brief Run setup on startup's maximum occurreces */
-  const char *show_help; /**< @brief Run setup on startup help description.  */
+  char ** show_arg;	/**< @brief Show windo 'name' on startup.  */
+  char ** show_orig;	/**< @brief Show windo 'name' on startup original value given at command line.  */
+  unsigned int show_min; /**< @brief Show windo 'name' on startup's minimum occurreces */
+  unsigned int show_max; /**< @brief Show windo 'name' on startup's maximum occurreces */
+  const char *show_help; /**< @brief Show windo 'name' on startup help description.  */
   int setup_flag;	/**< @brief Run setup on startup (default=off).  */
   const char *setup_help; /**< @brief Run setup on startup help description.  */
 

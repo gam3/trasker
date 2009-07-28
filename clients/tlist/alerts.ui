@@ -2,178 +2,38 @@
 <ui version="4.0">
  <class>Alerts</class>
  <widget class="QDialog" name="Alerts">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>331</width>
+    <height>247</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_2">
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="margin">
+    <number>1</number>
+   </property>
    <item>
-    <widget class="QTabWidget" name="tabWidget">
-     <property name="currentIndex">
-      <number>1</number>
-     </property>
-     <widget class="QWidget" name="tab">
-      <attribute name="title">
-       <string>Tab 1</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout">
-       <item>
-        <widget class="QTextBrowser" name="textBrowser"/>
-       </item>
-       <item>
-        <widget class="QDialogButtonBox" name="buttonBox">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="standardButtons">
-          <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QComboBox" name="comboBox_2">
-         <item>
-          <property name="text">
-           <string>2 Minutes</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>10 Minutes</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>20 Minutes</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>1 Hour</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>1Day</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>After Lunch</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>End of the Day</string>
-          </property>
-         </item>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="tab_2">
-      <attribute name="title">
-       <string>Tab 2</string>
-      </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_3">
-       <item>
-        <widget class="QTextBrowser" name="textBrowser_2"/>
-       </item>
-       <item>
-        <widget class="QDialogButtonBox" name="buttonBox_2">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="standardButtons">
-          <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QComboBox" name="comboBox_3">
-         <item>
-          <property name="text">
-           <string>2 Minutes</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>10 Minutes</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>20 Minutes</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>1 Hour</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>1Day</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>After Lunch</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>End of the Day</string>
-          </property>
-         </item>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </widget>
+    <widget class="MultiPageWidget" name="CurrentAlert"/>
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>MultiPageWidget</class>
+   <extends>QWidget</extends>
+   <header>multipagewidget.h</header>
+   <addpagemethod>addPage</addpagemethod>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
- <connections>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>accepted()</signal>
-   <receiver>Alerts</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>248</x>
-     <y>254</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>157</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>rejected()</signal>
-   <receiver>Alerts</receiver>
-   <slot>reject()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>316</x>
-     <y>260</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>286</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>

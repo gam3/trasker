@@ -6,7 +6,8 @@
 #include "ttcp.h"
 #include "connection.h"
 
-TTCP::TTCP(const QString &host_in, quint16 port_in, bool ssl_in, const QString &user_in, const QString &password_in) : user(user_in), password(password_in), host(host_in), port(port_in), ssl(ssl_in)
+TTCP::TTCP(const QString &host_in, quint16 port_in, bool ssl_in, const QString &user_in, const QString &password_in)
+    : user(user_in), password(password_in), host(host_in), port(port_in), ssl(ssl_in)
 {
     connection = new Connection(this);
 
@@ -34,6 +35,8 @@ QString TTCP::nickName() const
 
 bool TTCP::hasConnection(const QHostAddress &senderIp, int senderPort) const
 {
+    Q_UNUSED(senderIp);
+    Q_UNUSED(senderPort);
     return true;
 }
 
@@ -138,14 +141,20 @@ void TTCP::addtask(int parentId, const QString &name, const QString &desc) const
     connection->write(QString("addtask\t%1\t%2\t%3\t%4\n").arg(user).arg(parentId).arg(n).arg(d).toAscii());
 }
 
-void TTCP::addauto(const int id, const QString &host, const QString &classN, const QString &name, const QString &role, const QString &title, const QString &desktop) const
+void TTCP::addauto(const int id, const QString &host, const QString &classN, const QString &name,
+                   const QString &role, const QString &title, const QString &desktop) const
 {
-    connection->write(QString("addauto\t%1\t%2\t%3\t%4\t%5\t%6\t%7\t%8\n").arg(user).arg(id).arg(host).arg(classN).arg(name).arg(role).arg(title).arg(desktop).toAscii());
+    connection->write(QString("addauto\t%1\t%2\t%3\t%4\t%5\t%6\t%7\t%8\n").arg( user ).arg( id ).arg(host).arg(classN).arg(name).arg(role).arg(title).arg(desktop).toAscii());
 }
 
 void TTCP::setAuto(QString &host, QString &classN, QString &name, QString &role, QString &title, QString &desktop)
 {
-
+    Q_UNUSED(host);
+    Q_UNUSED(classN);
+    Q_UNUSED(name);
+    Q_UNUSED(role);
+    Q_UNUSED(title);
+    Q_UNUSED(desktop);
 }
 
 void TTCP::newCommand(const QStringList &list)
@@ -180,7 +189,7 @@ void TTCP::newCommand(const QStringList &list)
     } else if (list[0] == "accept_select") {
 	emit accept_select(list[1]);
     } else if (list[0] == "alert") {
-        emit alert_message(list[1].toInt(), list[2]);
+        emit alert_message(list[1].toInt(), list[2], list[3]);
     } else if (list[0] == "alert_end") {
         emit alert_end_message(list[1].toInt());
     } else {

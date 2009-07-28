@@ -1,15 +1,17 @@
 # #####################################################################
 # #####################################################################
-# MAKEFILE = qmakefile
+#MAKEFILE = qmakefile
 TEMPLATE = app
 DEPENDPATH += .
 INCLUDEPATH += .
 CONFIG += qt
 QT += network \
     webkit
-
 VERSION = 0.0.1
 DEFINES += HAVE_CONFIG_H
+DESTDIR = .
+target.path = /usr/local/bin
+INSTALLS += target
 
 # Input
 HEADERS += addproject.h \
@@ -32,8 +34,9 @@ HEADERS += addproject.h \
     timeedit.h \
     timemodel.h \
     timeitem.h \
-    cmdline.h
-
+    multipagewidget.h \
+    cmdline.h \
+    alertdisplay.h
 FORMS += addproject.ui \
     auto_select.ui \
     error.ui \
@@ -43,8 +46,9 @@ FORMS += addproject.ui \
     projects.ui \
     setup.ui \
     timeedit.ui \
-    alerts.ui
-
+    alerts.ui \
+    alert_entry.ui \
+    alertdisplay.ui
 SOURCES += addproject.cpp \
     auto_select.cpp \
     alerts.cpp \
@@ -63,21 +67,20 @@ SOURCES += addproject.cpp \
     timeedit.cpp \
     timemodel.cpp \
     timeitem.cpp \
-    cmdline.c
-
+    multipagewidget.cpp \
+    cmdline.c \
+    alertdisplay.cpp
 DISTFILES += tlist.ggo
-
 cmdline_c.target = cmdline.c
-cmdline_c.commands = gengetopt < tlist.ggo
+cmdline_c.commands = gengetopt \
+    < \
+    tlist.ggo
 cmdline_c.depends = cmdline_h
-
 cmdline_h.target = tlist.ggo
-
-QMAKE_EXTRA_TARGETS += cmdline_c cmdline_h
-
+QMAKE_EXTRA_TARGETS += cmdline_c \
+    cmdline_h
 MOC_DIR += .moc
 RESOURCES += systray.qrc \
     tlist.qrc
 unix:SOURCES += x11.cpp
-
 RC_FILE = pics/tlist.icns

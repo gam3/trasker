@@ -40,7 +40,6 @@ TimeEdit::~TimeEdit()
 
 void TimeEdit::myShow()
 {
-
     ttcp->getTimes();
     view->model()->revert();
 
