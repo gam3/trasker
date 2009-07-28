@@ -8,13 +8,13 @@ use strict;
 #
 # This object holds a Note that the user entered.
 #
-package Tasker::TTDB::Note;
+package Trasker::TTDB::Note;
 
-use Tasker::TTDB::DBI qw (get_dbh);
+use Trasker::TTDB::DBI qw (get_dbh);
 
 use Params::Validate qw (validate);
 
-use Tasker::Date;
+use Trasker::Date;
 
 sub new
 {
@@ -30,18 +30,18 @@ sub new
 	},
         user => {
 	    optional => 1,
-	    isa => "Tasker::TTDB::User",
+	    isa => "Trasker::TTDB::User",
 	},
         project => {
 	    optional => 1,
-	    isa => "Tasker::TTDB::Project",
+	    isa => "Trasker::TTDB::Project",
 	},
 	user_id => 0,
 	project_id => 0,
 	id => 0,
     });
     if (defined $p{time} && !ref($p{time})) {
-        $p{time} = Tasker::Date->new($p{time});
+        $p{time} = Trasker::Date->new($p{time});
     }
 
     bless { %p }, $class;
@@ -65,7 +65,7 @@ sub get
 
     $sth->execute($p{id});
 
-#    map({bless $_, 'Tasker::TTDB::Note'} @{$sth->fetchall_arrayref({})});
+#    map({bless $_, 'Trasker::TTDB::Note'} @{$sth->fetchall_arrayref({})});
 
     return $class->new($sth->fetchrow_hashref());
 }
@@ -159,7 +159,7 @@ sub user
     my $self = shift;
 
     if ($self->user_id) {
-	$self->{user} ||= Tasker::TTDB::User->get(id => $self->user_id);
+	$self->{user} ||= Trasker::TTDB::User->get(id => $self->user_id);
     }
 }
 
@@ -167,9 +167,9 @@ sub project
 {
     my $self = shift;
 
-    require Tasker::TTDB::Project;
+    require Trasker::TTDB::Project;
     if ($self->project_id) {
-	$self->{project} ||= Tasker::TTDB::Project->get(id => $self->project_id);
+	$self->{project} ||= Trasker::TTDB::Project->get(id => $self->project_id);
     }
     $self->{project};
 }
@@ -178,7 +178,7 @@ sub date
 {
     my $self = shift;
 
-    Tasker::Date->new($self->{time});
+    Trasker::Date->new($self->{time});
 }
 
 sub text
@@ -193,24 +193,24 @@ __END__
 
 =head1 NAME
 
-Tasker::TTDB::Note - Perl interface to the tasker notes table
+Trasker::TTDB::Note - Perl interface to the tasker notes table
 
 =head1 SYNOPSIS
 
-  use Tasker::TTDB::Note;
+  use Trasker::TTDB::Note;
 
-  $auto = Tasker::TTDB::Note->new(user => $user);
+  $auto = Trasker::TTDB::Note->new(user => $user);
 
-  $auto = Tasker::TTDB::Note->create(
+  $auto = Trasker::TTDB::Note->create(
       project_id => I<projectid>,
       user_id => I<userid>,
   );
 
-  $auto = Tasker::TTDB::Note->get(user => $user, role => 'bob'):
+  $auto = Trasker::TTDB::Note->get(user => $user, role => 'bob'):
 
 =head1 DESCRIPTION
 
-Normally the I<note> is returned from the I<Tasker::TTDB::Notes> interface or somewhere else.
+Normally the I<note> is returned from the I<Trasker::TTDB::Notes> interface or somewhere else.
 
 =head2 Constructor
 
@@ -275,7 +275,7 @@ This will delete the object from the database.
 
 =head1 SEE ALSO
 
-L<Tasker::TTDB::Notes>
+L<Trasker::TTDB::Notes>
 
 =head1 AUTHOR
 

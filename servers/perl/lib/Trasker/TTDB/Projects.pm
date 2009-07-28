@@ -8,12 +8,12 @@ use strict;
 # A list of Project objects
 #
 # This Object simply holds a list of Project objects
-# 
-package Tasker::TTDB::Projects;
+#
+package Trasker::TTDB::Projects;
 
-use Tasker::TTDB::Project;
+use Trasker::TTDB::Project;
 
-use Tasker::TTDB::DBI qw (get_dbh);
+use Trasker::TTDB::DBI qw (get_dbh);
 
 use Params::Validate qw( validate validate_pos SCALAR BOOLEAN HASHREF OBJECT );
 
@@ -45,7 +45,7 @@ sub new
     my %p = validate(@_, {
 	user => {
 	   optional => 1,
-	   isa => [ qw(  Tasker::TTDB::User ) ],
+	   isa => [ qw(  Trasker::TTDB::User ) ],
 	},
     });
 
@@ -70,9 +70,9 @@ SQL
 	$user_id = $data->{user_id};
 
 	# Merge data in case child gets set before data is seen.
-	my $entry = bless { %$data, child => $data_hash->{$id}{child} }, 'Tasker::TTDB::Project'; 
+	my $entry = bless { %$data, child => $data_hash->{$id}{child} }, 'Trasker::TTDB::Project';
 
-	$data_hash->{$id} = $entry; 
+	$data_hash->{$id} = $entry;
 	if (my $parent_id = $data->{parent_id}) {
 	    # the parent may not me definded yet
 	    $data_hash->{$parent_id}{child}{$id} = 1;
@@ -134,18 +134,18 @@ __END__
 
 =head1 NAME
 
-Tasker::TTDB::User - Perl interface to the tasker user
+Trasker::TTDB::User - Perl interface to the tasker user
 
 =head1 SYNOPSIS
 
-  use Tasker::TTDB::User;
+  use Trasker::TTDB::User;
 
-  $user = Tasker::TTDB::User->new(user => 'bob', fullname => 'Robert Smith'):
+  $user = Trasker::TTDB::User->new(user => 'bob', fullname => 'Robert Smith'):
 
   $user->create();
 
-  $user = Tasker::TTDB::User->get(user => 'bob'):
-  $user = Tasker::TTDB::User->get(id => 1):
+  $user = Trasker::TTDB::User->get(user => 'bob'):
+  $user = Trasker::TTDB::User->get(id => 1):
 
 =head2 Constructor
 

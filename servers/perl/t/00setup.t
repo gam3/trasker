@@ -3,7 +3,7 @@ use strict;
 
 use Test::More tests => 1;
 
-use Tasker::TTDB::DBI qw (get_dbh);
+use Trasker::TTDB::DBI qw (get_dbh);
 
 our $dbh = get_dbh;
 

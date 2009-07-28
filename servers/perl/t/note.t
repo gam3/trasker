@@ -4,22 +4,22 @@ use Test::More tests => 4;
 use Test::Exception;
 
 BEGIN {
-    use_ok('Tasker::TTDB::Note');
+    use_ok('Trasker::TTDB::Note');
 };
 
-use Tasker::TTDB::User;
-use Tasker::TTDB::Project;
+use Trasker::TTDB::User;
+use Trasker::TTDB::Project;
 
-our $user = Tasker::TTDB::User->get(user => 'bob');
-our $proj = Tasker::TTDB::Project->get(id => 1);
+our $user = Trasker::TTDB::User->get(user => 'bob');
+our $proj = Trasker::TTDB::Project->get(id => 1);
 
-my $x = Tasker::TTDB::Note->create(
+my $x = Trasker::TTDB::Note->create(
     user => $user,
     project => $proj,
     note => "This is a note",
 );
 
-my $y = Tasker::TTDB::Note->get(
+my $y = Trasker::TTDB::Note->get(
     id => 1,
 );
 

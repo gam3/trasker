@@ -4,7 +4,7 @@
 MAYBE_OPT =
 
 if HAVE_X11
-    MAYBE_OPT += tasker-x11
+    MAYBE_OPT += trasker-x11
 endif
 
 if HAVE_QT4

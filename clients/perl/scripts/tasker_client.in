@@ -71,7 +71,7 @@ sub main
         (
 	    SSL_verify_mode => 0x01, 
 	    SSL_ca_file => '/etc/tasker/cacert.pem',
-	) x!! 0,
+	) x!! 1,
     );
 
     nonblock($client);

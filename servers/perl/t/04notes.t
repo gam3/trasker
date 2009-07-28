@@ -3,10 +3,10 @@ use strict;
 use Test::More tests => 3;
 
 BEGIN {
-    use_ok('Tasker::TTDB::User');
+    use_ok('Trasker::TTDB::User');
 };
 
-use Tasker::TTDB::DBI qw (get_dbh);
+use Trasker::TTDB::DBI qw (get_dbh);
 
 our $dbh = get_dbh;
 
@@ -14,7 +14,7 @@ $dbh->do(qq/delete from notes/) or die;
 $dbh->do(qq/SELECT setval('notes_id_seq', 1, false)/);
 $dbh->commit;
 
-our $user_A = Tasker::TTDB::User->get(user => 'bob');
+our $user_A = Trasker::TTDB::User->get(user => 'bob');
 
 $user_A->add_note(note => "This is a user note.");
 pass('add note');

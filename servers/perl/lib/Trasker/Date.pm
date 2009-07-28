@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-package Tasker::Date;
+package Trasker::Date;
 
 use Date::Calc::Object;
 
@@ -11,13 +11,13 @@ use POSIX qw();
 
 =head1 NAME
 
-Tasker::Date - The time and date function for Tasker
+Trasker::Date - The time and date function for Trasker
 
 =head1 SYNOPSIS
 
-  use Tasker::Date;
+  use Trasker::Date;
 
-  $date = Tasker::Date->today();
+  $date = Trasker::Date->today();
 
 =head2 Constructors
 

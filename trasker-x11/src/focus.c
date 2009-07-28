@@ -543,6 +543,23 @@ int pid;
 char *user;
 int verbose = 0;
 
+char *config_file = "/home/gam3/.config/Tasker/user.conf";
+
+void get_password()
+{
+    FILE *config;
+    char buffer[1024];
+    char *ptr;
+
+    if (!(config = fopen(config_file, "r"))) {
+	perror("Could not open logfile");
+	exit(-3);
+    }
+    while (ptr = fgets(buffer, 1024, config)) {
+printf("%s", ptr);
+    }
+}
+
 void parse_command_line(int argc, char **argv, struct cmdlineopt *opt)
 {
     int c, i;
@@ -1120,11 +1137,13 @@ int main(int argc, char *argv[])
     }
 
     parse_command_line(argc, argv, &options);
+    get_password();
 
     long idletime = 3 * 60 * 1000L;
 
     typedef void (*sighandler_t) (int);
     sighandler_t old_sighander;
+
 
     user = getenv("USER");
 

@@ -12,17 +12,17 @@ use warnings;
 # This Object holds User and Project Objects and has a number of
 # helper methods that work on those objects.
 #
-package Tasker::TTDB::UserProject;
+package Trasker::TTDB::UserProject;
 
-use Tasker::TTDB::Projects;
-use Tasker::TTDB::User;
-use Tasker::TTDB::Project;
+use Trasker::TTDB::Projects;
+use Trasker::TTDB::User;
+use Trasker::TTDB::Project;
 
 use Carp qw (croak);
 
-use Tasker::TTDB::DBI qw (get_dbh dbi_setup);
+use Trasker::TTDB::DBI qw (get_dbh dbi_setup);
 
-use Tasker::Date;
+use Trasker::Date;
 
 use Params::Validate qw( validate validate_pos SCALAR BOOLEAN HASHREF OBJECT );
 
@@ -33,8 +33,8 @@ sub new
     my $self = bless { }, ref($class) || $class;
 
     my %p = validate(@_, {
-        user => { optional => 1, isa => 'Tasker::TTDB::User' },
-        project => { optional => 1, isa => 'Tasker::TTDB::Project' },
+        user => { optional => 1, isa => 'Trasker::TTDB::User' },
+        project => { optional => 1, isa => 'Trasker::TTDB::Project' },
         project_id => { optional => 1 },
         user_id => { optional => 1 },
     });
@@ -47,8 +47,8 @@ sub new
     if ($p{user}) {
 	$self->{user} = $p{user};
     } elsif (my $uid = $p{user_id}) {
-        require Tasker::TTDB::User;
-        $self->{user} = Tasker::TTDB::User->get(id => $uid);
+        require Trasker::TTDB::User;
+        $self->{user} = Trasker::TTDB::User->get(id => $uid);
     }
     unless ($self->{user}) {
         croak "Need a user";
@@ -57,8 +57,8 @@ sub new
     if ($p{project}) {
 	$self->{project} = $p{project};
     } elsif (my $pid = $p{project_id}) {
-        require Tasker::TTDB::Project;
-        $self->{project} = Tasker::TTDB::Project->get(id => $pid);
+        require Trasker::TTDB::Project;
+        $self->{project} = Trasker::TTDB::Project->get(id => $pid);
     }
     unless ($self->{project}) {
         die "Need a project";
@@ -202,7 +202,7 @@ sub add
 
     my $longname = $parent->longname . '::' . $p{name};
 
-    my $entry = bless { longname => $longname, data => { project_pid => $p{parent}, name => $p{name}, } }, 'Tasker::TTDB::Project'; 
+    my $entry = bless { longname => $longname, data => { project_pid => $p{parent}, name => $p{name}, } }, 'Trasker::TTDB::Project';
 
     $entry;
 }
@@ -227,7 +227,7 @@ our $get_time = {
 
 sub week
 {
-    require Tasker::TTDB::TimeSpan;
+    require Trasker::TTDB::TimeSpan;
     my $self = shift;
     my %p = validate(@_, {
         date => { isa => 'Date::Calc' },
@@ -235,15 +235,15 @@ sub week
     });
     my $date = $p{date};
 
-    my $start = Tasker::Date->new($date->date);
-    my $end = Tasker::Date->new(($date + 7)->date);
+    my $start = Trasker::Date->new($date->date);
+    my $end = Trasker::Date->new(($date + 7)->date);
 
     my @project_ids = ( $self->project->id );
     if ($p{all}) {
 	push(@project_ids, map({ $_->id; } $self->project->children));
     }
 
-    Tasker::TTDB::TimeSpan->get(
+    Trasker::TTDB::TimeSpan->get(
         start_time => $start,
         end_time => $end,
 	uids => [ $self->user->id ],
@@ -253,7 +253,7 @@ sub week
 
 sub day
 {
-    require Tasker::TTDB::TimeSpan;
+    require Trasker::TTDB::TimeSpan;
     my $self = shift;
     my %p = validate(@_, {
         date => { isa => 'Date::Calc' },
@@ -262,8 +262,8 @@ sub day
     my $date = $p{date};
 
 
-    my $start = Tasker::Date->new($date->date);
-    my $end = Tasker::Date->new(($date + 1)->date);
+    my $start = Trasker::Date->new($date->date);
+    my $end = Trasker::Date->new(($date + 1)->date);
 
     my @project_ids = ( $self->project->id );
 
@@ -271,14 +271,14 @@ sub day
 	push(@project_ids, map({ $_->id; } $self->project->children));
     }
 
-    my $dur = Tasker::TTDB::TimeSpan->get(
+    my $dur = Trasker::TTDB::TimeSpan->get(
         start_time => $start,
         end_time => $end,
 	uids => [ $self->user->id ],
 	pids => [ @project_ids ],
     );
-    my $duration = Tasker::Date->new($dur->{data}{time});
-    my $max = Tasker::Date->new(1, 0, 0, 0);
+    my $duration = Trasker::Date->new($dur->{data}{time});
+    my $max = Trasker::Date->new(1, 0, 0, 0);
 
 die 'bad duration' if $duration > $max;
     $dur;
@@ -290,7 +290,7 @@ sub get_time
     my $id = $self->project->id();
 
     if ($get_time->{'time'} && time - $get_time->{'time'} < 5) {
-	return $get_time->{data}{$id} || Tasker::Date->new([1], 0, 0, 0, 0,0,0);
+	return $get_time->{data}{$id} || Trasker::Date->new([1], 0, 0, 0, 0,0,0);
     }
 
     my $dbh = get_dbh();
@@ -314,14 +314,14 @@ SQL
     $get_time->{time} = time();
     while (my $row = $sth->fetchrow_arrayref) {
 	my $time = $row->[1];
-	my $ntime = Tasker::Date->new([1], 0, 0, 0, split(':', $time));
+	my $ntime = Trasker::Date->new([1], 0, 0, 0, split(':', $time));
 	if (defined($row->[0])) {
 	    $get_time->{data}{$row->[0]} = $ntime;
 	} else {
 	    $get_time->{data}{0} = $ntime;
 	}
     }
-    $get_time->{data}{$id} || Tasker::Date->new([1], 0, 0, 0, 0, 0, 0);
+    $get_time->{data}{$id} || Trasker::Date->new([1], 0, 0, 0, 0, 0, 0);
 }
 
 sub time
@@ -336,7 +336,7 @@ sub children
 {
     my $self = shift;
 
-    map({ Tasker::TTDB::UserProject->new(user => $self->user, project => $_); } $self->project->children);
+    map({ Trasker::TTDB::UserProject->new(user => $self->user, project => $_); } $self->project->children);
 }
 
 sub get_alltime
@@ -395,8 +395,8 @@ sub add_note
 	$st = $dbh->prepare("insert into notes (type, user_id, project_id, note, time) values (?, ?, ?, ?, now())");
     }
 
-    require Tasker::TTDB::Note;
-    my $note = Tasker::TTDB::Note->new(
+    require Trasker::TTDB::Note;
+    my $note = Trasker::TTDB::Note->new(
 	%p,
         user => $self->user,
         project => $self->project,
@@ -417,11 +417,11 @@ sub add_note
 sub get_notes
 {
     my $self = shift;
-    require Tasker::TTDB::Notes;
+    require Trasker::TTDB::Notes;
     my %p = validate(@_, {
     });
 
-    Tasker::TTDB::Notes->new(
+    Trasker::TTDB::Notes->new(
 	user_ids => [ $self->user->id ],
 	project_ids => [ $self->project->id ],
     )->entries;
@@ -430,11 +430,11 @@ sub get_notes
 sub get_selects
 {
     my $self = shift;
-    require Tasker::TTDB::Autos;
+    require Trasker::TTDB::Autos;
     my %p = validate(@_, {
     });
 
-    Tasker::TTDB::Autos->new(
+    Trasker::TTDB::Autos->new(
 	user_ids => [ $self->user->id ],
 	project_ids => [ $self->project->id ],
     )->entries;
@@ -463,8 +463,8 @@ sub add_task
     } else {
         $dbh->commit;
     }
-    
-    Tasker::TTDB::Projects::flush();
+
+    Trasker::TTDB::Projects::flush();
 
     $self->new(project_id => $id);
 }
@@ -473,7 +473,7 @@ sub depth
 {
     my $p = shift->project;
 
-    $p->depth; 
+    $p->depth;
 }
 
 use Data::Dumper;
@@ -489,10 +489,10 @@ SQL
     $st->execute($self->user->id, $self->project->id);
     my @ret;
 
-    require Tasker::TTDB::Auto;
+    require Trasker::TTDB::Auto;
 
     while (my $row = $st->fetchrow_hashref()) {
-        push @ret, Tasker::TTDB::Auto->new(%$row);
+        push @ret, Trasker::TTDB::Auto->new(%$row);
     }
     @ret;
 }
@@ -500,15 +500,15 @@ SQL
 sub new_auto
 {
     my $self = shift;
-    require Tasker::TTDB::Auto;
+    require Trasker::TTDB::Auto;
 
-    my $auto = Tasker::TTDB::Auto->new(
+    my $auto = Trasker::TTDB::Auto->new(
         user_id => $self->user->id,
         project_id => $self->project->id,
 	@_,
     );
 
-    $auto = Tasker::TTDB::Auto->create(
+    $auto = Trasker::TTDB::Auto->create(
         user_id => $self->user->id,
         project_id => $self->project->id,
 	@_,
@@ -527,20 +527,20 @@ __END__
 
 =head1 NAME
 
-Tasker::TTDB::UserProject - Perl interface to the tasker auto table
+Trasker::TTDB::UserProject - Perl interface to the tasker auto table
 
 =head1 SYNOPSIS
 
-  use Tasker::TTDB::UserProject;
+  use Trasker::TTDB::UserProject;
 
-  $up = Tasker::TTDB::UserProject->new(user => I<user>, project => I<project>);
+  $up = Trasker::TTDB::UserProject->new(user => I<user>, project => I<project>);
 
-  $up = Tasker::TTDB::UserProject->new(
+  $up = Trasker::TTDB::UserProject->new(
       project_id => I<project id>,
       user_id => I<user id>,
   );
 
-  $up = Tasker::TTDB::UserProject->get(user => $user, role => 'bob'):
+  $up = Trasker::TTDB::UserProject->get(user => $user, role => 'bob'):
 
 =head1 DESCRIPTION
 

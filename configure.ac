@@ -1,7 +1,7 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT([tasker],[0.0.2],[tasker-bugs@gam3.net])
+AC_INIT([trasker],[0.0.2],[trasker-bugs@gam3.net])
 AC_PREREQ(2.61)
 AC_COPYRIGHT([Copyright (c) 2008 G. Allen Morris III])
 AC_CANONICAL_TARGET
@@ -61,8 +61,8 @@ if test "x$with_perl" = "xyes" ; then
     AC_CONFIG_SUBDIRS( servers )
 fi
 if test "x$with_x11" = "xyes" ; then
-    AC_CONFIG_FILES( [ tasker-x11/configure.ac ] )
-    AC_CONFIG_SUBDIRS( tasker-x11 )
+    AC_CONFIG_FILES( [ trasker-x11/configure.ac ] )
+    AC_CONFIG_SUBDIRS( trasker-x11 )
 fi
 if test "x$with_qt4" = "xyes" ; then
     AC_CONFIG_SUBDIRS( clients/tlist )

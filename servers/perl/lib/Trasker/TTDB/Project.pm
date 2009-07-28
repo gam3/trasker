@@ -10,11 +10,11 @@ use strict;
 #
 # This Object holds the information on a Project
 # 
-package Tasker::TTDB::Project;
+package Trasker::TTDB::Project;
 
-use Tasker::TTDB::DBI qw (get_dbh);
+use Trasker::TTDB::DBI qw (get_dbh);
 
-use Tasker::TTDB::Projects;
+use Trasker::TTDB::Projects;
 
 our $VERSION = '0.001';
 
@@ -24,13 +24,13 @@ use Carp qw (croak);
 
 =head1 NAME
 
-Tasker::TTDB::Project - Perl interface to the tasker project data
+Trasker::TTDB::Project - Perl interface to the tasker project data
 
 =head1 SYNOPSIS
 
-  use Tasker::TTDB::Project;
+  use Trasker::TTDB::Project;
 
-  $user = Tasker::TTDB::Project(id => 1):
+  $user = Trasker::TTDB::Project(id => 1):
 
 =head2 Constructor
 
@@ -51,11 +51,11 @@ sub new
         description => 0,
 	parent => {
 	   optional => 1,
-	   isa => [ qw(  Tasker::TTDB::Project ) ],
+	   isa => [ qw(  Trasker::TTDB::Project ) ],
 	},
 	user => {
 	   optional => 1,
-	   isa => [ qw(  Tasker::TTDB::User ) ],
+	   isa => [ qw(  Trasker::TTDB::User ) ],
 	},
     });
 
@@ -79,11 +79,11 @@ sub get
 	id => 0,
 	child => {
 	   optional => 1,
-	   isa => [ qw(  Tasker::TTDB::Project ) ],
+	   isa => [ qw(  Trasker::TTDB::Project ) ],
 	},
 	user => {
 	   optional => 1,
-	   isa => [ qw(  Tasker::TTDB::User ) ],
+	   isa => [ qw(  Trasker::TTDB::User ) ],
 	},
 	name => 0,
 	root => 0,
@@ -91,7 +91,7 @@ sub get
 
     my $id = $p{id};
 
-    my $projects = Tasker::TTDB::Projects->get((user => $p{user}) x!! $p{user});
+    my $projects = Trasker::TTDB::Projects->get((user => $p{user}) x!! $p{user});
 
     if (my $name = $p{name}) {
         for my $k (keys %{$projects->{data}}) {
@@ -154,7 +154,7 @@ EOP
     my $id = $st_id->fetchrow();
     $self->{id} = $id;
     
-    Tasker::TTDB::Projects::flush();
+    Trasker::TTDB::Projects::flush();
 
     $dbh->commit;
 
@@ -206,7 +206,7 @@ sub parent
    return $self->{parent} if defined $self->{parent};
 
    if (my $id = $self->{parent_id}) {
-       $self->{parent} = Tasker::TTDB::Project->get(id => $id, child => $self);
+       $self->{parent} = Trasker::TTDB::Project->get(id => $id, child => $self);
    }
    $self->{parent};
 }
@@ -290,9 +290,9 @@ sub description
 sub users
 {
     my $self = shift;
-    require Tasker::TTDB::Users;
+    require Trasker::TTDB::Users;
 
-    Tasker::TTDB::Users->new(project => $self);
+    Trasker::TTDB::Users->new(project => $self);
 }
 
 sub child
@@ -321,7 +321,7 @@ sub get_time
     my $id = $self->id();
 
     if (time - $get_time->{time} < 1) {
-	return $get_time->{data}->{$id} || Tasker::Date->new([1], 0, 0, 0, 0,0,0);
+	return $get_time->{data}->{$id} || Trasker::Date->new([1], 0, 0, 0, 0,0,0);
     }
     $get_time->{data} = {};
 
@@ -363,11 +363,11 @@ SQL
     while (my $row = $sth->fetchrow_arrayref) {
 	my $time = $row->[1];
 
-	my $ntime = Tasker::Date->new([1], 0, 0, 0, split(':', $time));
+	my $ntime = Trasker::Date->new([1], 0, 0, 0, split(':', $time));
 	$get_time->{data}->{$row->[0]} = $ntime;
     }
     $get_time->{time} = time();
-    $get_time->{data}->{$id} || Tasker::Date->new([1], 0, 0, 0, 0, 0, 0);
+    $get_time->{data}->{$id} || Trasker::Date->new([1], 0, 0, 0, 0, 0, 0);
 }
 
 sub get_alltime
@@ -386,7 +386,7 @@ sub get_times
     my $id = $self->id();
 
     if (time - $get_time->{time} < 1) {
-	return $get_time->{data}->{$id} || Tasker::Date->new([1], 0, 0, 0, 0,0,0);
+	return $get_time->{data}->{$id} || Trasker::Date->new([1], 0, 0, 0, 0,0,0);
     }
 
     my $dbh = get_dbh();
@@ -405,11 +405,11 @@ SQL
 
     while (my $row = $sth->fetchrow_arrayref) {
 	my $time = $row->[1];
-	my $ntime = Tasker::Date->new([1], 0, 0, 0, split(':', $time));
+	my $ntime = Trasker::Date->new([1], 0, 0, 0, split(':', $time));
 	$get_time->{data}->{$row->[0]} = $ntime;
     }
     $get_time->{time} = time();
-    $get_time->{data}->{$id} || Tasker::Date->new([1], 0, 0, 0, 0, 0, 0);
+    $get_time->{data}->{$id} || Trasker::Date->new([1], 0, 0, 0, 0, 0, 0);
 }
 
 =item children_ids
@@ -429,7 +429,7 @@ sub children
 {
     my $self = shift;
 
-    map({ Tasker::TTDB::Project->get(id => $_) } keys %{$self->{child}});
+    map({ Trasker::TTDB::Project->get(id => $_) } keys %{$self->{child}});
 }
 
 sub default_rate
@@ -508,7 +508,7 @@ sub notes
     my $self = shift;
     my %p = validate(@_, {
         date => {
-	   isa => [ qw( Tasker::Date ) ],
+	   isa => [ qw( Trasker::Date ) ],
 	},
 	all => 0,
     });
@@ -519,8 +519,8 @@ sub notes
         push @pids, $self->children_ids;
     }
 
-    require Tasker::TTDB::Notes;
-    Tasker::TTDB::Notes->new(
+    require Trasker::TTDB::Notes;
+    Trasker::TTDB::Notes->new(
        date => $p{date},
     );
 }

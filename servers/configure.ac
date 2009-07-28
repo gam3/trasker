@@ -1,7 +1,7 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT([tasker-server],[0.0.1],[tasker-bugs@gam3.net])
+AC_INIT([trasker-server],[0.0.1],[trasker-bugs@gam3.net])
 AC_PREREQ(2.59)
 AC_COPYRIGHT([Copyright (c) 2008 G. Allen Morris III])
 AC_CANONICAL_TARGET
@@ -21,7 +21,7 @@ AC_SUBST([pkgvdatadir], ["\${datadir}/$PACKAGE-$APIVERSION"])
 
 AC_ARG_VAR([BUILDFLAGS], [Flags passed to Build.PL])
 
-AC_CONFIG_FILES([Makefile perl/Build.PL perl/Makefile perl/scripts/taskerd perl/scripts/taskers ])
+AC_CONFIG_FILES([Makefile perl/Build.PL perl/Makefile perl/scripts/traskerd perl/scripts/traskers ])
 
 AC_OUTPUT
 

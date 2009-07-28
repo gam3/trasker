@@ -3,18 +3,18 @@
 .html.text:
 	texi2html $<
 
-all : tasker.info tasker.html tasker
+all : trasker.info trasker.html trasker
 
-info_TEXINFOS=tasker.texi
+info_TEXINFOS=trasker.texi
 
-tasker_TEXINFOS=gpl.texi fdl.texi
+trasker_TEXINFOS=gpl.texi fdl.texi
 
-EXTRA_DIST=tasker.html tasker.dvi
+EXTRA_DIST=trasker.html trasker.dvi
 
-tasker : tasker.texi
+trasker : trasker.texi
 	texi2html --split=chapter $<
 
-tasker.html : tasker.texi
+trasker.html : trasker.texi
 	texi2html $<
 
-CLEANFILES = tasker/*.html
+CLEANFILES = trasker/*.html

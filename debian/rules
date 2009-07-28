@@ -82,9 +82,9 @@ install-indep:
 	# debian/<package>-doc.
 	#INSTALLDOC#
 	
-	$(MAKE) DESTDIR=$(CURDIR)/debian/tasker-doc install-info
-	$(MAKE) DESTDIR=$(CURDIR)/debian/tasker-doc install-html
-	$(MAKE) DESTDIR=$(CURDIR)/debian/tasker-doc install-pdf
+	$(MAKE) DESTDIR=$(CURDIR)/debian/trasker-doc install-info
+	$(MAKE) DESTDIR=$(CURDIR)/debian/trasker-doc install-html
+	$(MAKE) DESTDIR=$(CURDIR)/debian/trasker-doc install-pdf
 
 	dh_install -i
 

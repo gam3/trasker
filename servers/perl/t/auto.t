@@ -3,12 +3,12 @@ use strict;
 use Test::More tests => 4;
 
 BEGIN {
-    use_ok('Tasker::TTDB::Auto');
-    use_ok('Tasker::TTDB::User');
+    use_ok('Trasker::TTDB::Auto');
+    use_ok('Trasker::TTDB::User');
 };
 
 eval {
-    Tasker::TTDB::Auto->new();
+    Trasker::TTDB::Auto->new();
 };
 if ($@) {
     pass('no args');
@@ -18,7 +18,7 @@ if ($@) {
 
 my $auto;
 
-$auto = Tasker::TTDB::Auto->create(
+$auto = Trasker::TTDB::Auto->create(
     user_id => 1,
     project_id => 1,
     name => 'testme',
@@ -29,7 +29,7 @@ $auto = Tasker::TTDB::Auto->create(
     host => 'harpo',
 );
 
-my $nauto = Tasker::TTDB::Auto->get(
+my $nauto = Trasker::TTDB::Auto->get(
     user_id => 1,
     name => 'testme',
     class => 'testme',
@@ -43,7 +43,7 @@ is($nauto->id, $auto->id, 'get');
 
 $auto->delete();
 
-$auto = Tasker::TTDB::Auto->get(
+$auto = Trasker::TTDB::Auto->get(
     user_id => 1,
     name => 'testme',
     class => 'testme',

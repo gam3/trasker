@@ -3,25 +3,25 @@ use strict;
 use Test::More tests => 4;
 use Test::Exception;
 
-use Tasker::Date;
+use Trasker::Date;
 
 BEGIN {
-    use_ok('Tasker::TTDB::Notes');
+    use_ok('Trasker::TTDB::Notes');
 };
 
-my $notes = Tasker::TTDB::Notes->new();
+my $notes = Trasker::TTDB::Notes->new();
 
 $notes->entries;
 
-$notes = Tasker::TTDB::Notes->new(today => 1);
+$notes = Trasker::TTDB::Notes->new(today => 1);
 
 is(scalar $notes->entries, 3, 'today');
 
-$notes = Tasker::TTDB::Notes->new(date => Tasker::Date->new(2006, 1, 1));
+$notes = Trasker::TTDB::Notes->new(date => Trasker::Date->new(2006, 1, 1));
 
 is(scalar $notes->entries, 0, '2006-01-01');
 
-$notes = Tasker::TTDB::Notes->new(date => Tasker::Date->new(2006, 1, 2));
+$notes = Trasker::TTDB::Notes->new(date => Trasker::Date->new(2006, 1, 2));
 
 is(scalar $notes->entries, 0, '2006-01-02');
 

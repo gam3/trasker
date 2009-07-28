@@ -17,16 +17,16 @@ use warnings;
 
 =head1 NAME
 
-Tasker::TTDB::Auto - Perl interface to the tasker auto table
+Trasker::TTDB::Auto - Perl interface to the tasker auto table
 
 =cut
 
-package Tasker::TTDB::Auto;
+package Trasker::TTDB::Auto;
 
-use Tasker::TTDB::DBI qw (get_dbh);
+use Trasker::TTDB::DBI qw (get_dbh);
 
-use Tasker::TTDB::User;
-use Tasker::TTDB::Project;
+use Trasker::TTDB::User;
+use Trasker::TTDB::Project;
 
 use Params::Validate;
 
@@ -34,16 +34,16 @@ use Carp qw (croak);
 
 =head1 SYNOPSIS
 
-  use Tasker::TTDB::Auto;
+  use Trasker::TTDB::Auto;
 
-  $auto = Tasker::TTDB::Auto->new(user => $user);
+  $auto = Trasker::TTDB::Auto->new(user => $user);
 
-  $auto = Tasker::TTDB::Auto->create(
+  $auto = Trasker::TTDB::Auto->create(
       project_id => I<projectid>,
       user_id => I<userid>,
   );
 
-  $auto = Tasker::TTDB::Auto->get(user => $user, role => 'bob'):
+  $auto = Trasker::TTDB::Auto->get(user => $user, role => 'bob'):
 
 =head1 Constructor
 
@@ -51,7 +51,7 @@ use Carp qw (croak);
 
 Find a auto entry for the give arguments.
 
- Tasker::Tasker::TTDB::Auto->get(
+ Trasker::Trasker::TTDB::Auto->get(
      user => $user,
      host => '%',
      name => '%',
@@ -142,6 +142,7 @@ sub new
         title => 0,
         desktop => 0,
         presidence => 0,
+        enabled => 0,
     });
 
     croak "Need at least one argument" unless keys %p;
@@ -252,7 +253,7 @@ SQL
 
     my $id = $sth_id->fetchrow_array();
 
-    my $self = Tasker::TTDB::Auto->new(
+    my $self = Trasker::TTDB::Auto->new(
         %p,
         id => $id,
     );

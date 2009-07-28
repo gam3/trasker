@@ -9,11 +9,11 @@ use strict;
 #
 # A timeslice is a block of time attributed to a user and a project.
 #
-package Tasker::TTDB::TimeSlice;
+package Trasker::TTDB::TimeSlice;
 
 use Params::Validate qw( validate validate_pos SCALAR BOOLEAN HASHREF OBJECT );
 
-use Tasker::TTDB::DBI qw (get_dbh);
+use Trasker::TTDB::DBI qw (get_dbh);
 
 sub new
 {
@@ -26,11 +26,11 @@ sub new
             isa => 'Date::Calc',
         },
         user => {
-            isa => 'Tasker::TTDB::User',
+            isa => 'Trasker::TTDB::User',
             optional => 1,
         },
         project => {
-            isa => 'Tasker::TTDB::Project',
+            isa => 'Trasker::TTDB::Project',
             optional => 1,
         },
         temporary => 0,
@@ -60,7 +60,7 @@ sub get
             isa => 'Date::Calc',
         },
         user => {
-            isa => 'Tasker::TTDB::User',
+            isa => 'Trasker::TTDB::User',
         }
     });
     my $self = bless({ %p }, $class);
@@ -102,16 +102,16 @@ sub id
 sub start_time
 {
     my $self = shift;
-    require Tasker::Date;
+    require Trasker::Date;
 
-    Tasker::Date->new($self->{data}{start_time});
+    Trasker::Date->new($self->{data}{start_time});
 }
 
 sub end_time
 {
     my $self = shift;
 
-    $self->{data}{end_time} ? Tasker::Date->new($self->{data}{end_time}) : Tasker::Date->now();
+    $self->{data}{end_time} ? Trasker::Date->new($self->{data}{end_time}) : Trasker::Date->now();
 }
 
 sub duration
@@ -137,7 +137,7 @@ sub project
 {
     my $self = shift;
 
-    $self->{project} ||= Tasker::TTDB::Project->get(id => $self->{data}{project_id});
+    $self->{project} ||= Trasker::TTDB::Project->get(id => $self->{data}{project_id});
 }
 
 sub elapsed
@@ -207,7 +207,7 @@ SQL
 
     $st->execute($start, $end, $user_id);
 
-    my @ids = map({ { %$_, start_time => Tasker::Date->new($_->{start_time}), end_time => Tasker::Date->new($_->{end_time}), } } @{$st->fetchall_arrayref({})});
+    my @ids = map({ { %$_, start_time => Trasker::Date->new($_->{start_time}), end_time => Trasker::Date->new($_->{end_time}), } } @{$st->fetchall_arrayref({})});
 
     my $ins = 0;
     for my $ts (@ids) {
@@ -303,9 +303,9 @@ SQL
 sub notes
 {
     my $self = shift;
-    require Tasker::TTDB::Notes;
+    require Trasker::TTDB::Notes;
     
-    Tasker::TTDB::Notes->new(
+    Trasker::TTDB::Notes->new(
         start_time => $self->start_time,
         end_time => $self->end_time,
     );
@@ -328,18 +328,18 @@ __END__
 
 =head1 NAME
 
-Tasker::TTDB::TimeSlice - Perl interface to the tasker timeslice table
+Trasker::TTDB::TimeSlice - Perl interface to the tasker timeslice table
 
 =head1 SYNOPSIS
 
-  use Tasker::TTDB::User;
+  use Trasker::TTDB::User;
 
-  $user = Tasker::TTDB::User->new(user => 'bob', fullname => 'Robert Smith'):
+  $user = Trasker::TTDB::User->new(user => 'bob', fullname => 'Robert Smith'):
 
   $user->create();
 
-  $user = Tasker::TTDB::User->get(user => 'bob'):
-  $user = Tasker::TTDB::User->get(id => 1):
+  $user = Trasker::TTDB::User->get(user => 'bob'):
+  $user = Trasker::TTDB::User->get(id => 1):
 
 =head1 DESCRIPTION
 

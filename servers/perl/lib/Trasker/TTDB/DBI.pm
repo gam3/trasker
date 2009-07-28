@@ -12,7 +12,7 @@ use strict;
 # it is used to cache these handles and handle user name, password and host setup.
 # It also can return readonly and read/write handles.
 #
-package Tasker::TTDB::DBI;
+package Trasker::TTDB::DBI;
 
 our $dbi;
 
@@ -72,11 +72,11 @@ __END__
 
 =head1 NAME
 
-Tasker::TTDB::DBI - Perl interface to the DBI
+Trasker::TTDB::DBI - Perl interface to the DBI
 
 =head1 SYNOPSIS
 
-  use Tasker::TTDB::DBI qw (get_dbi);
+  use Trasker::TTDB::DBI qw (get_dbi);
 
 =head2 Constructor
 

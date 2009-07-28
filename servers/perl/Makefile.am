@@ -19,31 +19,31 @@
 
 #SUBDIRS = tests
 
-perllibdir = $(pkgvdatadir)/Tasker
+perllibdir = $(pkgvdatadir)/Trasker
 
 bin_SCRIPTS = \
-    scripts/taskerd \
+    scripts/traskerd \
     scripts/get_gaim \
     scripts/merge \
-    scripts/taskers
+    scripts/traskers
 
 dist_perllib_DATA = \
-    lib/Tasker.pm \
-    lib/Tasker/TTDB/Notes.pm \
-    lib/Tasker/TTDB/Note.pm \
-    lib/Tasker/TTDB/User.pm \
-    lib/Tasker/TTDB/Auto.pm \
-    lib/Tasker/TTDB/UserProjects.pm \
-    lib/Tasker/TTDB/Times.pm \
-    lib/Tasker/TTDB/TimeSlice.pm \
-    lib/Tasker/TTDB/Project.pm \
-    lib/Tasker/TTDB/Users.pm \
-    lib/Tasker/TTDB/DBI.pm \
-    lib/Tasker/TTDB/UserProject.pm \
-    lib/Tasker/TTDB/Time.pm \
-    lib/Tasker/TTDB/Projects.pm \
-    lib/Tasker/TTDB.pm \
-    lib/Tasker/Date.pm
+    lib/Trasker.pm \
+    lib/Trasker/TTDB/Notes.pm \
+    lib/Trasker/TTDB/Note.pm \
+    lib/Trasker/TTDB/User.pm \
+    lib/Trasker/TTDB/Auto.pm \
+    lib/Trasker/TTDB/UserProjects.pm \
+    lib/Trasker/TTDB/Times.pm \
+    lib/Trasker/TTDB/TimeSlice.pm \
+    lib/Trasker/TTDB/Project.pm \
+    lib/Trasker/TTDB/Users.pm \
+    lib/Trasker/TTDB/DBI.pm \
+    lib/Trasker/TTDB/UserProject.pm \
+    lib/Trasker/TTDB/Time.pm \
+    lib/Trasker/TTDB/Projects.pm \
+    lib/Trasker/TTDB.pm \
+    lib/Trasker/Date.pm
 
 nodist_perllib_DATA =
 

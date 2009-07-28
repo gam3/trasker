@@ -10,11 +10,11 @@ use strict;
 # This object contains a list of UserProject objects.
 # This may or may not be all UserProject objects.
 #
-package Tasker::TTDB::UserProjects;
+package Trasker::TTDB::UserProjects;
 
-use Tasker::TTDB::Projects;
+use Trasker::TTDB::Projects;
 
-use Tasker::TTDB::DBI qw (get_dbh);
+use Trasker::TTDB::DBI qw (get_dbh);
 
 use Params::Validate qw( validate validate_pos SCALAR BOOLEAN HASHREF OBJECT );
 
@@ -28,7 +28,7 @@ sub new
     my $class = shift;
 
     my %p = validate(@_, {
-        user => { isa => 'Tasker::TTDB::User' },
+        user => { isa => 'Trasker::TTDB::User' },
     });
 
     my $user_id = $p{user}->id;
@@ -51,9 +51,9 @@ SQL
 	$user_id = $data->{user_id};
 
 	# Merge data in case child gets set before data is seen.
-	my $entry = bless { data => $data, child => $data_hash->{$id}{child} }, 'Tasker::TTDB::Project'; 
+	my $entry = bless { data => $data, child => $data_hash->{$id}{child} }, 'Trasker::TTDB::Project';
 
-	$data_hash->{$id} = $entry; 
+	$data_hash->{$id} = $entry;
 	if (my $parent_id = $data->{project_pid}) {
 	    # the parent may not me definded yet
 	    $data_hash->{$parent_id}{child}{$id} = 1;
@@ -128,7 +128,7 @@ sub add
 
     my $longname = $parent->longname . '::' . $p{name};
 
-    my $entry = bless { longname => $longname, data => { project_pid => $p{parent}, name => $p{name}, } }, 'Tasker::TTDB::Project'; 
+    my $entry = bless { longname => $longname, data => { project_pid => $p{parent}, name => $p{name}, } }, 'Trasker::TTDB::Project';
 
     $entry;
 }
@@ -149,20 +149,20 @@ __END__
 
 =head1 NAME
 
-Tasker::TTDB::UserProjects - Perl interface to the tasker auto table
+Trasker::TTDB::UserProjects - Perl interface to the tasker auto table
 
 =head1 SYNOPSIS
 
-  use Tasker::TTDB::UserProjects;
+  use Trasker::TTDB::UserProjects;
 
-  $up = Tasker::TTDB::UserProjects->new(user => I<user>, project => I<project>);
+  $up = Trasker::TTDB::UserProjects->new(user => I<user>, project => I<project>);
 
-  $up = Tasker::TTDB::UserProjects->new(
+  $up = Trasker::TTDB::UserProjects->new(
       project_id => I<project id>,
       user_id => I<user id>,
   );
 
-  $up = Tasker::TTDB::UserProjects->get(user => $user, role => 'bob'):
+  $up = Trasker::TTDB::UserProjects->get(user => $user, role => 'bob'):
 
 =head1 DESCRIPTION
 

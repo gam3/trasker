@@ -4,7 +4,7 @@
 @documentlanguage en
 @documentencoding iso-8859-1
 @include version.texi
-@settitle The Tasker Task Managment System
+@settitle The Trasker@registeredsymbol{} Task Tracking System
 @setchapternewpage odd
 @ifnothtml
 @setcontentsaftertitlepage
@@ -12,7 +12,7 @@
 @finalout
 
 @copying
-This manual is for Tasker (version @value{VERSION}, @value{UPDATED}),
+This manual is for Trasker@registeredsymbol{} (version @value{VERSION}, @value{UPDATED}),
 a system to manage tasks for human beings.
 
 Copyright @copyright{} 2008 G. Allen Morris III
@@ -29,11 +29,11 @@ included in the section entitled ``GNU Free Documentation License.''
 
 @dircategory Business and productivity
 @direntry
-* Tasker: (tasker). Documentation of the tasker task management system.
+* Trasker: (trasker). Documentation of the tasker task management system.
 @end direntry
 
 @titlepage
-@title Tasker
+@title Trasker
 @subtitle Tasking Tasks
 @subtitle for Version @value{VERSION}, @value{UPDATED}
 @author G. Allen Morris III <@email{gam3@@gam3.com}>
@@ -46,7 +46,7 @@ included in the section entitled ``GNU Free Documentation License.''
 
 @ifnottex
 @node Top
-@top Tasker - Task Managment System
+@top Trasker - Task Managment System
 @insertcopying
 @end ifnottex
 
@@ -54,23 +54,23 @@ included in the section entitled ``GNU Free Documentation License.''
 * Distribution::            Where to find tasker: source, packages etc.
 * Introduction::            Important concepts you need to know as a user
 * Invoking::                How to invoke tasker
-* Protocol::                The Tasker client/server protocol
+* Protocol::                The Trasker client/server protocol
 * Environment Variables::   Environment variables which affect tasker
 * Errors and omissions::    Known problems
-* History::                 History of Tasker
+* History::                 History of Trasker
 * Copying this manual::     The GNU Free Documentation License
 @end menu
 
 @node Distribution
 @unnumbered Distribution
 
-Tasker is @dfn{free software}; this means that everyone
+Trasker is @dfn{free software}; this means that everyone
 is free to use it and free to redistribute it on certain conditions.
 The precise conditions are found in the GNU General Public License that
-comes with this program and also follows this section.
+comes with this program and can be found here: @uref{http://www.gnu.org/copyleft/gpl.html}.
 
 @noindent
-You can obtain Tasker from a friend or from the Internet:
+You can obtain Trasker from a friend or from the Internet:
 
 @table @asis
 @item Home page @uref{http://tasker.sourceforge.net/}
@@ -82,16 +82,13 @@ You can obtain Tasker from a friend or from the Internet:
 @node Introduction, Invoking, Distribution, Top
 @chapter Introduction
 
-Tasker is a system to track the tasks that human beings are doing, or
+Trasker is a system to track the tasks that human beings are doing, or
 have done.
 
 It is built on a client server model. It is designed to support multiple
 users on multiple computers and platforms.
 
-@node Invoking, Protocol, Introduction, Top
-@chapter Invoking
-
-The server must be running on a know computer for proper operation.
+Trasker is simular to these programs:
 
 @itemize
   @item GnoTime
@@ -101,6 +98,11 @@ The server must be running on a know computer for proper operation.
   @item PTimeTracker
   @item TimeTracker
 @end itemize
+
+@node Invoking, Protocol, Introduction, Top
+@chapter Invoking
+
+The server must be running on a know computer for proper operation.
 
 @section Server
 
@@ -114,9 +116,18 @@ data security is important.
 
 @section Clients
 
-@subsection tlist
+@subsection trist
 
-@subsection email
+@subsection trail
+
+There is an email client for trasker. With it you can control some of
+the feature of Trasker by sending emails to a known address.
+
+The Trasker email client is called tremail and is normally run as an
+alias on a mail system.
+
+As security can be a problem with email the tremail can require mail to
+be signed.
 
 @subsection Focus Tracking
 
@@ -135,7 +146,7 @@ The focus tracking software does 3 functions:
 @item it tracks the what windows are active and informs the server.
 
 @item it sends other hints to the server to help detirmine what project is active.
-This include monitoring which page is active, and watching for several key properties and 
+This include monitoring which page is active, and watching for several key properties and
 sending apropiate signals to the server.
 
 @end itemize
@@ -160,13 +171,17 @@ focus -k
 @chapter Protocol
 
 When the tasker server is first connected to it returns a string that give
-version of TTCP that the server is using.
+the version of TTCP that the server is using.
 
 @emph{TTCP 0.01} for example.
 
 @unnumberedsec Client Commands
 
 @table @code
+
+@item authorize @emph{user/password}
+
+
 
 @item user @emph{user}
 
@@ -226,13 +241,13 @@ of the project.
 @node Environment Variables, Errors and omissions, Protocol, Top
 @chapter Environment Variables
 
-Tasker uses the following environment variables:
+Trasker uses the following environment variables:
 
 @table @code
 
 @item VISUAL
 
-Some Tasker applications use this variable to determine what program to use
+Some Trasker applications use this variable to determine what program to use
 to edit text.
 
 @end table
@@ -250,7 +265,7 @@ time from the original project will be moved to the new project.
 There are no errors.
 
 @node History, Copying this manual, Errors and omissions, Top
-@appendix History of Tasker
+@appendix History of Trasker
 
 @itemize @bullet
 @item
@@ -258,7 +273,7 @@ The initial system was designed and written by G. Allen Morris III.
 @end itemize
 
 I started writing tasker because I hate keeping timesheets. I always saw
-Tasker as a client/server based system, because I work on more that one
+Trasker as a client/server based system, because I work on more that one
 computer often.
 
 The client/server system does make the system much more complex than

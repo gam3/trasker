@@ -10,11 +10,11 @@ use strict;
 #
 # This Object simply holds a list of Note objects
 # 
-package Tasker::TTDB::Notes;
+package Trasker::TTDB::Notes;
 
 use Params::Validate qw (validate ARRAYREF);
 
-use Tasker::TTDB::DBI qw (get_dbh);
+use Trasker::TTDB::DBI qw (get_dbh);
 
 sub new
 {
@@ -23,16 +23,16 @@ sub new
     my %p = validate(@_, {
         date => {
 	    optional => 1,
-	    isa => 'Tasker::Date',
+	    isa => 'Trasker::Date',
 	},
 	today => 0,
         start_time => {
 	    optional => 1,
-	    isa => 'Tasker::Date',
+	    isa => 'Trasker::Date',
 	},
         end_time => {
 	    optional => 1,
-	    isa => 'Tasker::Date',
+	    isa => 'Trasker::Date',
 	},
 	project_ids => {
 	    optional => 1,
@@ -86,9 +86,9 @@ sub entries
     my $sth = $dbi->prepare($sql);
 
     $sth->execute(@args);
-    require Tasker::TTDB::Note;
+    require Trasker::TTDB::Note;
 
-    @ret = map({bless $_, 'Tasker::TTDB::Note'} @{$sth->fetchall_arrayref({})});
+    @ret = map({bless $_, 'Trasker::TTDB::Note'} @{$sth->fetchall_arrayref({})});
 
     @ret;
 }
@@ -98,13 +98,13 @@ __END__
 
 =head1 NAME
 
-Tasker::TTDB::Notes - Perl interface to the tasker notes table
+Trasker::TTDB::Notes - Perl interface to the tasker notes table
 
 =head1 SYNOPSIS
 
-  use Tasker::TTDB::Notes;
+  use Trasker::TTDB::Notes;
 
-  $auto = Tasker::TTDB::Notes->entries(user => $user, role => 'bob'):
+  $auto = Trasker::TTDB::Notes->entries(user => $user, project_ids => [ 11 ]):
 
 =head1 DESCRIPTION
 
@@ -152,7 +152,7 @@ This will delete the object from the database.
 
 =head1 SEE ALSO
 
-L<Tasker::TTDB::Note>
+L<Trasker::TTDB::Note>
 
 =head1 AUTHOR
 

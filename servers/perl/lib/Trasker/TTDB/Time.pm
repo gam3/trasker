@@ -10,11 +10,11 @@ use strict;
 #
 # This object holds a timeslice
 #
-package Tasker::TTDB::Time;
+package Trasker::TTDB::Time;
 
 use Params::Validate qw( validate validate_pos SCALAR BOOLEAN HASHREF OBJECT );
 
-use Tasker::TTDB::DBI qw (get_dbh);
+use Trasker::TTDB::DBI qw (get_dbh);
 
 sub new
 {
@@ -53,10 +53,10 @@ sub time
     my $self = shift;
     if ((my @date) = ($self->{data}{time} =~ /(\d*):(\d*):(\d*)/)) {
 warn " @date ";        
-	return Tasker::Date->new([1], 0, 0, 0, @date);
+	return Trasker::Date->new([1], 0, 0, 0, @date);
     } else {
 warn '0';        
-        return Tasker::Date->new([1], 0, 0, 0, 0, 0, 0);
+        return Trasker::Date->new([1], 0, 0, 0, 0, 0, 0);
     }
 }
 
@@ -87,7 +87,7 @@ sub print
    print $self->active ? 'a' : 'b';
 }
 
-use Tasker::Date;
+use Trasker::Date;
 use Date::ICal;
 
 sub ical_start
@@ -138,18 +138,18 @@ __END__
 
 =head1 NAME
 
-Tasker::TTDB::Time - Perl interface to the tasker timeslice table
+Trasker::TTDB::Time - Perl interface to the tasker timeslice table
 
 =head1 SYNOPSIS
 
-  use Tasker::TTDB::Time;
+  use Trasker::TTDB::Time;
 
-  $user = Tasker::TTDB::Time->new(user => 'bob', fullname => 'Robert Smith'):
+  $user = Trasker::TTDB::Time->new(user => 'bob', fullname => 'Robert Smith'):
 
   $user->create();
 
-  $user = Tasker::TTDB::Time->get(user => 'bob'):
-  $user = Tasker::TTDB::Time->get(id => 1):
+  $user = Trasker::TTDB::Time->get(user => 'bob'):
+  $user = Trasker::TTDB::Time->get(id => 1):
 
 =head1 DESCRIPTION
 

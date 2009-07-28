@@ -1,14 +1,14 @@
 use strict;
 
-use Tasker::TTDB::Project;
+use Trasker::TTDB::Project;
 
 use Test::More tests => 1;
 
-our $user = $Tasker::TTDB::DBI::user;
-our $passwd = $Tasker::TTDB::DBI::password;
-our $database = $Tasker::TTDB::DBI::database;
+our $user = $Trasker::TTDB::DBI::user;
+our $passwd = $Trasker::TTDB::DBI::password;
+our $database = $Trasker::TTDB::DBI::database;
 
-our $proj = Tasker::TTDB::Project->get(id => 1);
+our $proj = Trasker::TTDB::Project->get(id => 1);
 
 pass();
 

@@ -9,10 +9,10 @@ use strict;
 #
 # This is simply a list of User Objects
 #
-package Tasker::TTDB::Users;
+package Trasker::TTDB::Users;
 
-use Tasker::TTDB::DBI qw (get_dbh);
-use Tasker::TTDB::User;
+use Trasker::TTDB::DBI qw (get_dbh);
+use Trasker::TTDB::User;
 
 use Params::Validate qw( validate validate_pos SCALAR BOOLEAN HASHREF OBJECT );
 
@@ -58,12 +58,12 @@ SQL
     }
 
     my @data;
-    require Tasker::TTDB::UserProject;
+    require Trasker::TTDB::UserProject;
 
     while (my $data = $sth->fetchrow_hashref()) {
-	my $user = Tasker::TTDB::User->new(id => $data->{user_id}, name => $data->{user_name}, fullname => $data->{user_fullname}  );
+	my $user = Trasker::TTDB::User->new(id => $data->{user_id}, name => $data->{user_name}, fullname => $data->{user_fullname}  );
         if ($project) {
-	    push(@data,  Tasker::TTDB::UserProject->new(user => $user, project => $project));
+	    push(@data,  Trasker::TTDB::UserProject->new(user => $user, project => $project));
 	} else {
 	    push(@data, $user);
 	}

@@ -1,1 +1,4 @@
 /Build
+/_build/
+/blib/
+/scripts/tnote

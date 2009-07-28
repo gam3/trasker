@@ -1,38 +1,38 @@
-Source: tasker
+Source: trasker
 Section: unknown
 Priority: extra
 Maintainer: G. Allen Morris III <gam3@gam3.net>
 Build-Depends: debhelper (>= 7), autotools-dev
 Standards-Version: 3.8.0
-Homepage: http://tasker.sf.net/
+Homepage: http://trasker.gam3.net/
 
-Package: tasker-tlist
+Package: trasker-tlist
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: A QT 4 client to control tasker
- This is the most popular (and currently the only> client for tasker.
+Description: A QT 4 client to control trasker
+ This is the most popular (and currently the only> client for trasker.
 
-Package: tasker-doc
+Package: trasker-doc
 Architecture: all
-Description: Documentation for tasker
+Description: Documentation for trasker
  This documentation is only needed for server-client information
 
-Package: tasker-server-perl
+Package: trasker-server-perl
 Architecture: any
 Depends: perl, postgresql | sqlite
 Description: An implimentation of the Tasker server writen in perl.
  This package also contains the Tasker::TTDB perl package that can be
  used to write other servers.
 
-Package: tasker-server
+Package: trasker-server
 Architecture: any
-Depends: tasker-server-perl
-Description: The common tasker-server files
-  This file has the tasker-server keys and init.d files.
+Depends: trasker-server-perl
+Description: The common trasker-server files
+  This file has the trasker-server keys and init.d files.
 
-Package: tasker-x11
+Package: trasker-x11
 Architecture: any
-Description: tasker clients for X11 desktops
+Description: trasker clients for X11 desktops
  This package has programs to help you track your actions on an X11 desktop.
  If you are using XWindows (XFree86 or Xorg) you should install this package.
 

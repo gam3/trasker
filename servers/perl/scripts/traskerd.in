@@ -2,11 +2,11 @@
 
 =head1 NAME
 
- taskerd
+ traskerd
 
 =head1 SYNOPSIS
 
- taskerd --config /etc/tasker.conf
+ traskerd --config /etc/trasker.conf
 
 =head1 DESCRIPTION
 
@@ -33,7 +33,7 @@ use IO::Socket::SSL;
 use IO::Select;
 use Params::Validate qw (validate);
 
-use Tasker::Date;
+use Trasker::Date;
 
 use Fcntl qw(F_GETFL F_SETFL O_NONBLOCK O_NDELAY);
 
@@ -56,10 +56,10 @@ sub print_log {
     print "\n";
 }
 
-use Tasker::TTDB::User;
-use Tasker::TTDB::Project;
+use Trasker::TTDB::User;
+use Trasker::TTDB::Project;
 
-use Tasker::TTDB::DBI qw (dbi_setup);
+use Trasker::TTDB::DBI qw (dbi_setup);
 
 sub nonblock
 {
@@ -95,7 +95,7 @@ sub get_user
 	$user = $hash->{_user}{$userid};
     }
     unless ($user) {
-	$user = Tasker::TTDB::User->get(user => $userid);
+	$user = Trasker::TTDB::User->get(user => $userid);
 	$hash->{_user}{$userid} = $user;
     }
     $user;
@@ -110,31 +110,74 @@ The client should then authorize the user.
 =cut
 
 our $cmd_hash = {
-    "addauto"=> \&addauto,
-    "addtask" => \&addtask,		# add a task for a user
+# Global
     "authorize" => \&authorize,		# get authorization for client
-    "change" => \&change,		# change current project
+    "user" => \&user,
     "clients" => \&clients,		# list clients
-    "desktop" => \&desktop,
-    "getauto" => \&getauto,
-    "gettime" => \&gettime,
-    "help" => \&help,
     "nop" => \&nop,
+    "ping" => \&ping,
+    "host" => \&host,
+    "help" => \&help,
+    "now" => \&now,
+    "quit" => \&quit,
+
+# cache control
+    "update" => \&update,
+
+# debuging
+    "dumper" => \&dumper,
+
+# Auto Select
+    "addauto"=> \&addauto,
+    "getauto" => \&getauto,
+    "setauto"=> \&setauto,
+
+    "selects"=> \&selects,
+
+# Tracking
+    "tracker" => \&tracker,
+    "xtracker" => \&xtracker,
+    "change" => \&change,		# change current project
+    "track" => \&track,
+
+# Tasks
+    "addtask" => \&addtask,		# add a task for a user
+
+# Notes
     "note" => \&note,
     "notes" => \&notes,
-    "ping" => \&ping,
-    "project" => \&project,
-    "push" => \&xpush,
-    "quit" => \&quit,
-    "selects"=> \&selects,
-    "setauto"=> \&setauto,
+
+# Alerts
+    "alertadd" => \&add_alert,
+    "alertupdate" => \&update_alert,
+    "alerts" => \&alerts,
+    "alert" => \&alert,
+
+# Timeslices
+
     "times" => \&times,
-    "tracker" => \&tracker,
-    "track" => \&track,
-    "update" => \&update,
-    "user" => \&user,
-    "xtracker" => \&xtracker,
+    "gettime" => \&gettime,
+
 };
+
+sub dumper
+{
+    my $client = shift;
+
+    require Trasker::TTDB;
+
+    use Data::Dumper;
+    warn Dumper $hash;
+}
+
+sub now
+{
+    my $client = shift;
+
+    require Trasker::TTDB;
+
+    printf $client "now\t%s\n", Trasker::TTDB::now();
+}
 
 =head2 Authorization
 
@@ -165,7 +208,7 @@ sub authorize
 
 =head2 Miscellaneous
 
-=head3 nop 
+=head3 nop
 
  nop
 
@@ -207,7 +250,7 @@ to a project.  Project 0 being a global project.
 
 =item note {I<user>} {I<project_id | 0>} {I<string>}
 
-replies with 
+replies with
 
 =item accept_note OK
 
@@ -239,17 +282,6 @@ sub note
     }
 }
 
-sub project
-{
-    my $client = shift;
-    my $data = shift;
-    my $comand = shift;
-    my $user = shift;
-    my $parent = shift;
-
-    print "$comand $user $parent\n";
-}
-
 =head3 help
 
  help
@@ -261,18 +293,61 @@ This command prints a sort help message.
 sub help()
 {
     my $client = shift;
+    my $extra = shift;
+    my $cmd = shift;
+warn "xx '$cmd' @_";
+if ($cmd) {
+} else {
 # make sure that each line starts with whitespace.
     print($client <<EOP);
  You may need to authorize before you can use the folloing commands:
 
- user\t{username}/{password}
+ authorize\t"user/passprase"
+ help\t[command]
+
+ user\t{username}
+ track\t{username} [on|off]
+
+ addauto
+ addtask
  change\t{project id}
- track "user" [on|off]
+ clients
+ desktop
+ getauto
+ gettime
+ nop
+ note
+ notes
+ ping
+ project
+ quit
+ selects
+ setauto
+ times
+ tracker
+ track
+ update
+ user
+ xtracker
 EOP
+}
     '';
 }
 
-=head3 quit 
+=head3 host
+
+ host <TAB> I<host identification>
+
+=cut
+
+sub host()
+{
+    my $client = shift;
+
+    print($client "host\tuser\@host:vt\n");
+}
+
+=head3 quit
 
 Have the server close the connection to the client
 
@@ -296,7 +371,7 @@ or group.
 
  user {user}
 
-get times an follow {user}.
+get times and follow {user}.
 
 =cut
 
@@ -331,7 +406,7 @@ sub user
     undef;
 }
 
-=head3 track 
+=head3 track
 
 Follow the focus
 
@@ -412,14 +487,15 @@ sub times
     my $date = shift;
 
     my $user = get_user($userid, $client);
-    my $time = Tasker::Date->today();
+    my $time = Trasker::Date->today();
 
     if ($date) {
-        $time = Tasker::Date->new($date);
+        $time = Trasker::Date->new($date);
     }
     my @times = $user->times(date => $time);
 
     for my $ts (@times) {
+
 	printf($client qq(timeslice\t%s\t%d\t%d\t%d\t%s\t%s\t%s\n),
 	    $userid,
 	    $ts->id,
@@ -476,7 +552,7 @@ sub notes
 =item selects {I<user>} {I<projectId>} day [day]
 
 returns
- 
+
 =item autoselect {user} {id} {project_id} {host} {name} {class} {role} {title} {desktop}
 
 =back
@@ -523,7 +599,7 @@ sub selects
 
 =head2 Tasks
 
-=head3 addtask 
+=head3 addtask
 
  addtask user projectId a user, parent_id name description
 
@@ -642,7 +718,7 @@ sub getauto()
     '';
 }
 
-=head3 addauto 
+=head3 addauto
 
  addauto user projectId host class name role title desktop [flag]
 
@@ -683,11 +759,11 @@ sub addauto()
 		    role => $role,
 		    title => $title,
 		   );
-    
+
     print($client "accept_select\tOK\n");
 }
 
-=head3 setauto 
+=head3 setauto
 
   addauto userid host class name role title desktop
 
@@ -725,7 +801,7 @@ print "FAIL\n";
     }
 }
 
-=head3 getauto 
+=head3 getauto
 
   getauto userid projectid
 
@@ -767,13 +843,13 @@ print "FAIL\n";
 
 The following commands are used to track the actions of a user or resource.
 
-=head3 change 
+=head3 change
 
 =over
 
 =item change {user} {projectId}
 
-Change the current project for user to projectid. 
+Change the current project for user to projectid.
 
 This sets the default project for the user. This will clear the
 project stack. This is normally used by a user interface to change the
@@ -793,14 +869,14 @@ sub change
     my ($port, $iaddr) = sockaddr_in($peername);
     my $host = gethostbyaddr($iaddr, AF_INET);
 
-    my $project = Tasker::TTDB::Project->get(id => $project_id);
+    my $project = Trasker::TTDB::Project->get(id => $project_id);
     my $user = get_user($user, $client);
     $user->set_current_project(project => $project, host => $host);
 
     update_user($user);
 }
 
-=head3 tracker 
+=head3 tracker
 
 =over
 
@@ -871,14 +947,47 @@ sub xtracker
     '';
 }
 
-sub xpush
+sub add_alert
+{
+}
+
+sub update_alert
+{
+}
+
+sub alert
+{
+
+}
+
+=head3 alerts
+
+This returns a list of alerts
+
+=over
+
+=item alerts {I<user>}
+
+=back
+
+=cut
+
+sub alerts
 {
     my $client = shift;
     my $data = shift;
     my $user = shift;
-    my $value = shift;
+    my $stime = shift | '';
+    my $etime = shift | '';
 
-    die 'push is not defined';
+    my $userobj = get_user($user, $client);
+
+    my @alerts = $userobj->get_alerts();
+
+    for my $alert (@alerts) {
+	printf($client "alertentry\t%d\t%s\n", $alert->id, $alert->title);
+#	                alert\t11\tgam3\tThis is an alert\n
+    }
 }
 
 sub get_clients_for
@@ -902,7 +1011,7 @@ sub update
 sub update_user
 {
     my $user = shift;
-    die 'Bad user: ', join(' ', caller) unless $user->isa('Tasker::TTDB::User');
+    die 'Bad user: ', join(' ', caller) unless $user->isa('Trasker::TTDB::User');
 
     my $user_project = $user->current_project();
     my $user_name = $user->name;
@@ -918,6 +1027,15 @@ sub update_user
 
         print($cli "current\t$user_name\t$id\n");
     }
+}
+
+sub recent
+{
+    my $client = shift;
+    my $data = shift;
+    my $userid = shift;
+
+    my $user = get_user($userid, $client);
 }
 
 sub clients
@@ -936,8 +1054,8 @@ sub clients
 
 # '/home/gam3/demoCA/private/cakey.pem', '/home/gam3/demoCA/cacert.pem',
 
-our $key_file = '/etc/tasker/tasker_key.pem';
-our $crt_file = '/etc/tasker/tasker_cert.pem';
+our $key_file = '/etc/trasker/trasker_key.pem';
+our $crt_file = '/etc/trasker/trasker_cert.pem';
 
 sub main
 {
@@ -945,7 +1063,7 @@ sub main
     $done=0;
 
     dbi_setup(
-        database => 'tasker',
+        database => 'trasker',
         user => 'gam3',
         password => 'awnmwad',
     );
@@ -958,7 +1076,7 @@ sub main
     $SIG{__DIE__} = sub { print_log('DIE: ' . $_[0]); };
     $SIG{PIPE} = 'IGNORE';
     $SIG{INT} = $SIG{TERM} = $SIG{QUIT} = $SIG{ABRT} = sub { $done = 1; };
-        
+
     $server = IO::Socket::INET->new(LocalPort => 8000,
                     Listen => 10,
                     Proto => "TCP",
@@ -979,13 +1097,14 @@ sub main
     $select = IO::Select->new();
     $select->add($server);
     $select->add($sslserver);
-        
+
     print_log "Started";
 
     daemonize() unless $opt_debug;
 
     my $line_count;
     my $x = 0;
+    my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime();
     while (!$done) {
         my $client;
         my $rv;
@@ -1055,7 +1174,7 @@ print "accept $client\n";
             } else {
                 $data = '';
                 $rv = $client->read($data, POSIX::BUFSIZ, 0);
-                
+
                 unless (defined($rv) && length $data) {
 QUIT:
                     print_log(sprintf("Disconnected: %s:%s", $client->peerhost || 'N/A', $client->peerport || -1));
@@ -1075,7 +1194,7 @@ QUIT:
                 while ($datahash->{$client} =~ s/([^\n]*)\n//) {
                     my $data = $1;
                     my ($cmd, @args);
-                   
+
                     if ($data =~ /\t/) {
                         ($cmd, @args) = split('\t', $data);
                     } else {
@@ -1083,6 +1202,7 @@ QUIT:
                     }
                     next unless length $cmd;
                     if (my $function = $cmd_hash->{$cmd}) {
+print("Got $cmd\n") if $cmd ne "ping";
                         my $action;
                         eval {
                             $action = $function->($client, $data, @args);
@@ -1101,16 +1221,27 @@ print $client "error\t" . $@;
                 }
             }
         }
-        # we are here one a second
 
         my (@time) = localtime;
-        if ($time[1] == 0) {
-            my @clients;
-#           = grep({ $_->{_list}{$user->name} } map({ $hash->{_clients}{$_} } %{$hash->{_clients}}));
-            for my $client (@clients) {
+	# Once a second
+        if ($time[0] != $sec) {
 
+	}
+	# Once a minute
+        if ($time[1] != $min) {
+	    # once a minute
+	    for my $client_key (keys %{$hash->{_clients}}) {
+	        my $client = $hash->{_clients}{$client_key}{client};
+                print $client "alert\t11\tgam3\tThis is an alert\n";
             }
         }
+        if ($time[2] != $hour) {
+warn "hour";
+	}
+        if ($time[3] != $mday) {
+warn "day";
+	}
+	($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = @time;
     }
 
     print_log "Exit";
@@ -1147,7 +1278,7 @@ if ($opt_versions) {
     exit;
 }
 
-$0 = "taskerd";
+$0 = "traskerd";
 main;
 
 __END__
@@ -1174,7 +1305,7 @@ None that I know of.
 
 =head1 TODO
 
-  This is currently a very long list. 
+  This is currently a very long list.
 
 =head1 UPDATES
 

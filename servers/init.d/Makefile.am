@@ -1,5 +1,5 @@
 #
-# tasker: Task tracking system
+# trasker: Task tracking system
 #
 # Copyright (C) 2006 G. Allen Morris III
 #
@@ -21,13 +21,13 @@ MAINTAINERCLEANFILES    = Makefile.in
 
 initddir		= @INITDIR@
 
-initd_SCRIPTS		= tasker-server
+initd_SCRIPTS		= trasker-server
 
-EXTRA_DIST              = tasker-server.in
+EXTRA_DIST              = trasker-server.in
 
 
-tasker-server : tasker-server.in
-	cp tasker-server.in tasker-server
+trasker-server : trasker-server.in
+	cp trasker-server.in trasker-server
 
 install-initdSCRIPTS: $(initd_SCRIPTS)
 	@$(NORMAL_INSTALL)

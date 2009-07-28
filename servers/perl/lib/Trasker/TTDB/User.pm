@@ -9,11 +9,11 @@ use strict;
 # A user is normally a human, but can be any object that can be in only
 # one place at one time.
 #
-package Tasker::TTDB::User;
+package Trasker::TTDB::User;
 
-use Tasker::TTDB::DBI qw (get_dbh);
+use Trasker::TTDB::DBI qw (get_dbh);
 
-use Tasker::TTDB::Projects;
+use Trasker::TTDB::Projects;
 
 our $VERSION = '0.001';
 
@@ -123,7 +123,7 @@ sub id
 sub get_timeslices_for_day
 {
     my $self = shift;
-    require Tasker::TTDB::TimeSlice;
+    require Trasker::TTDB::TimeSlice;
     my %p = validate(@_, {
         date => {
             isa => 'Date::Calc',
@@ -142,10 +142,10 @@ SQL
     $st->execute($self->id, $p{date}->mysql, $p{date}->mysql);
 
     while (my $row = $st->fetchrow_hashref()) {
-        push @ret, Tasker::TTDB::TimeSlice->new(
+        push @ret, Trasker::TTDB::TimeSlice->new(
            %$row,
-           start_time => Tasker::Date->new($row->{start_time}),
-           end_time => Tasker::Date->new($row->{end_time}),
+           start_time => Trasker::Date->new($row->{start_time}),
+           end_time => Trasker::Date->new($row->{end_time}),
         );
     }
 
@@ -171,13 +171,13 @@ sub projects
 {
     my $self = shift;
 
-    require Tasker::TTDB::UserProject;
+    require Trasker::TTDB::UserProject;
 
-    my $prjs = Tasker::TTDB::Projects->new(user => $self);
+    my $prjs = Trasker::TTDB::Projects->new(user => $self);
     my @ret;
 
     for my $project ($prjs->entries) {
-        my $up = Tasker::TTDB::UserProject->new(user => $self, project => $project);
+        my $up = Trasker::TTDB::UserProject->new(user => $self, project => $project);
         if ($up->active()) {
             push(@ret, $up)
         }
@@ -202,14 +202,14 @@ sub project
     if (my $p = $p{project}) {
         $project = $p;
     } elsif (my $name = $p{name}) {
-        $project = Tasker::TTDB::Project->get(name => $name);
+        $project = Trasker::TTDB::Project->get(name => $name);
     } elsif (my $id = $p{id}) {
-        $project = Tasker::TTDB::Project->get(id => $id);
+        $project = Trasker::TTDB::Project->get(id => $id);
     }
 
-    require Tasker::TTDB::UserProject;
+    require Trasker::TTDB::UserProject;
 
-    Tasker::TTDB::UserProject->new(project => $project, user => $self);
+    Trasker::TTDB::UserProject->new(project => $project, user => $self);
 }
 
 sub set_current_project
@@ -225,7 +225,7 @@ sub set_current_project
         host => 1,
         project => {
            optional => 1,
-           isa => [ qw(  Tasker::TTDB::Project ) ],
+           isa => [ qw(  Trasker::TTDB::Project ) ],
         },
     });
 
@@ -249,14 +249,14 @@ SQL
     my $sthu;
     if (0) {
         $sthu = $dbh->prepare(<<'SQL') or die $dbh->err_str();
-update timeslice 
+update timeslice
    set elapsed = timediff(NOW(), start_time),
    end_time = NOW(),
  where id = ?
 SQL
     } else {
         $sthu = $dbh->prepare(<<'SQL') or die $dbh->err_str();
-update timeslice 
+update timeslice
    set elapsed = now() - start_time,
    end_time = now()
  where id = ?
@@ -264,7 +264,7 @@ SQL
     }
 
     my $sthi = $dbh->prepare(<<SQL) or die $dbh->err_str();
-insert into timeslice 
+insert into timeslice
        (user_id, project_id, temporary, start_time, auto_id, revert_to, host)
 values (      ?,          ?,         ?,      now(),       ?,         ?,    ?)
 SQL
@@ -373,7 +373,7 @@ SQL
             warn "Rollback";
         }
     } elsif ($rows == 0) {
-        warn "Nothing to revert too." if ($Tasker::TTDB::debug);
+        warn "Nothing to revert too." if ($Trasker::TTDB::debug);
     } else {
         die "Fatal Error: ", $rows;
     }
@@ -391,7 +391,7 @@ sub auto_revert_project
         name => 1,
         desktop => 1,
     });
-    
+
     $self->revert(type => 'window', host => $p{host});  # We only want to revert it if we set it.
 }
 
@@ -440,10 +440,10 @@ sub auto_set_project
         role => 0,
         desktop => 1,
     });
-    
-    require Tasker::TTDB::Auto;
 
-    my $auto = Tasker::TTDB::Auto->get(
+    require Trasker::TTDB::Auto;
+
+    my $auto = Trasker::TTDB::Auto->get(
         user => $self,
         role => '',
         %p,
@@ -473,10 +473,10 @@ SQL
 
     croak("No current project") unless $current;
 
-    require Tasker::TTDB::Project;
-    require Tasker::TTDB::UserProject;
+    require Trasker::TTDB::Project;
+    require Trasker::TTDB::UserProject;
 
-    Tasker::TTDB::UserProject->new(project => Tasker::TTDB::Project->get(id => $current), user => $self);
+    Trasker::TTDB::UserProject->new(project => Trasker::TTDB::Project->get(id => $current), user => $self);
 }
 
 sub has_project
@@ -488,7 +488,7 @@ sub has_project
         id => 0,
         project => {
            optional => 1,
-           isa => [ qw(  Tasker::TTDB::Project ) ],
+           isa => [ qw(  Trasker::TTDB::Project ) ],
         },
     });
     die 'need a project' unless $p{id} || $p{project};
@@ -536,10 +536,10 @@ sub add_task
     } else {
         $dbh->commit;
     }
-    
-    Tasker::TTDB::Projects::flush();
 
-    Tasker::TTDB::UserProject->new(user => $self, project_id => $id);
+    Trasker::TTDB::Projects::flush();
+
+    Trasker::TTDB::UserProject->new(user => $self, project_id => $id);
 }
 
 sub add_note
@@ -594,11 +594,11 @@ sub day
     die 'need a date' if ($p{date}->is_long);
 
     my $day = $p{date};
-    my $start = Tasker::Date->new($day->date, 0,0,0);
+    my $start = Trasker::Date->new($day->date, 0,0,0);
 
     my $dbh = get_dbh();
 
-   
+
     my $project_id_clause = '';
     my @args;
     if ($a = $p{pids}) {
@@ -636,7 +636,7 @@ SQL
 
     my $data = $sth->fetchrow_hashref() || { time => '0:00:00.0' };
 
-    return bless({ %p, data => $data, date => $start }, 'Tasker::TTDB::Time');
+    return bless({ %p, data => $data, date => $start }, 'Trasker::TTDB::Time');
 }
 
 sub days
@@ -652,9 +652,9 @@ sub days
     die 'need a date' if ($p{end}->is_long);
 
     my $day = $p{start};
-    my $start = Tasker::Date->new($day->date, 0,0,0);
+    my $start = Trasker::Date->new($day->date, 0,0,0);
     $day = $p{end};
-    my $end = Tasker::Date->new($day->date, 0,0,0);
+    my $end = Trasker::Date->new($day->date, 0,0,0);
 
     my $dbh = get_dbh();
 
@@ -695,7 +695,7 @@ SQL
 
     my $data = $sth->fetchrow_hashref() || { time => '0:00:00.0' };
 
-    return bless({ %p, data => $data, date => $start }, 'Tasker::TTDB::Time');
+    return bless({ %p, data => $data, date => $start }, 'Trasker::TTDB::Time');
 }
 
 sub times
@@ -703,7 +703,7 @@ sub times
     my $self = shift;
     my %p = validate(@_, {
         date => {
-	    isa => 'Tasker::Date',
+	    isa => 'Trasker::Date',
 	},
     });
     my $dbh = get_dbh();
@@ -711,7 +711,7 @@ sub times
     my @args = ();
     if ($p{date}) {
 	$date_clause = <<EOP;
-and start_time < ? and end_time >= ?
+and (start_time < ? and end_time >= ?)
 EOP
         push(@args, ($p{date} + 1)->mysql);
         push(@args, ($p{date} + 0)->mysql);
@@ -734,18 +734,36 @@ select timeslice.id,
  order by start_time
  limit 100
 SQL
-
+#   warn $sth->{Statement};
     $sth->execute(@args);
 
     my @data;
 
-    require Tasker::TTDB::TimeSlice;
+    require Trasker::TTDB::TimeSlice;
 
     while (my $data = $sth->fetchrow_hashref()) {
-	push(@data, bless { data => $data, id => $data->{id} }, 'Tasker::TTDB::TimeSlice');
+	push(@data, bless { data => $data, id => $data->{id} }, 'Trasker::TTDB::TimeSlice');
     }
 
     @data;
+}
+
+=item recent_projects
+
+  return the last (10) or fewer projects that have been used in the last 10 days.
+
+=cut
+
+sub recent_projects
+{
+    my $sth = <<SQL;
+select project_id, count(*)
+  from timeslice
+ where start_time + interval '10 days' > now()
+ group by project_id
+ order by count desc
+ limit 10
+SQL
 }
 
 1;
@@ -753,18 +771,18 @@ __END__
 
 =head1 NAME
 
-Tasker::TTDB::User - Perl interface to the tasker user
+Trasker::TTDB::User - Perl interface to the tasker user
 
 =head1 SYNOPSIS
 
-  use Tasker::TTDB::User;
+  use Trasker::TTDB::User;
 
-  $user = Tasker::TTDB::User->new(user => 'bob', fullname => 'Robert Smith'):
+  $user = Trasker::TTDB::User->new(user => 'bob', fullname => 'Robert Smith'):
 
   $user->create();
 
-  $user = Tasker::TTDB::User->get(user => 'bob'):
-  $user = Tasker::TTDB::User->get(id => 1):
+  $user = Trasker::TTDB::User->get(user => 'bob'):
+  $user = Trasker::TTDB::User->get(id => 1):
 
 =head2 Constructor
 

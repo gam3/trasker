@@ -5,11 +5,11 @@ use strict;
 
 ## @class
 # Get time information
-package Tasker::TTDB::Times;
+package Trasker::TTDB::Times;
 
-use Tasker::TTDB::Time;
+use Trasker::TTDB::Time;
 
-use Tasker::TTDB::DBI qw (get_dbh);
+use Trasker::TTDB::DBI qw (get_dbh);
 use Params::Validate qw (validate);
 
 sub new
@@ -63,10 +63,10 @@ SQL
 
     my @data;
 
-    require Tasker::TTDB::TimeSlice;
+    require Trasker::TTDB::TimeSlice;
 
     while (my $data = $sth->fetchrow_hashref()) {
-	push(@data, bless { data => $data, id => $data->{id} }, 'Tasker::TTDB::TimeSlice');
+	push(@data, bless { data => $data, id => $data->{id} }, 'Trasker::TTDB::TimeSlice');
     }
 
     @data;
@@ -77,7 +77,7 @@ __END__
 
 =head1 NAME
 
-Tasker::TTDB::Times - Perl interface to the tasker timeslice table
+Trasker::TTDB::Times - Perl interface to the tasker timeslice table
 
 =head1 SYNOPSIS
 
