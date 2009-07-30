@@ -28,7 +28,7 @@ class Project : public TreeItem {};
 #include "ttcp.h"
 #include "alerts.h"
 
-MainWindow::MainWindow(TTCP *ttcp, QWidget *parent)
+ProjectsTree::ProjectsTree(TTCP *ttcp, QWidget *parent)
     : QMainWindow(parent)
 {
     setupUi(this);
@@ -73,7 +73,7 @@ MainWindow::MainWindow(TTCP *ttcp, QWidget *parent)
 
     /*! \sa
      * MyTreeView::popMenu()
-     * MainWindow::itemMenu()
+     * ProjectsTree::itemMenu()
      */
     connect(ttcp, SIGNAL(error(const QString &)), this, SLOT(p_error(const QString &)));
     connect(view, SIGNAL(popMenu()), this, SLOT(itemMenu()));
@@ -140,7 +140,7 @@ MainWindow::MainWindow(TTCP *ttcp, QWidget *parent)
 #include <X11/Xlib.h>
 #include <QX11Info>
 
-void MainWindow::x11()
+void ProjectsTree::x11()
 {
     XSelectInput(QX11Info::display(), internalWinId(),
                  KeyPressMask | KeyReleaseMask |
@@ -156,11 +156,11 @@ void MainWindow::x11()
 }
 #endif
 
-MainWindow::~MainWindow()
+ProjectsTree::~ProjectsTree()
 {
 }
 
-void MainWindow::insertChild()
+void ProjectsTree::insertChild()
 {
     QModelIndex index = view->selectionModel()->currentIndex();
     QAbstractItemModel *model = view->model();
@@ -186,7 +186,7 @@ void MainWindow::insertChild()
     updateActions();
 }
 
-bool MainWindow::insertColumn(const QModelIndex &parent)
+bool ProjectsTree::insertColumn(const QModelIndex &parent)
 {
     QAbstractItemModel *model = view->model();
     int column = view->selectionModel()->currentIndex().column();
@@ -202,7 +202,7 @@ bool MainWindow::insertColumn(const QModelIndex &parent)
     return changed;
 }
 
-void MainWindow::insertRow()
+void ProjectsTree::insertRow()
 {
     QModelIndex index = view->selectionModel()->currentIndex();
     QAbstractItemModel *model = view->model();
@@ -218,7 +218,7 @@ void MainWindow::insertRow()
     }
 }
 
-bool MainWindow::removeColumn(const QModelIndex &parent)
+bool ProjectsTree::removeColumn(const QModelIndex &parent)
 {
     QAbstractItemModel *model = view->model();
     int column = view->selectionModel()->currentIndex().column();
@@ -232,7 +232,7 @@ bool MainWindow::removeColumn(const QModelIndex &parent)
     return changed;
 }
 
-void MainWindow::removeRow()
+void ProjectsTree::removeRow()
 {
     QModelIndex index = view->selectionModel()->currentIndex();
     QAbstractItemModel *model = view->model();
@@ -240,7 +240,7 @@ void MainWindow::removeRow()
         updateActions();
 }
 
-void MainWindow::updateActions()
+void ProjectsTree::updateActions()
 {
     bool hasSelection = !view->selectionModel()->selection().isEmpty();
     removeRowAction->setEnabled(hasSelection);
@@ -265,7 +265,7 @@ void MainWindow::updateActions()
 /*
  */
 
-void MainWindow::setCurrent(int id)
+void ProjectsTree::setCurrent(int id)
 {
     if (id) {
 	updateActions();
@@ -291,13 +291,13 @@ void MainWindow::setCurrent(int id)
     }
 }
 
-void MainWindow::menu( const QModelIndex &/* index */ )
+void ProjectsTree::menu( const QModelIndex &/* index */ )
 {
 //    TreeModel *model = (TreeModel *)view->model();
     qWarning("mouse");
 }
 
-void MainWindow::myHide()
+void ProjectsTree::myHide()
 {
     saveSize = size();
     savePos = pos();
@@ -313,7 +313,7 @@ namespace x11 {
 void wmMessage(Window win, long type, long l0, long l1, long l2, long l3, long l4);
 }
 #endif
-void MainWindow::myShow()
+void ProjectsTree::myShow()
 {
     if (visible_flag) {
 	return;
@@ -332,7 +332,7 @@ void MainWindow::myShow()
     }
 }
 
-void MainWindow::exposeCurrentProject()
+void ProjectsTree::exposeCurrentProject()
 {
     TreeModel *model = view->model();
 
@@ -343,7 +343,7 @@ void MainWindow::exposeCurrentProject()
     view->scrollTo(item, QAbstractItemView::PositionAtCenter);
 }
 
-void MainWindow::createActions()
+void ProjectsTree::createActions()
 {
     selectCurrentAction = new QAction(tr("Select Current"), this);
 
@@ -396,7 +396,7 @@ void MainWindow::createActions()
     connect(timeEditAction, SIGNAL(triggered()), this, SLOT(timeEdit()));
 }
 
-void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason)
+void ProjectsTree::iconActivated(QSystemTrayIcon::ActivationReason reason)
 {
     switch (reason) {
     case QSystemTrayIcon::Trigger:
@@ -434,7 +434,7 @@ void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason)
     }
 }
 
-void MainWindow::mousePressEvent(QMouseEvent *event)
+void ProjectsTree::mousePressEvent(QMouseEvent *event)
 {
     QMenu quickMenu;
 
@@ -448,7 +448,7 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
     quickMenu.exec(event->globalPos(), restoreAction);
 }
 
-void MainWindow::readSettings()
+void ProjectsTree::readSettings()
 {
     QSettings settings("Tasker", "tlist");
 
@@ -462,7 +462,7 @@ void MainWindow::readSettings()
     saveSize = size;
 }
 
-void MainWindow::writeSettings()
+void ProjectsTree::writeSettings()
 {
     QSettings settings("Tasker", "tlist");
     settings.beginGroup("mainwindow");
@@ -475,7 +475,7 @@ void MainWindow::writeSettings()
 }
 
 #if defined (Q_WS_X11)
-bool MainWindow::x11Event(XEvent *event)
+bool ProjectsTree::x11Event(XEvent *event)
 {
     switch (event->type) {
       case 15:
@@ -501,12 +501,12 @@ bool MainWindow::x11Event(XEvent *event)
     return false;
 }
 #endif
-bool MainWindow::visible()
+bool ProjectsTree::visible()
 {
     return visible_flag;
 }
 
-void MainWindow::closeEvent(QCloseEvent *event)
+void ProjectsTree::closeEvent(QCloseEvent *event)
 {
     //cerr << "MainWindow::closeEvent" << endl;
     if (1) {
@@ -520,14 +520,14 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 /*! Ask the server to change the current project
  */
-void MainWindow::setProject(const QModelIndex &index)
+void ProjectsTree::setProject(const QModelIndex &index)
 {
     TreeItem *item = static_cast<TreeItem *>(index.internalPointer());
 
     ttcp->setProject(item->getId());
 }
 
-void MainWindow::projItemMenu(int projId)
+void ProjectsTree::projItemMenu(int projId)
 {
 	QMenu bg_menu;
 
@@ -545,7 +545,7 @@ void MainWindow::projItemMenu(int projId)
 	bg_menu.exec( QCursor::pos() );
 }
 
-void MainWindow::itemMenu()
+void ProjectsTree::itemMenu()
 {
     QMenu popup;
     popup.addAction("bob");
@@ -553,7 +553,7 @@ void MainWindow::itemMenu()
     popup.exec( QCursor::pos() );
 }
 
-void MainWindow::startProject()
+void ProjectsTree::startProject()
 {
     QAction *action = qobject_cast<QAction *>(sender());
 
@@ -564,13 +564,13 @@ void MainWindow::startProject()
     }
 }
 
-void MainWindow::p_error(const QString &error)
+void ProjectsTree::p_error(const QString &error)
 {
     errorWin->setText(error);
     errorWin->show();
 }
 
-void MainWindow::p_note()
+void ProjectsTree::p_note()
 {
     QAction *action = qobject_cast<QAction *>(sender());
 
@@ -584,7 +584,7 @@ void MainWindow::p_note()
     }
 }
 
-void MainWindow::p_task()
+void ProjectsTree::p_task()
 {
     QAction *action = qobject_cast<QAction *>(sender());
 
@@ -596,7 +596,7 @@ void MainWindow::p_task()
     }
 }
 
-void MainWindow::p_auto()
+void ProjectsTree::p_auto()
 {
     QAction *action = qobject_cast<QAction *>(sender());
 
@@ -613,11 +613,11 @@ void MainWindow::p_auto()
     }
 }
 
-void MainWindow::timeEdit()
+void ProjectsTree::timeEdit()
 {
 }
 
-Project *MainWindow::getProject(int projId) {
+Project *ProjectsTree::getProject(int projId) {
     Project *proj = (Project *)view->model()->getItem(projId);
     return proj;
 }

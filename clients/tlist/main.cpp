@@ -14,6 +14,7 @@
 #include <QApplication>
 #include <QSystemTrayIcon>
 
+#include "mainwindow.h"
 #include "projects.h"
 #include "ttcp.h"
 #include "settings.h"
@@ -62,11 +63,15 @@ main(int argc, char *argv[])
     TTCP *ttcp = new TTCP(host, port, ssl, user, password);
 
     MainWindow window(ttcp);
+    ProjectsTree projects(ttcp);
     Alerts alerts(ttcp);
 
     for (unsigned int i = 0; i < args_info.show_given; ++i) {
 	for (char **str = args_info.show_arg; *str; str++) {
 	    if (!strcmp(args_info.show_arg[i], "project")) {
+		projects.show();
+	    }
+	    if (!strcmp(args_info.show_arg[i], "main")) {
 		window.show();
 	    }
 	}

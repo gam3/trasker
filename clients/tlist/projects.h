@@ -14,8 +14,8 @@
  *  that can be controled.
  */
 
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#ifndef PROJECTS_H
+#define PROJECTS_H
 
 #include <QMainWindow>
 #include <QModelIndex>
@@ -52,13 +52,13 @@ class MyPopupMenu : public QMenu {
  *
  */
 
-class MainWindow : public QMainWindow, private Ui::MainWindow
+class ProjectsTree : public QMainWindow, private Ui::ProjectsTree
 {
     Q_OBJECT
 
 public:
-    MainWindow(TTCP *, QWidget *parent = 0);
-    ~MainWindow();
+    ProjectsTree(TTCP *, QWidget *parent = 0);
+    ~ProjectsTree();
 
     bool visible();
 
