@@ -22,7 +22,7 @@ class TimeItem
 public:
     TimeItem(TimeItem *parent = 0);
     TimeItem(const QString &name, const QTime &time, const QTime &atime, const int id, const int pid, TimeItem *parent = 0);
-    TimeItem(QString user, int timeclice_id, int project_id, int auto_id, QString from, QDateTime startTime, QString duration);
+    TimeItem(QString user, int timeclice_id, int project_id, int auto_id, QString from, QDateTime startTime, QString duration, QDate displayDate);
 
     ~TimeItem();
 
@@ -36,6 +36,7 @@ private:
     int project_id;
     QDateTime dateTime;
     QString elapsed;
+    QDate displayDate;
 };
 
 #endif

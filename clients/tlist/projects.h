@@ -111,9 +111,6 @@ private:
     QAction *restoreAction;
     QAction *quitAction;
 
-    QSystemTrayIcon *trayIcon;
-    QMenu *trayIconMenu;
-
     QSize saveSize;
     QPoint savePos;
 

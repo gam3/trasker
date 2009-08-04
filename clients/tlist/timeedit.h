@@ -24,7 +24,7 @@
 #include "ttcp.h"
 
 class TimeEdit:public QMainWindow, private Ui::TimeEdit {
-    Q_OBJECT public slots:void myShow(void);
+    Q_OBJECT
 
   public:
     TimeEdit(TTCP * ttcp, QWidget * parent = 0);
@@ -33,6 +33,11 @@ class TimeEdit:public QMainWindow, private Ui::TimeEdit {
   protected:
     TTCP * ttcp;
 
+public slots:
+    void myShow(void);
+    void dateChanged(const QDate & date);
+    void refresh(void);
+    void hourly(void);  // update maxDate etc.
 };
 
 #endif

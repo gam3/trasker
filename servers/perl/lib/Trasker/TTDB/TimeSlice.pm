@@ -15,37 +15,66 @@ use Params::Validate qw( validate validate_pos SCALAR BOOLEAN HASHREF OBJECT );
 
 use Trasker::TTDB::DBI qw (get_dbh);
 
+use Carp qw(croak);
+
+=head1 NAME
+
+Trasker::TTDB::TimeSlice - Perl interface to the tasker timeslice table
+
+=head1 SYNOPSIS
+
+  use Trasker::TTDB::TimeSlice;
+
+  $user = Trasker::TTDB::User->new(user => 'bob', fullname => 'Robert Smith'):
+
+  $user->create();
+
+  $timeslice = Trasker::TTDB::TimeSlice->get(id => 1):
+
+  my $new = $timeslice->split(time => $datetime);
+
+=head1 DESCRIPTION
+
+This package contains a single timeslice.
+
+=head2 Constructors
+
+=over
+
+=item new()
+
+This constructor is used by get to instaniciate this object.
+Most users do not need to use this method.
+
+=cut
+
 sub new
 {
     my $class = shift;
     my %p = validate(@_, {
-        start_time => {
-            isa => 'Date::Calc',
-        },
-        end_time => {
-            isa => 'Date::Calc',
-        },
-        user => {
-            isa => 'Trasker::TTDB::User',
-            optional => 1,
-        },
-        project => {
-            isa => 'Trasker::TTDB::Project',
-            optional => 1,
-        },
-        temporary => 0,
-        host => 0,
-        elapsed => 0,
         id => 0,
-        user_id => 0,
-        auto_id => 0,
-        revert_to => 0,
-        project_id => 0,
+        start_time => 1,
+        end_time => 1,
+        temporary => 1,
+        host => 1,
+        elapsed => 1,
+        user_id => 1,
+        user_name => 0,
+        auto_id => 1,
+        revert_to => 1,
+        project_id => 1,
     });
+
     my $self = bless({ %p }, $class);
 
     return $self;
 }
+
+=item get
+
+This is the normal way to access a timeslice.
+
+=cut
 
 sub get
 {
@@ -53,49 +82,37 @@ sub get
     my $dbh = get_dbh();
 
     my %p = validate(@_, {
-        start_time => {
-            isa => 'Date::Calc',
-        },
-        end_time => {
-            isa => 'Date::Calc',
-        },
-        user => {
-            isa => 'Trasker::TTDB::User',
-        }
+        id => 1,
+	user_id => 0,
     });
-    my $self = bless({ %p }, $class);
-}
 
-sub _get
-{
-    my $self = shift;
-    my $dbh = get_dbh();
+    my @args = ($p{id});
+    my $extra = '';
+
+    if ($p{user_id}) {
+         push(@args, $p{user_id});
+	 $extra .= ' and user_id = ?';
+    }
+
+#FIX this needs security.  Only find for a certain set of users
 
     my $sth = $dbh->prepare(<<SQL);
 select *
   from timeslice
- where (end_time > ? or end_time is null)
-   and start_time <= ?
-   and user_id = ?
+ where id = ? $extra
 SQL
 
-    my $start = $self->start_time->mysql;
-    my $end = $self->end_time->mysql;
-    my $user_id = $self->user->id;
+    $sth->execute(@args);
 
-    $sth->execute( $start, $end, $user_id );
+    my $data = $sth->fetchrow_hashref();
 
-    my $data = $sth->fetchall_arrayref({});
-
-    $self->{data} = $data;
-
-    return $self;
+    return $class->new(%$data);
 }
 
 sub id
 {
     my $self = shift;
-    
+
     $self->{id};
 }
 
@@ -104,14 +121,14 @@ sub start_time
     my $self = shift;
     require Trasker::Date;
 
-    Trasker::Date->new($self->{data}{start_time});
+    Trasker::Date->new($self->{start_time});
 }
 
 sub end_time
 {
     my $self = shift;
 
-    $self->{data}{end_time} ? Trasker::Date->new($self->{data}{end_time}) : Trasker::Date->now();
+    $self->{end_time} ? Trasker::Date->new($self->{end_time}) : Trasker::Date->now();
 }
 
 sub duration
@@ -123,21 +140,22 @@ sub duration
 
 sub user
 {
+    die;
     shift->{user};
 }
 
 sub project_id
 {
     my $self = shift;
- 
-    $self->{data}{project_id}
+
+    $self->{project_id}
 }
 
 sub project
 {
     my $self = shift;
 
-    $self->{project} ||= Trasker::TTDB::Project->get(id => $self->{data}{project_id});
+    $self->{project} ||= Trasker::TTDB::Project->get(id => $self->{project_id});
 }
 
 sub elapsed
@@ -151,165 +169,50 @@ sub count
 {
     my $self = shift;
 
-    @{$self->{data}};
-}
-
-sub create
-{
-    my $self = shift;
-    my $dbh = get_dbh('write');
-
-    $self->_get();
-
-    return "Can't create" if $self->count();
-    
-    my $st = $dbh->prepare(<<SQL);
-insert into timeslice
-       (user_id, project_id, start_time, end_time, elapsed)
-values (?, ?, ?, ?, ?)
-SQL
-
-    $st->execute(
-        $self->user->id,
-        $self->project->id,
-        $self->start_time->mysql,
-        $self->end_time->mysql,
-        $self->elapsed->mysql,
-    );
+    1;
 }
 
 sub update
 {
     my $self = shift;
     my $dbh = get_dbh('write');
+    my %p = validate(@_, {
+        id => 0,
+	project_id => 0,
+	old_project_id => 0,
+    });
+    my $id;
+    my $old_value;
+    my $new_value = $p{project_id} or die "Need new project id";
+    my $field = "project_id";
 
-die;
-
-    $self->_get();
-
-    my $user_id = $self->user->id;
-    my $start = $self->start_time->mysql;
-    my $end = $self->end_time->mysql;
-
-    my $st = $dbh->prepare(<<SQL);
-select id,
-       start_time,
-       end_time,
-       user_id,
-       project_id,
-       'eof'
-  from timeslice
- where (end_time > ? or end_time is null)
-   and start_time < ?
-   and user_id = ?
-   for update
-SQL
-
-    $st->execute($start, $end, $user_id);
-
-    my @ids = map({ { %$_, start_time => Trasker::Date->new($_->{start_time}), end_time => Trasker::Date->new($_->{end_time}), } } @{$st->fetchall_arrayref({})});
-
-    my $ins = 0;
-    for my $ts (@ids) {
-        if ( $self->start_time eq $ts->{start_time} &&
-            $self->end_time eq $ts->{end_time}) {
-        } elsif ( $self->start_time ge $ts->{start_time} &&
-#new time inside old time
-            $self->end_time le $ts->{end_time}) {
-            if ( $self->start_time gt $ts->{start_time} ) {
-                my $sta = $dbh->prepare(<<SQL);
-update timeslice set end_time = ?, elapsed = ? where id = ?
-SQL
-                my $el = ($self->end_time - $ts->{start_time});
-                $sta->execute($self->start_time->mysql, ($self->start_time - $ts->{start_time})->mysql, $ts->{id});
-            } else {
-warn "start eq";
-            }
-            if ( $self->end_time lt $ts->{end_time} ) {
-                my $sti = $dbh->prepare(<<SQL) or die;
-insert into timeslice
-       (user_id, project_id, start_time, end_time, elapsed)
-values (?, ?, ?, ?, ?)
-SQL
-                $sti->execute(
-                    $ts->{user_id},
-                    $ts->{project_id},
-                    $self->end_time->mysql,
-                    $ts->{end_time}->mysql,
-                    ($ts->{end_time} - $self->end_time)->mysql
-                ) or die;
-            } else {
-warn "end eq";
-            }
-            my $sta = $dbh->prepare(<<SQL);
-insert into timeslice
-       (user_id, project_id, start_time, end_time, elapsed)
-values (?, ?, ?, ?, ?)
-SQL
-            $sta->execute(
-                $self->user->id,
-                $self->project->id,
-                $self->start_time->mysql,
-                $self->end_time->mysql,
-                $self->elapsed->mysql,
-            );
-        } elsif (
-            $self->start_time gt $ts->{start_time} &&
-            $self->start_time lt $ts->{end_time}
-        ) {
-# set the end time of the first block
-            my $sta = $dbh->prepare(<<SQL);
-update timeslice set end_time = ?, elapsed = ? where id = ?
-SQL
-            $sta->execute($self->start_time->mysql, ($self->start_time - $ts->{start_time})->mysql, $ts->{id});
-            $ins++;
-        } elsif (
-            $self->end_time gt $ts->{start_time} &&
-            $self->end_time lt $ts->{end_time}
-        ) {
-# set the end time of the first block
-            my $sta = $dbh->prepare(<<SQL);
-update timeslice set start_time = ?, elapsed = ? where id = ?
-SQL
-            $sta->execute($self->end_time->mysql, ($ts->{end_time} - $self->end_time)->mysql, $ts->{id});
-            $ins++;
-        } else {
-            my $sta = $dbh->prepare(<<SQL);
-delete from timeslice where id = ?
-SQL
-            $sta->execute($ts->{id});
-            $ins++;
-        }
+    if (ref($self)) {
+        $id = $self->id;
+        $old_value = $self->project_id;
+    } else {
+        $id = $p{id} or croak "id is required";
+        $old_value = $p{old_project_id} or croak "id is required";
     }
-    if ($ins) {
-#        $self->create;
-        my $st = $dbh->prepare(<<SQL);
-insert into timeslice
-       (user_id, project_id, start_time, end_time, elapsed)
-values (?, ?, ?, ?, ?)
-SQL
 
-        $st->execute(
-            $self->user->id,
-            $self->project->id,
-            $self->start_time->mysql,
-            $self->end_time->mysql,
-            $self->elapsed->mysql,
-        );
-    }
+    my $stu = $dbh->prepare(<<'SQL');
+update timeslice
+   set project_id = ?
+ where id = ? and project_id = ?
+SQL
+    $stu->execute($new_value, $id, $old_value);
+
+    die "no update" unless $stu->rows;
+
     $dbh->commit;
 }
 
-sub notes
-{
-    my $self = shift;
-    require Trasker::TTDB::Notes;
-    
-    Trasker::TTDB::Notes->new(
-        start_time => $self->start_time,
-        end_time => $self->end_time,
-    );
-}
+=back
+
+=head2 Accessors
+
+=over
+
+=cut
 
 sub auto_id
 {
@@ -323,59 +226,20 @@ sub from
     $self->{from};
 }
 
+sub notes
+{
+    my $self = shift;
+    require Trasker::TTDB::Notes;
+
+    Trasker::TTDB::Notes->new(
+        start_time => $self->start_time,
+        end_time => $self->end_time,
+    );
+}
+
+
 1;
 __END__
-
-=head1 NAME
-
-Trasker::TTDB::TimeSlice - Perl interface to the tasker timeslice table
-
-=head1 SYNOPSIS
-
-  use Trasker::TTDB::User;
-
-  $user = Trasker::TTDB::User->new(user => 'bob', fullname => 'Robert Smith'):
-
-  $user->create();
-
-  $user = Trasker::TTDB::User->get(user => 'bob'):
-  $user = Trasker::TTDB::User->get(id => 1):
-
-=head1 DESCRIPTION
-
-=head2 Constructors
-
-=over
-
-=item new()
-
-=back
-
-=head2 Methods
-
-=over
-
-=item count
-
-=item create
-
-=item duration
-
-=item elapsed
-
-=item end_time
-
-=item get
-
-=item id
-
-=item project
-
-=item start_time
-
-=item update
-
-=item user
 
 =back
 

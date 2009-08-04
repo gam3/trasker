@@ -175,7 +175,7 @@ bool Connection::readProtocolHeader()
 	    if (list[0] == "authorized") {
 		cstate = ReadyForUse;
 	    } else {
-                qWarning("Unknown responce: %s", qPrintable(line));
+                qWarning("Unknown response: %s", qPrintable(line));
 	    }
 	    break;
         default:

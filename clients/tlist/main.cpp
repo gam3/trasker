@@ -62,6 +62,8 @@ main(int argc, char *argv[])
 
     TTCP *ttcp = new TTCP(host, port, ssl, user, password);
 
+// You don't get here unless you are connected to a server
+
     MainWindow window(ttcp);
     ProjectsTree projects(ttcp);
     Alerts alerts(ttcp);

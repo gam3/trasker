@@ -217,6 +217,12 @@ bool TreeModel::setData(const QModelIndex &index, const QVariant &value,
 
 bool TreeModel::setRow(const QModelIndex &index, const QString &name, int id, int pid, const QTime &time, const QTime &atime)
 {
+    Q_UNUSED(index);
+    Q_UNUSED(name);
+    Q_UNUSED(id);
+    Q_UNUSED(pid);
+    Q_UNUSED(time);
+    Q_UNUSED(atime);
     return false;
 }
 
@@ -304,6 +310,7 @@ void TreeModel::add_entry(QString name, int id, int pid, const QTime time, const
     }
 
     if (parents[id]) {
+       update_time(id, time, atime);
        qWarning("reload of \"entry\" (%d).", id);
        return;
     }

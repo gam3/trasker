@@ -21,8 +21,16 @@
 
 perllibdir = $(pkgvdatadir)/Trasker
 
+man_MANS = traskerd.1p
+
+traskerd.1p : scripts/traskerd
+	perldoc -M Pod::Man  scripts/traskerd > traskerd.1p
+
+
+sbin_SCRIPTS = \
+    scripts/traskerd
+
 bin_SCRIPTS = \
-    scripts/traskerd \
     scripts/get_gaim \
     scripts/merge \
     scripts/traskers

@@ -47,35 +47,36 @@ endif
 build: build-arch build-indep
 
 build-arch: build-arch-stamp
-build-arch-stamp:  config.status 
+build-arch-stamp:  config.status
 
 	# Add here commands to compile the arch part of the package.
 	$(MAKE)
 	touch $@
 
 build-indep: build-indep-stamp
-build-indep-stamp:  config.status 
+build-indep-stamp:  config.status
 
 	# Add here commands to compile the indep part of the package.
 	#$(MAKE) doc
 	touch $@
 
-clean: 
+clean:
 	dh_testdir
 	dh_testroot
-	rm -f build-arch-stamp build-indep-stamp 
+	rm -f build-arch-stamp build-indep-stamp
 
 	# Add here commands to clean up after the build process.
 	[ ! -f Makefile ] || $(MAKE) distclean
 	rm -f config.sub config.guess
 
-	dh_clean 
+	dh_clean
 
 install: install-indep install-arch
+
 install-indep:
 	dh_testdir
 	dh_testroot
-	dh_clean -k -i 
+	dh_prep -i
 	dh_installdirs -i
 
 	# Add here commands to install the indep part of the package into
@@ -91,14 +92,14 @@ install-indep:
 install-arch:
 	dh_testdir
 	dh_testroot
-	dh_clean -k -s 
-	dh_installdirs -s
+	dh_prep -a
+	dh_installdirs -a
 
 	# Add here commands to install the arch part of the package into
 	# debian/tmp.
 	$(MAKE) DESTDIR=$(CURDIR)/debian/tmp install
 
-	dh_install -s
+	dh_install -a
 # Must not depend on anything. This is to be called by
 # binary-arch/binary-indep
 # in another 'make' thread.
@@ -139,4 +140,4 @@ binary-arch: build-arch install-arch
 	$(MAKE) -f debian/rules DH_OPTIONS=-s binary-common
 
 binary: binary-arch binary-indep
-.PHONY: build clean binary-indep binary-arch binary install install-indep install-arch 
+.PHONY: build clean binary-indep binary-arch binary install install-indep install-arch

@@ -1,6 +1,6 @@
 #! /bin/sh
 ### BEGIN INIT INFO
-# Provides:          tasker-server
+# Provides:          trasker-server
 # Required-Start:    $remote_fs $syslog
 # Required-Stop:     $remote_fs $syslog
 # Default-Start:     2 3 4 5
@@ -11,10 +11,10 @@
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin
 
-DAEMON=/usr/bin/taskerd
+DAEMON=/usr/bin/traskerd
 
-NAME=taskerd
-DESC="tasker server"
+NAME=traskerd
+DESC="trasker server"
 
 test -x $DAEMON || exit 0
 

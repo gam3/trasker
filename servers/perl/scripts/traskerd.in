@@ -2,7 +2,7 @@
 
 =head1 NAME
 
- traskerd
+ traskerd - The Trasker Perl Server
 
 =head1 SYNOPSIS
 
@@ -91,6 +91,11 @@ sub get_user
     my $client = shift or die 'Need a client';
     my $user;
 
+    my $a = $hash->{'_clients'}{$client}{authorized};
+    unless ($a) {
+        die "You must be authorized";
+    }
+
     if ($hash->{_user}{$userid}) {
 	$user = $hash->{_user}{$userid};
     }
@@ -155,8 +160,10 @@ our $cmd_hash = {
 
 # Timeslices
 
-    "times" => \&times,
     "gettime" => \&gettime,
+    'times' => \&times,
+    'timesplit' => \&timesplit,
+    'timeedit' => \&timeedit,
 
 };
 
@@ -183,6 +190,11 @@ sub now
 
 =head3 authorize
 
+  authorize {user/password}
+
+This command must be run to get permitions to use most other
+commands.
+
 =cut
 
 sub authorize
@@ -192,19 +204,26 @@ sub authorize
     my $user = shift;
 
     my @part = split('/', $user);
+    my $ok = 0;
 
     if ($hash->{'_clients'}{$client}{authorized}) {
 	printf $client "error Can't reauthorized %s\n", $part[0];
     } else {
 	if (@part == 2) {
+	    require Trasker::TTDB::Authorize;
+	    $hash->{'_clients'}{$client}{authorized} = Trasker::TTDB::Authorize->authorize(user => $part[0], passwd => $part[1]);
+	    $ok = 1;
+	}
+	if ($ok) {
 	    printf $client "authorized\t%s\tOK\n", $part[0];
-	    $hash->{'_clients'}{$client}{authorized} = "Token";
 	} else {
+	    sleep(2);
 	    printf $client "notauthorized\t%s\n", $part[0];
+	    return 'QUIT';
 	}
     }
+    return 'OK';
 }
-
 
 =head2 Miscellaneous
 
@@ -309,8 +328,10 @@ if ($cmd) {
  track\t{username} [on|off]
 
  addauto
+
  addtask
- change\t{project id}
+
+ change\t{user}\t{project id} - change the current project for user
  clients
  desktop
  getauto
@@ -492,10 +513,9 @@ sub times
     if ($date) {
         $time = Trasker::Date->new($date);
     }
-    my @times = $user->times(date => $time);
+    my @times = $user->get_timeslices_for_day(date => $time);
 
     for my $ts (@times) {
-
 	printf($client qq(timeslice\t%s\t%d\t%d\t%d\t%s\t%s\t%s\n),
 	    $userid,
 	    $ts->id,
@@ -507,6 +527,45 @@ sub times
     }
 #    printf($client qq(timeslice_done\n));
 }
+
+=item timesplit
+
+  timesplit user timeslice_id {time | +duration | -duration}
+
+=cut
+
+sub timesplit
+{
+    my $client = shift;
+    my $data = shift;
+    my $userid = shift;
+    my $timeslice_id = shift;
+    my $date = shift;
+    die "bad usage" if (@_);
+
+    my $time;
+
+    my $user = get_user($userid, $client);
+
+    my @ts = $user->timesplit(
+	timeslice_id => $timeslice_id,
+	time => $date,
+    );
+    if (@ts == 0) {
+warn "timesplit failed";
+    }
+    foreach my $ts (@ts) {
+	printf($client qq(timeslice\t%s\t%d\t%d\t%d\t%s\t%s\t%s\n),
+	    $userid,
+	    $ts->id,
+	    $ts->project_id,
+	    $ts->auto_id,
+	    '"' . $ts->from . '"',
+	    $ts->start_time->mysql,
+	    $ts->duration);
+    }
+}
+
 
 =head3 notes
 
@@ -765,7 +824,9 @@ sub addauto()
 
 =head3 setauto
 
-  addauto userid host class name role title desktop
+=item setauto userid host class name role title desktop
+
+=back
 
 =cut
 
@@ -876,6 +937,74 @@ sub change
     update_user($user);
 }
 
+=head3 timeedit
+
+=over
+
+=item timeedit {user} {timesliceid} {projectid} {new projectid}
+
+Change the project for a timeslice to projectid.
+
+This is allows old timeslices to be edited. This is will fail if the
+timeslice is 'closed' or you don't supply the correct current project
+id. These may happen if an invoice has been issued or if you or someone
+else is editing the timeslice from somewhere else.
+
+On success 3 commands are issued:
+
+   timeslice timesliceid
+   entry projectid
+   entry new_projectid
+
+=back
+
+=cut
+
+sub timeedit
+{
+    my $client = shift;
+    my $data = shift;
+    my $user_id = shift;
+    my $timeslice_id = shift;
+    my $project_id = shift;
+    my $new_project_id = shift;
+
+    my $user = get_user($user_id, $client);
+
+    require Trasker::TTDB::TimeSlice;
+
+    my $ots = Trasker::TTDB::TimeSlice->get(id => $timeslice_id, user_id => $user->id);
+
+    Trasker::TTDB::TimeSlice->update(id => $timeslice_id, project_id => $new_project_id, old_project_id => $project_id);
+
+    my $ts = Trasker::TTDB::TimeSlice->get(id => $timeslice_id, user_id => $user->id);
+
+    for my $client_key (keys %{$hash->{_clients}}) {
+	my $uclient = $hash->{_clients}{$client_key}{client};
+	printf($uclient qq(timeslice\t%s\t%d\t%d\t%d\t%s\t%s\t%s\n),
+	    $user->name,
+	    $ts->id,
+	    $ts->project_id,
+	    $ts->auto_id,
+	    '"' . $ts->from . '"',
+	    $ts->start_time->mysql,
+	    $ts->duration);
+	for my $entry ($user->project(id => $project_id), $user->project(id => $new_project_id)) {
+	    my $time = $entry->time;
+	    my $atime = $entry->alltime;
+
+	    printf($uclient "entry\t%s\t%s\t%d\t%d\t%s\t%s\t%s\n",
+		   $user->name,
+		   $entry->project->name,
+		   $entry->project->id,
+		   $entry->project->parent_id,
+		   $time, $atime,
+		   $entry->active
+	    );
+	}
+    }
+}
+
 =head3 tracker
 
 =over
@@ -895,7 +1024,7 @@ sub tracker
 
     my $user = get_user($userid, $client);
 
-    if (1) {
+    if ($opt_debug) {
         printf("%s %s dsk %s win %s host (%s) name (%s) class (%s) role (%s) title (%s)\n",
                $host1, $idle, $desktop, $window, $host, $name, $class, $role, $title);
     }
@@ -985,8 +1114,8 @@ sub alerts
     my @alerts = $userobj->get_alerts();
 
     for my $alert (@alerts) {
-	printf($client "alertentry\t%d\t%s\n", $alert->id, $alert->title);
-#	                alert\t11\tgam3\tThis is an alert\n
+        printf($client "alertentry\t%d\t%s\n", $alert->id, $alert->title);
+#                       alert\t11\tgam3\tThis is an alert\n
     }
 }
 
@@ -1182,6 +1311,7 @@ QUIT:
                     $client->shutdown(2);
                     close $client;
 
+warn "FIX autoselect here";
                     delete $hash->{_clients}{$client};
 
                     $connections--;
@@ -1223,25 +1353,29 @@ print $client "error\t" . $@;
         }
 
         my (@time) = localtime;
-	# Once a second
+        # Once a second
         if ($time[0] != $sec) {
 
-	}
-	# Once a minute
+        }
+        # Once a minute
         if ($time[1] != $min) {
-	    # once a minute
-	    for my $client_key (keys %{$hash->{_clients}}) {
-	        my $client = $hash->{_clients}{$client_key}{client};
+            # once a minute
+            for my $client_key (keys %{$hash->{_clients}}) {
+                my $client = $hash->{_clients}{$client_key}{client};
                 print $client "alert\t11\tgam3\tThis is an alert\n";
             }
         }
         if ($time[2] != $hour) {
-warn "hour";
-	}
+            # once a minute
+            for my $client_key (keys %{$hash->{_clients}}) {
+                my $client = $hash->{_clients}{$client_key}{client};
+                print $client "hourly\t$time[2]\n";
+            }
+        }
         if ($time[3] != $mday) {
 warn "day";
-	}
-	($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = @time;
+        }
+        ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = @time;
     }
 
     print_log "Exit";
@@ -1282,7 +1416,6 @@ $0 = "traskerd";
 main;
 
 __END__
-
 
 =head1 AUTHOR
 

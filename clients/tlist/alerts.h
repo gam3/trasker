@@ -9,6 +9,7 @@
 
 #include "ui_alerts.h"
 
+class AlertDisplay;
 class TTCP;
 class Project;
 
@@ -27,6 +28,7 @@ private slots:
 private:
     const TTCP *ttcp;
     const Project *parentProject;
+    QHash<int, AlertDisplay *> alertDisplays;
 };
 
 #endif

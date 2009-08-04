@@ -22,9 +22,9 @@ require Exporter;
 our @ISA = qw (Exporter);
 our @EXPORT_OK = qw(get_dbh dbi_setup);  # symbols to export on request
 
-our $database = 'test_tasker';
+our $database = 'test_trasker';
 our $host = 'harpo';
-our $user = 'tasker';
+our $user = 'trasker';
 our $password = 'seviceforward';
 our $db = 'Pg';
 

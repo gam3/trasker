@@ -18,6 +18,14 @@ public:
     MainWindow(TTCP *, QWidget *parent = 0);
     ~MainWindow();
 
+private:
+    TTCP *ttcp;
+
+    QSystemTrayIcon *trayIcon;
+    QMenu *trayIconMenu;
+
+private slots:
+    void iconActivated(QSystemTrayIcon::ActivationReason reason);
 };
 
 #endif

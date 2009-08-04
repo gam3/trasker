@@ -34,8 +34,8 @@ sub new
     my $user_id = $p{user}->id;
 
     my $sth = $dbh->prepare(<<SQL);
-select project_id project_id,
-       user_id user_id,
+select project_id,
+       user_id,
        'eof'
   from user_project
   where user_id = ?

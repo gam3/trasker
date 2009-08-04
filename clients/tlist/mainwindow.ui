@@ -70,6 +70,9 @@
    </property>
   </action>
  </widget>
- <resources/>
+ <resources>
+  <include location="systray.qrc"/>
+  <include location="tlist.qrc"/>
+ </resources>
  <connections/>
 </ui>

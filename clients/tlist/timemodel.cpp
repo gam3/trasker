@@ -99,16 +99,16 @@ QVariant TimeModel::headerData(int section, Qt::Orientation orientation, int rol
 }
 
 void TimeModel::timeSlice(QString user,
-			 int timeclice_id,
-			 int project_id,
-			 int auto_id,
-			 QString from, QDateTime startTime, QString duration)
+                          int timeclice_id,
+                          int project_id,
+                          int auto_id,
+                          QString from, QDateTime startTime, QString duration)
 {
     TimeItem *item;
 
     beginInsertRows(QModelIndex(), 0, ids.size());
     ids.append(timeclice_id);
-    item = new TimeItem(user, timeclice_id, project_id, auto_id, from, startTime, duration);
+    item = new TimeItem(user, timeclice_id, project_id, auto_id, from, startTime, duration, displayDate);
     timelist[timeclice_id] = item;
 
     endInsertRows();
@@ -119,7 +119,17 @@ void TimeModel::timeSlice(QString user,
 
 bool TimeModel::setDate( const QModelIndex & index, const QVariant & value, int role )
 {
+    Q_UNUSED(index);
+    Q_UNUSED(value);
+    Q_UNUSED(role);
+
     return false;
+}
+
+void TimeModel::setDisplayDate(QDate const& date)
+{
+    revert();
+    displayDate = date;
 }
 
 Qt::ItemFlags TimeModel::flags( const QModelIndex& index ) const

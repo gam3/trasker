@@ -42,21 +42,6 @@ ProjectsTree::ProjectsTree(TTCP *ttcp, QWidget *parent)
 
     this->ttcp = ttcp;
 
-    trayIcon = new QSystemTrayIcon();
-    trayIconMenu = new QMenu();
-    QIcon icon = QIcon(":/pics/active-icon-0.xpm");
-
-    trayIconMenu->addAction(selectCurrentAction);
-    trayIconMenu->addAction(timeEditAction);
-    trayIconMenu->addAction(minimizeAction);
-    trayIconMenu->addAction(maximizeAction);
-    trayIconMenu->addAction(restoreAction);
-    trayIconMenu->addAction(quitAction);
-
-    trayIcon->setIcon(icon);
-    trayIcon->setContextMenu(trayIconMenu);
-
-    trayIcon->show();
 
     QStringList headers;
     headers << tr("Title") << tr("Description");
@@ -115,9 +100,6 @@ ProjectsTree::ProjectsTree(TTCP *ttcp, QWidget *parent)
             SIGNAL(selectionChanged(const QItemSelection &,
                                     const QItemSelection &)),
             this, SLOT(updateActions()));
-
-    connect(trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
-	    this, SLOT(iconActivated(QSystemTrayIcon::ActivationReason)));
 
 #if defined (Q_WS_X11)
     x11();

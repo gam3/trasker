@@ -51,13 +51,16 @@ void Alerts::update()
 void Alerts::add(int id, const QString title, const QString description)
 {
     Q_UNUSED(id);
-    qWarning("test");
+    if (alertDisplays.contains(id)) {
+        qWarning() << "Dup";
+        return;
+    }
     AlertDisplay *alert = new AlertDisplay(this);
+    alertDisplays[id] = alert;
     alert->setWindowTitle(title);
     alert->setText(description);
     CurrentAlert->addPage(alert);
     show();
-///FIX    ttcp->addtask(id, name, desc);
 }
 
 void Alerts::show_help()

@@ -76,8 +76,12 @@ QTime totime(QString timestring)
 
 QDateTime todatetime(QString timestring)
 {
-    QString x = timestring.left(timestring.indexOf('.')+4);
-
+    QString x;
+    if (timestring.indexOf('.') > 0) {
+        x = timestring.left(timestring.indexOf('.')+4);
+    } else {
+        x = timestring;
+    }
     QDateTime time = QDateTime::fromString(x, "yyyy-MM-dd hh:mm:ss.zzz" );
 
 //  cerr << qPrintable(x) << " -> " << qPrintable(time.toString("yyyy-MM-dd hh:mm:ss.zzz")) << endl;
@@ -110,9 +114,13 @@ void TTCP::getTimes()
     if (connection->state() == QAbstractSocket::ConnectedState)
 	connection->write(QString("times\t%1\n").arg(user).toAscii());
 }
-void TTCP::getTimes(const QDate)
+
+void TTCP::getTimes(const QDate date)
 {
+    if (connection->state() == QAbstractSocket::ConnectedState)
+	connection->write(QString("times\t%1\t%2\n").arg(user).arg(date.toString(Qt::ISODate)).toAscii());
 }
+
 void TTCP::getTimes(const QDate, const QDate)
 {
 }
@@ -156,15 +164,19 @@ void TTCP::setAuto(QString &host, QString &classN, QString &name, QString &role,
     Q_UNUSED(title);
     Q_UNUSED(desktop);
 }
-
+/*
+  We have a new comand from the server.
+  'emit' a signal.
+ */
 void TTCP::newCommand(const QStringList &list)
 {
     if (list[0] == "entry") {
 	emit add_entry(list[2], list[3].toInt(), list[4].toInt(), totime(list[5]),  totime(list[6]));
     } else if (list[0] == "timeslice") {
         if (list.size() == 8) {
-	    emit add_timeslice(list[1], list[2].toInt(), list[3].toInt(), list[4].toInt(), list[5], todatetime(list[6]), list[7]);
-	} else {
+            emit add_timeslice(list[1], list[2].toInt(), list[3].toInt(), list[4].toInt(), list[5], todatetime(list[6]), list[7]);
+
+        } else {
             qWarning("timeslice: wrong # of arguments %d", list.size());
 	}
     } else if (list[0] == "current") {
@@ -192,6 +204,9 @@ void TTCP::newCommand(const QStringList &list)
         emit alert_message(list[1].toInt(), list[2], list[3]);
     } else if (list[0] == "alert_end") {
         emit alert_end_message(list[1].toInt());
+    } else if (list[0] == "hourly") {
+        qWarning("Hourly");
+        emit hourly();
     } else {
         printf("TTCP Unknown: '%s'/%d\n", qPrintable(list[0]), list.size() - 1);
     }

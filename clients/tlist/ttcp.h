@@ -65,6 +65,7 @@ signals:
     void project(QString name, QString action);
     void settime(int project_id, QTime time, QTime atime);
     void update_all();
+    void hourly();
 
 public:
     void sendMessage(const QString &message);
@@ -84,8 +85,8 @@ private slots:
 private:
     void removeConnection(Connection *connection);
 
-    const QString &password;
     const QString &user;
+    const QString &password;
     const QString &host;
     quint16 port;
     bool    ssl;

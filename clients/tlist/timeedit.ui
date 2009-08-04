@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Time Editor for 1 Jan 1970</string>
+   <string>Time Editor</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -40,7 +40,7 @@
       </property>
       <layout class="QGridLayout" name="gridLayout">
        <item row="2" column="4">
-        <widget class="QPushButton" name="pushButton">
+        <widget class="QPushButton" name="saveButton">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -48,7 +48,7 @@
           </sizepolicy>
          </property>
          <property name="text">
-          <string>PushButton</string>
+          <string>Save</string>
          </property>
         </widget>
        </item>
@@ -66,8 +66,8 @@
            <minute>0</minute>
            <second>0</second>
            <year>2009</year>
-           <month>6</month>
-           <day>1</day>
+           <month>7</month>
+           <day>30</day>
           </datetime>
          </property>
          <property name="minimumDate">
@@ -82,6 +82,13 @@
          </property>
          <property name="calendarPopup">
           <bool>true</bool>
+         </property>
+         <property name="date">
+          <date>
+           <year>2009</year>
+           <month>7</month>
+           <day>30</day>
+          </date>
          </property>
         </widget>
        </item>
@@ -99,9 +106,19 @@
         </spacer>
        </item>
        <item row="2" column="1">
-        <widget class="QPushButton" name="pushButton_2">
+        <widget class="QPushButton" name="refreshButton">
+         <property name="toolTip">
+          <string>Update the list.</string>
+         </property>
          <property name="text">
           <string>Refresh</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="3">
+        <widget class="QPushButton" name="cancelButton">
+         <property name="text">
+          <string>Cancel</string>
          </property>
         </widget>
        </item>
@@ -119,6 +136,13 @@
      <height>28</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuTimeSlice">
+    <property name="title">
+     <string>TimeSlice</string>
+    </property>
+    <addaction name="actionEdit"/>
+   </widget>
+   <addaction name="menuTimeSlice"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QToolBar" name="toolBar">
@@ -135,6 +159,11 @@
     <bool>false</bool>
    </attribute>
   </widget>
+  <action name="actionEdit">
+   <property name="text">
+    <string>Edit</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>

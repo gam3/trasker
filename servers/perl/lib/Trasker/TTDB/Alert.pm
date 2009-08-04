@@ -25,11 +25,12 @@ sub new
     my %p = validate(@_, {
         id => 0,
 	start_time => 1,
-	end_time => 0,
+	end_time => 1,
+	alert_type_id => 0,
         title => 1,
         description => 1,
-	alert_type_id => 0,
 	recurs_id => 0,
+	updated => 0,
     });
 
     return bless { %p }, $class;
@@ -37,10 +38,20 @@ sub new
 
 sub create
 {
-    my $self = shift;
+    my $class = shift;
 
-    die if $self->{id};
+    my %p = validate(@_, {
+        id => 0,
+	start_time => 1,
+	end_time => 0,
+        title => 1,
+        description => 1,
+	alert_type_id => 0,
+	recurs_id => 0,
+	updated => 0,
+    });
 
+    my $self;
     my $dbh = get_dbh;
 
     my $sth_id;
@@ -50,11 +61,11 @@ sub create
         $sth_id = $dbh->prepare("select currval('users_id_seq')");
     }
     my $sth = $dbh->prepare(<<SQL);
-insert into users (name, fullname) values (?, ?)
+insert into alert (name, fullname) values (?, ?)
 SQL
 
-    $sth->execute($self->{name}, $self->{fullname});
-    $sth_id->execute();
+#    $sth->execute($self->{name}, $self->{fullname});
+#    $sth_id->execute();
     my $id = $sth_id->fetchrow_array();
     $self->{id} = $id;
 
@@ -63,11 +74,6 @@ SQL
     $self;
 }
 
-## @cmethod object get(%hash)
-# create a user object.
-# @param id is the user id [optional]
-# @param user is the user name [optoinal]
-# @return user object
 sub get
 {
     my $dbh = get_dbh;
@@ -75,40 +81,9 @@ sub get
 
     my %p = validate(@_, {
         id => 0,
-        user => 0,
     });
 
-    croak(q(Can't have both a user and an id)) if (defined $p{user} && defined $p{id});
-    croak(q(Must have a user or an id)) if (!defined $p{user} && !defined $p{id});
-
-    my $sth;
-
-    if (my $user = $p{user}) {
-        $sth = $dbh->prepare(<<SQL);
-select name,
-       fullname,
-       id,
-       'eof' as eof
-  from users
- where name = ?
-SQL
-
-        $sth->execute($user);
-    } else {
-        my $id = $p{id};
-        $sth = $dbh->prepare(<<SQL);
-select name,
-       fullname,
-       id,
-       'eof'
-  from users
- where id = ?
-SQL
-
-        $sth->execute($id);
-    }
-
-    my $data = $sth->fetchrow_hashref();
+    my $data;
 
     die "No Alert" unless $data;
 
@@ -122,37 +97,6 @@ sub id
     $self->{id} || die "No id";
 }
 
-sub get_timeslices_for_day
-{
-    my $self = shift;
-    require Trasker::TTDB::TimeSlice;
-    my %p = validate(@_, {
-        date => {
-            isa => 'Date::Calc',
-        },
-    });
-    my $dbh = get_dbh;
-
-    my $st = $dbh->prepare(<<SQL);
-select * from timeslice
- where user_id = ?
-   and start_time <= date(?) + interval '1 day'
-   and end_time >= date(?)
-SQL
-    my @ret;
-
-    $st->execute($self->id, $p{date}->mysql, $p{date}->mysql);
-
-    while (my $row = $st->fetchrow_hashref()) {
-        push @ret, Trasker::TTDB::TimeSlice->new(
-           %$row,
-           start_time => Trasker::Date->new($row->{start_time}),
-           end_time => Trasker::Date->new($row->{end_time}),
-        );
-    }
-
-    @ret;
-}
 
 1;
 __END__

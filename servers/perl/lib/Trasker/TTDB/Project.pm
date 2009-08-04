@@ -127,7 +127,7 @@ sub create
     my $pid = $self->parent_id;
     my $name = $self->name;
     my $user_id = $self->user_id;
-    my $hidden = $self->hidden;
+    my $hidden = $self->hidden || "N";
     my $description = $self->description;
 
     my $st_id;

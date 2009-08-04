@@ -3,7 +3,7 @@ Section: unknown
 Priority: extra
 Maintainer: G. Allen Morris III <gam3@gam3.net>
 Build-Depends: debhelper (>= 7), autotools-dev
-Standards-Version: 3.8.0
+Standards-Version: 3.8.2
 Homepage: http://trasker.gam3.net/
 
 Package: trasker-tlist
@@ -26,7 +26,7 @@ Description: An implimentation of the Tasker server writen in perl.
 
 Package: trasker-server
 Architecture: any
-Depends: trasker-server-perl
+Depends: trasker-server-perl | trasker-server-c
 Description: The common trasker-server files
   This file has the trasker-server keys and init.d files.
 
@@ -35,4 +35,11 @@ Architecture: any
 Description: trasker clients for X11 desktops
  This package has programs to help you track your actions on an X11 desktop.
  If you are using XWindows (XFree86 or Xorg) you should install this package.
+
+Package: trasker-server-c
+Architecture: any
+Depends: postgresql | sqlite
+Description: An implimentation of the Tasker server writen in C.
+ This server should be more rubust and faster than the perl server, but will
+ not have as many features.
 

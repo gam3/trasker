@@ -21,6 +21,32 @@ use Params::Validate qw( validate validate_pos SCALAR BOOLEAN HASHREF OBJECT );
 
 use Carp qw (croak);
 
+=head1 NAME
+
+Trasker::TTDB::User - Perl interface to the tasker user
+
+=head1 SYNOPSIS
+
+  use Trasker::TTDB::User;
+
+  $user = Trasker::TTDB::User->new(user => 'bob', fullname => 'Robert Smith'):
+
+  $user->create();
+
+  $user = Trasker::TTDB::User->get(user => 'bob'):
+  $user = Trasker::TTDB::User->get(id => 1):
+
+=head2 Constructor
+
+=over
+
+=item new(name => I<required>, fullname => I<required>)
+
+This creates a user object.  Use I<create> to make this object
+preminate.
+
+=cut
+
 sub new
 {
     my $class = shift;
@@ -61,11 +87,14 @@ SQL
     $self;
 }
 
-## @cmethod object get(%hash)
-# create a user object.
-# @param id is the user id [optional]
-# @param user is the user name [optoinal]
-# @return user object
+=item get( { id => # | name => 'name' } )
+
+I<get> returns a user object that describes the user requested
+by either I<name> or I<id>.
+
+=back
+=cut
+
 sub get
 {
     my $dbh = get_dbh;
@@ -120,36 +149,55 @@ sub id
     $self->{id} || die "No id";
 }
 
-sub get_timeslices_for_day
+sub times
 {
     my $self = shift;
-    require Trasker::TTDB::TimeSlice;
     my %p = validate(@_, {
         date => {
-            isa => 'Date::Calc',
-        },
+	    isa => 'Trasker::Date',
+	},
     });
-    my $dbh = get_dbh;
+    my $dbh = get_dbh();
+    my $date_clause;
+    my @args = ();
 
-    my $st = $dbh->prepare(<<SQL);
-select * from timeslice
- where user_id = ?
-   and start_time <= date(?) + interval '1 day'
-   and end_time >= date(?)
+    if ($p{date}) {
+	$date_clause = <<EOP;
+and (start_time < ? and (end_time >= ? or end_time is NULL))
+EOP
+        push(@args, ($p{date} + 1)->mysql);
+        push(@args, ($p{date} + 0)->mysql);
+    }
+    my $sth = $dbh->prepare(<<SQL);
+select timeslice.id,
+       users.name as user_name,
+       project.id as project_id,
+       project.name as project_name,
+       start_time,
+       end_time,
+       auto_id,
+       host,
+       'eof'
+  from timeslice, project, users
+ where users.id = timeslice.user_id
+   and project.id = project_id
+   and users.id = ?
+   $date_clause
+ order by start_time
+ limit 100
 SQL
-    my @ret;
+#   warn $sth->{Statement};
+    $sth->execute($self->id, @args);
 
-    $st->execute($self->id, $p{date}->mysql, $p{date}->mysql);
+    my @data;
 
-    while (my $row = $st->fetchrow_hashref()) {
-        push @ret, Trasker::TTDB::TimeSlice->new(
-           %$row,
-           start_time => Trasker::Date->new($row->{start_time}),
-           end_time => Trasker::Date->new($row->{end_time}),
-        );
+    require Trasker::TTDB::TimeSlice;
+
+    while (my $data = $sth->fetchrow_hashref()) {
+	push(@data, bless { data => $data, id => $data->{id} }, 'Trasker::TTDB::TimeSlice');
     }
 
-    @ret;
+    @data;
 }
 
 sub userid
@@ -243,7 +291,8 @@ sub set_current_project
 select id, project_id, temporary, revert_to
   from timeslice
  where end_time is NULL
-   and user_id = ? for update;
+   and user_id = ?
+   for update
 SQL
 
     my $sthu;
@@ -384,15 +433,10 @@ sub auto_revert_project
     my $self = shift;
     my $dbh = get_dbh;
     my %p = validate(@_, {
-        host => 1,
-        class => 1,
-        title => 1,
-        role => 0,
-        name => 1,
-        desktop => 1,
+        id => 1,
     });
 
-    $self->revert(type => 'window', host => $p{host});  # We only want to revert it if we set it.
+    $self->revert(type => 'window', id => $p{host});  # We only want to revert it if we set it.
 }
 
 sub auto_get_project
@@ -698,55 +742,8 @@ SQL
     return bless({ %p, data => $data, date => $start }, 'Trasker::TTDB::Time');
 }
 
-sub times
-{
-    my $self = shift;
-    my %p = validate(@_, {
-        date => {
-	    isa => 'Trasker::Date',
-	},
-    });
-    my $dbh = get_dbh();
-    my $date_clause;
-    my @args = ();
-    if ($p{date}) {
-	$date_clause = <<EOP;
-and (start_time < ? and end_time >= ?)
-EOP
-        push(@args, ($p{date} + 1)->mysql);
-        push(@args, ($p{date} + 0)->mysql);
-    }
 
-    my $sth = $dbh->prepare(<<SQL);
-select timeslice.id,
-       users.name as user_name,
-       project.id as project_id,
-       project.name as project_name,
-       start_time,
-       end_time,
-       auto_id,
-       host,
-       'eof'
-  from timeslice, project, users
- where users.id = timeslice.user_id
-   and project.id = project_id
-   $date_clause
- order by start_time
- limit 100
-SQL
-#   warn $sth->{Statement};
-    $sth->execute(@args);
-
-    my @data;
-
-    require Trasker::TTDB::TimeSlice;
-
-    while (my $data = $sth->fetchrow_hashref()) {
-	push(@data, bless { data => $data, id => $data->{id} }, 'Trasker::TTDB::TimeSlice');
-    }
-
-    @data;
-}
+=over
 
 =item recent_projects
 
@@ -766,37 +763,93 @@ select project_id, count(*)
 SQL
 }
 
-1;
-__END__
+=item get_timeslices_for_day
 
-=head1 NAME
+=cut
 
-Trasker::TTDB::User - Perl interface to the tasker user
+sub get_timeslices_for_day
+{
+    my $self = shift;
+    my %p = validate(@_, {
+        date => {
+	    isa => 'Trasker::Date',
+	},
+    });
+    my $dbh = get_dbh();
+    my $date_clause;
+    my @args = ();
 
-=head1 SYNOPSIS
+    if ($p{date}) {
+	$date_clause = <<EOP;
+and (start_time < ? and (end_time >= ? or end_time is NULL))
+EOP
+        push(@args, ($p{date} + 1)->mysql);
+        push(@args, ($p{date} + 0)->mysql);
+    }
+    my $sth = $dbh->prepare(<<SQL);
+select *
+  from timeslice
+ where user_id = ?
+       $date_clause
+ order by start_time
+ limit 100
+SQL
+   warn $sth->{Statement};
+    $sth->execute($self->id, @args);
 
-  use Trasker::TTDB::User;
+    my @data;
 
-  $user = Trasker::TTDB::User->new(user => 'bob', fullname => 'Robert Smith'):
+    require Trasker::TTDB::TimeSlice;
 
-  $user->create();
+    while (my $data = $sth->fetchrow_hashref()) {
+	push(@data, Trasker::TTDB::TimeSlice->new(%$data));
+    }
 
-  $user = Trasker::TTDB::User->get(user => 'bob'):
-  $user = Trasker::TTDB::User->get(id => 1):
-
-=head2 Constructor
+    @data;
+}
 
 =over
 
-=item new(name => I<required>, fullname => I<required>)
+=item timesplit
 
-This creates a user object.  Use I<create> to make this object
-preminate.
+=back
 
-=item get( { id => # | name => 'name' } )
+=cut
 
-I<get> returns a user object that describes the user requested
-by either I<name>  or I<id>.
+sub timesplit
+{
+    my $self = shift;
+    my $dbh = get_dbh('commit');
+    my %p = validate(@_, {
+	timeslice_id   => 1,
+	time => 0,
+    });
+
+    my $sta = $dbh->prepare(<<SQL);
+select *
+  from timeslice
+ where id = ?
+   and user_id = ?
+   for update;
+SQL
+    warn $sta->{Statement};
+    $sta->execute($p{timeslice_id}, $self->id);
+
+    my $data = $sta->fetchrow_hashref();
+
+    require Trasker::TTDB::TimeSlice;
+
+    my $orig = Trasker::TTDB::TimeSlice->new(%$data);
+
+    warn Dumper $orig;
+
+    $dbh->commit;
+
+    return ();
+}
+
+1;
+__END__
 
 =back
 
@@ -851,8 +904,6 @@ Return information about a give day for the user.
 =item days
 
 Return information about a give range of days for the user.
-
-=item get_timeslices_for_day
 
 =item times
 

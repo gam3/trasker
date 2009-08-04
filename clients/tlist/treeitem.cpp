@@ -22,6 +22,7 @@ TreeItem::TreeItem(TreeItem *parent)
     parentItem = parent;
     this->id = 0;
     this->pid = 0;
+    this->expanded_flag = 0;
 }
 
 TreeItem::TreeItem(const QString &name, const QTime &time, const QTime &atime, const int id, const int pid, TreeItem *parent)
@@ -32,6 +33,7 @@ TreeItem::TreeItem(const QString &name, const QTime &time, const QTime &atime, c
     this->atime = atime;
     this->id = id;
     this->pid = pid;
+    this->expanded_flag = 0;
 }
 
 TreeItem::~TreeItem()

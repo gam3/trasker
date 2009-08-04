@@ -1,16 +1,18 @@
 # #####################################################################
 # #####################################################################
-#MAKEFILE = qmakefile
+# MAKEFILE = qmakefile
 TEMPLATE = app
 DEPENDPATH += .
 INCLUDEPATH += .
 CONFIG += qt
+CONFIG += debug
 QT += network \
     webkit
 VERSION = 0.0.1
 DEFINES += HAVE_CONFIG_H
 DESTDIR = .
-target.path = /usr/local/bin
+
+# target.path = /usr/local/bin
 INSTALLS += target
 
 # Input
@@ -41,7 +43,6 @@ FORMS += addproject.ui \
     auto_select.ui \
     error.ui \
     help.ui \
-    mainwindow.ui \
     notes.ui \
     projects.ui \
     setup.ui \

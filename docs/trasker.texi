@@ -99,6 +99,12 @@ Trasker is simular to these programs:
   @item TimeTracker
 @end itemize
 
+Time is measured from the server. This should make little difference
+to most users, but in a world wide operation it might be important. If
+it is important to have users in distant timezones not overlap server
+days during thier workdays you should create a seperate server for
+those users.
+
 @node Invoking, Protocol, Introduction, Top
 @chapter Invoking
 

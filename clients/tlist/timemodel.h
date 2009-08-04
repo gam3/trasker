@@ -51,13 +51,16 @@ public:
     bool setDate( const QModelIndex & index, const QVariant & value, int role = Qt::EditRole );
     Qt::ItemFlags flags( const QModelIndex& index ) const;
 
+    void setDisplayDate(QDate const&);
+
+
 public slots:
-    void timeSlice (QString user,
-    int timeclice_id,
-    int project_id,
-    int auto_id,
-    QString from, QDateTime startTime,
-    QString duration);
+    void timeSlice(QString user,
+      int timeclice_id,
+      int project_id,
+      int auto_id,
+      QString from, QDateTime startTime,
+      QString duration);
 
 private slots:
     void revert();
@@ -69,5 +72,7 @@ private:
     QList < int >ids;
     QHash < int, TimeItem * >timelist;
     QTimer refreshTimer;
+
+    QDate displayDate;
 };
 #endif
