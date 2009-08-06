@@ -75,7 +75,7 @@ sub as_hours
     $x += $self->[4];
 
     if (my $day = $self->[3]) {
-        $x += $day * 24; 
+        $x += $day * 24;
     }
 
     die Dumper $self if $self->[2];
@@ -107,8 +107,27 @@ sub strftime
 {
     my $self = shift;
     my $format = shift or die "Need a format";
-   
+
     POSIX::strftime($format, localtime(Date::Calc::Mktime($self->datetime)));
+}
+
+sub replace_time
+{
+    my $self = shift;
+    my @time;
+    if (@_ == 1) {
+        my @temp = split(/:/, shift);
+	while (@temp < 3) {
+	    push(@temp, "0");
+	}
+	@time = map({ $_ + 0 } @temp);
+    } elsif (@_ == 3) {
+	@time = @_;
+    } else {
+        die "Bad input to replace_time";
+    }
+
+    ref($self)->new($self->date, @time)->normalize;
 }
 
 1;

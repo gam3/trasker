@@ -92,8 +92,8 @@ sub get_user
     my $user;
 
     my $a = $hash->{'_clients'}{$client}{authorized};
-    unless ($a) {
-        die "You must be authorized";
+    unless ($a->ok) {
+        die "You must be authorized.";
     }
 
     if ($hash->{_user}{$userid}) {
@@ -116,8 +116,10 @@ The client should then authorize the user.
 
 our $cmd_hash = {
 # Global
-    "authorize" => \&authorize,		# get authorization for client
-    "user" => \&user,
+    'authorize' => \&authorize,		# get authorization for client
+    'user' => \&user,
+    'recentprojects' => \&recent_projects,
+    'recentProjects' => \&recent_projects,
     "clients" => \&clients,		# list clients
     "nop" => \&nop,
     "ping" => \&ping,
@@ -211,15 +213,14 @@ sub authorize
     } else {
 	if (@part == 2) {
 	    require Trasker::TTDB::Authorize;
-	    $hash->{'_clients'}{$client}{authorized} = Trasker::TTDB::Authorize->authorize(user => $part[0], passwd => $part[1]);
-	    $ok = 1;
+	    my $a = $hash->{'_clients'}{$client}{authorized} = Trasker::TTDB::Authorize->authorize(login => $part[0], password => $part[1]);
+	    $ok = $a->ok();
 	}
 	if ($ok) {
 	    printf $client "authorized\t%s\tOK\n", $part[0];
 	} else {
 	    sleep(2);
 	    printf $client "notauthorized\t%s\n", $part[0];
-	    return 'QUIT';
 	}
     }
     return 'OK';
@@ -547,22 +548,24 @@ sub timesplit
 
     my $user = get_user($userid, $client);
 
-    my @ts = $user->timesplit(
+    my $tdate = Trasker::Date->new($date);
+warn $date;
+    my $tsl = $user->timesplit(
 	timeslice_id => $timeslice_id,
 	time => $date,
     );
-    if (@ts == 0) {
-warn "timesplit failed";
-    }
-    foreach my $ts (@ts) {
-	printf($client qq(timeslice\t%s\t%d\t%d\t%d\t%s\t%s\t%s\n),
-	    $userid,
-	    $ts->id,
-	    $ts->project_id,
-	    $ts->auto_id,
-	    '"' . $ts->from . '"',
-	    $ts->start_time->mysql,
-	    $ts->duration);
+    if ($tsl->count > 1) {
+	foreach my $ts ($tsl->entry) {
+	    printf($client qq(timeslice\t%s\t%d\t%d\t%d\t%s\t%s\t%s\n),
+		$userid,
+		$ts->id,
+		$ts->project_id,
+		$ts->auto_id,
+		'"' . $ts->from . '"',
+		$ts->start_time->mysql,
+		$ts->duration);
+	}
+    } else {
     }
 }
 
@@ -930,10 +933,10 @@ sub change
     my ($port, $iaddr) = sockaddr_in($peername);
     my $host = gethostbyaddr($iaddr, AF_INET);
 
-    my $project = Trasker::TTDB::Project->get(id => $project_id);
     my $user = get_user($user, $client);
-    $user->set_current_project(project => $project, host => $host);
+    my $project = Trasker::TTDB::Project->get(id => $project_id);
 
+    $user->set_current_project(project => $project, host => $host);
     update_user($user);
 }
 
@@ -1158,13 +1161,22 @@ sub update_user
     }
 }
 
-sub recent
+sub recent_projects
 {
     my $client = shift;
     my $data = shift;
     my $userid = shift;
 
     my $user = get_user($userid, $client);
+
+    my $response = $user->recent_projects();
+
+    my $count = 0;
+    my $max = @{$response->{projects}};
+
+    for my $p (@{$response->{projects}}) {
+        printf($client "recentproject\t%d\t%d\t%d\n", $p, $count++, $max);
+    }
 }
 
 sub clients

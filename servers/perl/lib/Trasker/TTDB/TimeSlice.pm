@@ -14,6 +14,7 @@ package Trasker::TTDB::TimeSlice;
 use Params::Validate qw( validate validate_pos SCALAR BOOLEAN HASHREF OBJECT );
 
 use Trasker::TTDB::DBI qw (get_dbh);
+use Trasker::Date;
 
 use Carp qw(croak);
 
@@ -25,13 +26,7 @@ Trasker::TTDB::TimeSlice - Perl interface to the tasker timeslice table
 
   use Trasker::TTDB::TimeSlice;
 
-  $user = Trasker::TTDB::User->new(user => 'bob', fullname => 'Robert Smith'):
-
-  $user->create();
-
-  $timeslice = Trasker::TTDB::TimeSlice->get(id => 1):
-
-  my $new = $timeslice->split(time => $datetime);
+  $user = Trasker::TTDB::TimeSlice->get(id => 1, user_id => 1):
 
 =head1 DESCRIPTION
 
@@ -41,9 +36,9 @@ This package contains a single timeslice.
 
 =over
 
-=item new()
+=item new
 
-This constructor is used by get to instaniciate this object.
+This constructor is used by C<get> to instaniciate this object.
 Most users do not need to use this method.
 
 =cut
@@ -74,7 +69,10 @@ sub new
 
 This is the normal way to access a timeslice.
 
+This method takes 2 arguments the ID of the timeslice and and the user that the timeslice is for.
+
 =cut
+
 
 sub get
 {
@@ -83,7 +81,7 @@ sub get
 
     my %p = validate(@_, {
         id => 1,
-	user_id => 0,
+        user_id => 0,
     });
 
     my @args = ($p{id});
@@ -91,7 +89,7 @@ sub get
 
     if ($p{user_id}) {
          push(@args, $p{user_id});
-	 $extra .= ' and user_id = ?';
+         $extra .= ' and user_id = ?';
     }
 
 #FIX this needs security.  Only find for a certain set of users
@@ -109,68 +107,49 @@ SQL
     return $class->new(%$data);
 }
 
-sub id
+=back
+
+=head2 Methods
+
+=over
+
+=item split
+
+The I<split> devides a timeslice into multiple pieces.  Normally 2
+pieces.
+
+  $timeslices =
+  $ts->split(
+      time => [Trasker::Date],
+  );
+
+=cut
+
+sub split
 {
     my $self = shift;
+    my $dbh = get_dbh('write');
+    my %p = validate(@_, {
+        time => {
+	    isa => 'Trasker::Date',
+	},
+    });
 
-    $self->{id};
+    require Trasker::TTDB::TimeSlices;
+
+    return Trasker::TTDB::TimeSlices->new($self);
 }
 
-sub start_time
-{
-    my $self = shift;
-    require Trasker::Date;
+=item update
 
-    Trasker::Date->new($self->{start_time});
-}
+The I<update> method changes the project_id for a given timeslise
 
-sub end_time
-{
-    my $self = shift;
+  $updated_timeslice =
+  $ts->update(
+      project_id => I<n>,
+  );
 
-    $self->{end_time} ? Trasker::Date->new($self->{end_time}) : Trasker::Date->now();
-}
-
-sub duration
-{
-    my $self = shift;
-
-    $self->end_time - $self->start_time;
-}
-
-sub user
-{
-    die;
-    shift->{user};
-}
-
-sub project_id
-{
-    my $self = shift;
-
-    $self->{project_id}
-}
-
-sub project
-{
-    my $self = shift;
-
-    $self->{project} ||= Trasker::TTDB::Project->get(id => $self->{project_id});
-}
-
-sub elapsed
-{
-    my $self = shift;
-
-    $self->end_time - $self->start_time;
-}
-
-sub count
-{
-    my $self = shift;
-
-    1;
-}
+=cut
 
 sub update
 {
@@ -178,8 +157,8 @@ sub update
     my $dbh = get_dbh('write');
     my %p = validate(@_, {
         id => 0,
-	project_id => 0,
-	old_project_id => 0,
+        project_id => 0,
+        old_project_id => 0,
     });
     my $id;
     my $old_value;
@@ -204,6 +183,8 @@ SQL
     die "no update" unless $stu->rows;
 
     $dbh->commit;
+
+    return $self;
 }
 
 =back
@@ -211,6 +192,105 @@ SQL
 =head2 Accessors
 
 =over
+
+=item id
+
+The timeslice I<id>.  This is a unique integer for each timeslice.
+
+=cut
+
+sub id
+{
+    my $self = shift;
+
+    $self->{id};
+}
+
+=item start_time
+
+The timeslice I<start_time>. A Trasker::Date object that represents the start time of the
+the timeslice.
+
+=cut
+
+sub start_time
+{
+    my $self = shift;
+    require Trasker::Date;
+
+    Trasker::Date->new($self->{start_time});
+}
+
+=item end_time
+
+The timeslice I<end_time>. A Trasker::Date object that represents the end time of the
+the timeslice.
+
+=cut
+
+sub end_time
+{
+    my $self = shift;
+
+    $self->{end_time} ? Trasker::Date->new($self->{end_time}) : Trasker::Date->now();
+}
+
+=item duration
+
+The duration of the timeslice.  This is exactly equal to end_time - start_time.  And
+is a Trasker::Date difference object;
+
+=cut
+
+sub duration
+{
+    my $self = shift;
+
+    $self->end_time - $self->start_time;
+}
+
+
+=item user_id
+
+The I<user_id> of the user whos time the timeslice is representing.
+
+=cut
+
+sub user_id
+{
+    die;
+    shift->{user_id};
+}
+
+=item project_id
+
+The I<user_id> of the user whos time the timeslice is representing.
+
+=cut
+
+sub project_id
+{
+    my $self = shift;
+
+    $self->{project_id}
+}
+
+=item count
+
+Always 1.
+
+=cut
+
+sub count
+{
+    my $self = shift;
+
+    1;
+}
+
+=item count
+
+The auto_id that if the timeslice was created by an auto_select deamon.
 
 =cut
 
@@ -220,11 +300,23 @@ sub auto_id
     $self->{auto_id};
 }
 
+=item from
+
+The device that created the timeslice.
+
+=cut
+
 sub from
 {
     my $self = shift;
     $self->{from};
 }
+
+=item notes
+
+A list of notes that were created while this timeslice was active.
+
+=cut
 
 sub notes
 {
@@ -236,7 +328,6 @@ sub notes
         end_time => $self->end_time,
     );
 }
-
 
 1;
 __END__

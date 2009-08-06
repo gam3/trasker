@@ -12,6 +12,22 @@ use Trasker::TTDB::Time;
 use Trasker::TTDB::DBI qw (get_dbh);
 use Params::Validate qw (validate);
 
+=head1 NAME
+
+Trasker::TTDB::Times - Perl interface to the tasker timeslice table
+
+=head1 SYNOPSIS
+
+=head1 DESCRIPTION
+
+=head2 Constructors
+
+=over
+
+=item new()
+
+=back
+
 sub new
 {
     my $class = shift;
@@ -72,25 +88,6 @@ SQL
     @data;
 }
 
-1;
-__END__
-
-=head1 NAME
-
-Trasker::TTDB::Times - Perl interface to the tasker timeslice table
-
-=head1 SYNOPSIS
-
-=head1 DESCRIPTION
-
-=head2 Constructors
-
-=over
-
-=item new()
-
-=back
-
 =head2 Methods
 
 =over
@@ -102,6 +99,9 @@ Trasker::TTDB::Times - Perl interface to the tasker timeslice table
 =item entries
 
 =item today
+
+1;
+__END__
 
 =back
 

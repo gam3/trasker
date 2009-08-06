@@ -17,7 +17,7 @@ use Trasker::TTDB::Projects;
 
 our $VERSION = '0.001';
 
-use Params::Validate qw( validate validate_pos SCALAR BOOLEAN HASHREF OBJECT );
+use Params::Validate qw( validate validate_pos SCALAR BOOLEAN HASHREF OBJECT ARRAYREF );
 
 use Carp qw (croak);
 
@@ -137,7 +137,7 @@ SQL
 
     my $data = $sth->fetchrow_hashref();
 
-    die "No User" unless $data;
+    die "No User $p{id}" unless $data;
 
     return bless { %$data }, $class;
 }
@@ -338,7 +338,7 @@ SQL
         } elsif ($rows == 0) {
 #           warn "new";
         } else {
-            die "bad entries: ", $rows;
+            die "The database is corrupt";
         }
 
         my $new_rid;
@@ -356,8 +356,8 @@ SQL
         ) || die $sthi->{Statement} . ' ' . $dbh->errstr ;
     };
     if ($@) {
-warn $@;
         $dbh->rollback;
+	die $@;
     } else {
         $dbh->commit;
     }
@@ -753,14 +753,37 @@ SQL
 
 sub recent_projects
 {
-    my $sth = <<SQL;
-select project_id, count(*)
+    my $self = shift;
+    my $dbh = get_dbh('read');
+
+    my $sth = $dbh->prepare(<<SQL);
+select project_id,
+       sum(elapsed) as time,
+       count(*)
   from timeslice
- where start_time + interval '10 days' > now()
+ where user_id = ?
+   and start_time + interval '10 days' > now()
  group by project_id
- order by count desc
+ having count(*) > 1
+ order by time desc
  limit 10
 SQL
+
+    $sth->execute($self->id);
+
+    my $data = $sth->fetchall_arrayref({});
+
+    $sth->finish;
+
+    my $ret = bless({ user_id => $self->id }, "Trasker::TTDB::ProjectResponse");
+
+    for my $entry (@$data) {
+	$data = { %$entry };
+	$ret->{project}{$entry->{project_id}} = $data;
+	push(@{$ret->{projects}},  $entry->{project_id});
+    }
+
+    return $ret;
 }
 
 =item get_timeslices_for_day
@@ -794,7 +817,6 @@ select *
  order by start_time
  limit 100
 SQL
-   warn $sth->{Statement};
     $sth->execute($self->id, @args);
 
     my @data;
@@ -812,6 +834,13 @@ SQL
 
 =item timesplit
 
+  $user->timesplit(
+      timeslice_id => "10",
+      time => "11:00:00",
+  );
+
+returns a list of the timeslice ids for the timeslices created or updated.
+
 =back
 
 =cut
@@ -823,29 +852,88 @@ sub timesplit
     my %p = validate(@_, {
 	timeslice_id   => 1,
 	time => 0,
+	times => {
+	    optional => 1,
+	    type => ARRAYREF,
+	},
     });
+    my $curid = $p{timeslice_id};
+    my @times = ();
+    push(@times, $p{time}) if defined $p{time};
+    push(@times, @{$p{times}||[]});
 
-    my $sta = $dbh->prepare(<<SQL);
+    my $sth_id = $dbh->prepare(qq/select currval('timeslice_id_seq')/);
+
+    my $sth_s = $dbh->prepare(<<SQL);
 select *
   from timeslice
  where id = ?
    and user_id = ?
    for update;
 SQL
-    warn $sta->{Statement};
-    $sta->execute($p{timeslice_id}, $self->id);
 
-    my $data = $sta->fetchrow_hashref();
+    my $sthi = $dbh->prepare(<<SQL);
+insert into timeslice
+       (user_id, project_id, temporary, start_time, end_time, auto_id, revert_to, host, elapsed)
+   select user_id, project_id, temporary, end_time, end_time, auto_id, revert_to, host, end_time - end_time
+     from timeslice where id = ?
+SQL
 
-    require Trasker::TTDB::TimeSlice;
+    my $sth_st = $dbh->prepare(<<SQL);
+update timeslice
+   set start_time = ?,
+       elapsed = end_time - ?
+ where id = ?
+SQL
 
-    my $orig = Trasker::TTDB::TimeSlice->new(%$data);
+    my $sth_et = $dbh->prepare(<<SQL);
+update timeslice
+   set end_time = ?,
+       temporary = 'split',
+       elapsed = ? - start_time
+ where id = ?
+SQL
+    my @timeslices = ($curid);
+    eval {
+	$sth_s->execute($curid, 1);		# Lock the timeslice being split
 
-    warn Dumper $orig;
+	die "Timeslice not found" unless $sth_s->rows;
 
-    $dbh->commit;
+	my $data = $sth_s->fetchrow_hashref();
 
-    return ();
+	require Trasker::TTDB::TimeSlice;
+
+	my $orig = Trasker::TTDB::TimeSlice->new(%$data);
+
+	my @splittimes = sort({ die "duplicate time $a $b" if $a eq $b; $b cmp $a } map({ref($_) ? $_ : $orig->end_time->replace_time($_); } @times));
+
+	foreach my $splittime (@splittimes) {
+	    warn $splittime;
+
+	    if ($splittime ge $orig->end_time or $splittime le $orig->start_time) {
+		die "Time out of range " . $splittime->mysql();
+	    }
+
+	    $sthi->execute($orig->id);
+
+	    $sth_id->execute();
+
+	    my $id = $sth_id->fetchrow();
+
+	    push @timeslices, $id;
+
+	    my $t = $splittime->mysql;
+	    $sth_et->execute($t, $t, $curid);
+	    $sth_st->execute($t, $t, $id);
+	}
+	$dbh->commit;
+    };
+    if ($@) {
+	$dbh->rollback;
+	die $@;
+    }
+
+    return @timeslices;
 }
 
 1;
