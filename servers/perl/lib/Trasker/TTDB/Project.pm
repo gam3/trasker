@@ -224,6 +224,55 @@ sub parent_id
     }
 }
 
+=item is_descendant
+
+  $project->is_decendent($other_project);
+
+returns i<true> if <$other_project> is a descendant of D<$project>.
+
+=cut
+
+sub is_descendant
+{
+   my $self = shift;
+   my $project = shift;
+
+   if (!ref($project)) {
+       $project = $self->new(id => $project);
+   }
+
+   return $project->is_ancestor($self);
+}
+
+=item is_ancestor
+
+  $project->is_ancestor($other_project);
+
+returns i<true> if <$other_project> is an ancestor of D<$project>.
+
+=cut
+
+sub is_ancestor
+{
+   my $self = shift;
+   my $project = shift;
+
+   my $project_id = $project;
+   if (ref($project)) {
+       $project_id = $project->id;
+   }
+   my $parent = $self->parent;
+   while ($parent) {
+       return 1 if ($parent->id == $project_id);
+       $parent = $parent->parent;
+   }
+   return 0;  # false
+}
+
+=item  longname
+
+=cut
+
 sub longname
 {
    my $self = shift;
@@ -595,7 +644,6 @@ update the database.
 
 The depth of the project.
 
-=item  longname
 
 =item  users
 
@@ -644,7 +692,6 @@ make changes to the object and store them in the database.
 =item default_rate
 
 The default charges for this project.
-
 
 =back
 
