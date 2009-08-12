@@ -169,6 +169,11 @@ int TreeItem::getPid() const
     return pid;
 }
 
+QString TreeItem::getLongName() const
+{
+    return QString("LongName->") + name;
+}
+
 void TreeItem::set_times(QTime time, QTime atime)
 {
     this->time = time;

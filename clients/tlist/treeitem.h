@@ -44,6 +44,7 @@ public:
     int getId() const;
     int getPid() const;
     QString getName() const;
+    QString getLongName() const;
 
     void set_times(QTime time, QTime atime);
     void inc_times();
