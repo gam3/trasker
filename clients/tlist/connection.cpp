@@ -12,6 +12,7 @@
 #include "connection.h"
 
 #include <QtNetwork>
+#include <QtDebug>
 
 #include "setup.h"
 
@@ -30,7 +31,7 @@ Connection::Connection(QObject *parent)
     isGreetingMessageSent = false;
     pingTimer.setInterval(PingInterval);
     pongTimer.setInterval(PongTimeout);
-    connectionTimer.setInterval(400);
+    connectionTimer.setInterval(4000);
 
     QObject::connect(this, SIGNAL(connected()),
                      this, SLOT(setupConnection()));
@@ -85,12 +86,12 @@ void Connection::timerEvent(QTimerEvent *timerEvent)
 
 void Connection::sendAuthorize()
 {
-    QSettings settings("Tasker", "tlist");
+    QSettings settings("Trasker", "tlist");
     settings.beginGroup("User");
-    const QString user = settings.value("user", "guest").toString();
+    const QString login = settings.value("login", "guest").toString();
     const QString password = settings.value("password", "guest").toString();
     settings.endGroup();
-    write(QString("authorize\t%1/%2\n").arg(user).arg(password).toAscii());
+    write(QString("authorize\t%1/%2\n").arg(login).arg(password).toAscii());
 }
 
 void Connection::processReadyRead()
@@ -116,7 +117,7 @@ void Connection::processReadyRead()
 
 void Connection::setFailed()
 {
-    qWarning("fail");
+    qWarning("Pong Time timeout");
 }
 
 void Connection::sendPing()
@@ -168,6 +169,7 @@ bool Connection::readProtocolHeader()
 	case WaitingForAuthorized:
 	    if (list[0] == "notauthorized") {
 ///FIXME Need to pop the setup window
+                Setup().exec();
                 exit(1);
                 sendAuthorize();
                 cstate = WaitingForAuthorized;
@@ -218,14 +220,24 @@ void Connection::connectionError(QAbstractSocket::SocketError ername)
     }
 }
 
+void Connection::connect()
+{
+    reConnect();
+    if (!waitForConnected(300000)) {
+        qWarning() << errorString();
+        qFatal("Could Not Connect");
+        exit(1);
+    }
+}
+
 void Connection::reConnect()
 {
-    QSettings settings("Tasker", "tlist");
+    QSettings settings("Trasker", "tlist");
     settings.beginGroup("Host");
     const QString host = settings.value("host", "127.0.0.1").toString();
     const qint16 port = settings.value("port", 8001).toInt();
     const bool ssl = settings.value("ssl", true).toBool();
-    const QString certpath = settings.value("certpath", "/etc/tasker/cacert.pem").toString();
+    const QString certpath = settings.value("certpath", "/etc/trasker/cacert.pem").toString();
     settings.endGroup();
 
     connectionTimer.start();

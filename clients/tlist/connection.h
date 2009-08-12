@@ -64,6 +64,9 @@ signals:
 protected:
     void timerEvent(QTimerEvent *timerEvent);
 
+public:
+    void connect();
+
 public slots:
     void reConnect();
 
