@@ -49,12 +49,15 @@ public slots:
     void getTimes(QDate);
     void getTimes(QDate, QDate);
 
+    void getRecentProjects();
+
 signals:
     void accept_note(QString name);
     void accept_project(QString name);
     void accept_select(QString name);
+    void add_autoentry(QString user, int project_id, int auto_id, QString, QString, QString, QString, QString, QString, QString);
     void add_entry(QString user, int project_id, int parent_project_id, QTime time, QTime atime);
-    void add_timeslice( QString user, int timeclice_id, int project_id, int auto_id, QString from, QDateTime startTime, QString duration);
+    void add_timeslice(QString user, int timeclice_id, int project_id, int auto_id, QString from, QDateTime startTime, QString duration);
     void alert_end_message(int alert_id);
     void alert_message(int alert_id, QString title, QString description);
     void connected();
@@ -66,6 +69,8 @@ signals:
     void settime(int project_id, QTime time, QTime atime);
     void update_all();
     void hourly();
+    void recentproject(int project_id, int index, int max, QString uniqueName);
+    void recentprojects(QList<int>&);
 
 public:
     void sendMessage(const QString &message);

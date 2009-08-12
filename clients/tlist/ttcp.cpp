@@ -6,14 +6,16 @@
 #include "ttcp.h"
 #include "connection.h"
 
+#include "projectlist.h"
+
 TTCP::TTCP(const QString &host_in, quint16 port_in, bool ssl_in, const QString &user_in, const QString &password_in)
     : user(user_in), password(password_in), host(host_in), port(port_in), ssl(ssl_in)
 {
     connection = new Connection(this);
 
-    newConnection(connection);
+    newConnection(connection);   // set up signals
 
-    connection->reConnect();
+    connection->connect();
 }
 
 TTCP::~TTCP()
@@ -62,8 +64,13 @@ void TTCP::setConnected()
 void TTCP::readyForUse()
 {
     Connection *connection = qobject_cast<Connection *>(sender());   // This is only needed if there is more than one connection
+    QSettings settings("Trasker", "tlist");
+    settings.beginGroup("User");
+    const QString login = settings.value("login", "guest").toString();
+    const QString password = settings.value("password", "guest").toString();
+    settings.endGroup();
 
-    connection->write("user gam3\n");
+    connection->write(QString("user\t%1\n").arg(user).toAscii());
 }
 
 QTime totime(QString timestring)
@@ -78,11 +85,11 @@ QDateTime todatetime(QString timestring)
 {
     QString x;
     if (timestring.indexOf('.') > 0) {
-        x = timestring.left(timestring.indexOf('.')+4);
+        x = timestring.left(timestring.indexOf('.'));
     } else {
         x = timestring;
     }
-    QDateTime time = QDateTime::fromString(x, "yyyy-MM-dd hh:mm:ss.zzz" );
+    QDateTime time = QDateTime::fromString(x, "yyyy-MM-dd hh:mm:ss" );
 
 //  cerr << qPrintable(x) << " -> " << qPrintable(time.toString("yyyy-MM-dd hh:mm:ss.zzz")) << endl;
 
@@ -164,18 +171,26 @@ void TTCP::setAuto(QString &host, QString &classN, QString &name, QString &role,
     Q_UNUSED(title);
     Q_UNUSED(desktop);
 }
+
+void TTCP::getRecentProjects()
+{
+    connection->write(QString("recentProjects\t%1\n").arg(user).toAscii());
+}
+
 /*
   We have a new comand from the server.
   'emit' a signal.
  */
 void TTCP::newCommand(const QStringList &list)
 {
-    if (list[0] == "entry") {
+    if (list[0] == "auto") {
+        emit add_autoentry(list[1], list[2].toInt(), list[3].toInt(), list[4], list[5], list[6], list[7], list[8], list[9], list[10]);
+                         /* user    project          auto_id          host     name     class    role     desk     title     flags*/
+    } else if (list[0] == "entry") {
 	emit add_entry(list[2], list[3].toInt(), list[4].toInt(), totime(list[5]),  totime(list[6]));
     } else if (list[0] == "timeslice") {
         if (list.size() == 8) {
             emit add_timeslice(list[1], list[2].toInt(), list[3].toInt(), list[4].toInt(), list[5], todatetime(list[6]), list[7]);
-
         } else {
             qWarning("timeslice: wrong # of arguments %d", list.size());
 	}
@@ -207,8 +222,24 @@ void TTCP::newCommand(const QStringList &list)
     } else if (list[0] == "hourly") {
         qWarning("Hourly");
         emit hourly();
+    } else if (list[0] == "recentproject") {
+        emit recentproject(
+                    list[2].toInt(),   // project ID
+                    list[3].toInt(),   // index
+                    list[4].toInt(),   // max index
+                    QString("A comment")
+                );
+    } else if (list[0] == "recentprojects") {
+        QStringList plist(list.mid(2));
+        QList<int> pilist;
+        QStringList::iterator i;
+        for (i = plist.begin(); i != plist.end(); ++i)
+            pilist.append((*i).toInt());
+        emit recentprojects(
+                    pilist
+                );
     } else {
-        printf("TTCP Unknown: '%s'/%d\n", qPrintable(list[0]), list.size() - 1);
+        qWarning("TTCP Unknown: '%s'/%d\n", qPrintable(list[0]), list.size() - 1);
     }
 }
 
