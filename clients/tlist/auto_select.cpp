@@ -16,15 +16,24 @@
 #include <iostream>
 
 #include "auto_select.h"
+#include "automodel.h"
 #include "project.h"
 #include "ttcp.h"
 
 #include <QProcess>
 
-AddAuto::AddAuto(TTCP *ttcp, QWidget *parent) : QDialog(parent)
+AddAuto::AddAuto(TTCP *ttcp, QWidget *parent) : QMainWindow(parent)
 {
     setupUi(this);
-    this->ttcp = ttcp;
+
+    AutoModel *model = new AutoModel(this);
+    this->ttcp = ttcp;		// TTCP is need to update the autoselect data
+
+    connect(ttcp,
+            SIGNAL( add_autoentry(QString, int, int, QString, QString, QString, QString, QString, QString, QString)),
+	    model,
+            SLOT( add_autoentry(QString, int, int, QString, QString, QString, QString, QString, QString, QString) )
+	    );
 }
 
 void AddAuto::setProject(const Project &proj)

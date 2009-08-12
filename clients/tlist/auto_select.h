@@ -13,7 +13,7 @@ class QProcess;
 class TTCP;
 class Project;
 
-class AddAuto : public QDialog, private Ui::AddAuto {
+class AddAuto : public QMainWindow, private Ui::AddAuto {
     Q_OBJECT
 public:
     AddAuto(TTCP *, QWidget *parent = 0);
