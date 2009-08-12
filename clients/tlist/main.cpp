@@ -45,7 +45,7 @@ main(int argc, char *argv[])
 	Setup().exec();
     }
 
-    QSettings settings("Tasker", "tlist");
+    QSettings settings("Trasker", "tlist");
     settings.beginGroup("User");
     const QString user = settings.value("user", "guest").toString();
     const QString password = settings.value("password", "guest").toString();
@@ -56,26 +56,29 @@ main(int argc, char *argv[])
     const bool ssl = settings.value("ssl", true).toBool();
     settings.endGroup();
 
-    if (QSystemTrayIcon::isSystemTrayAvailable()) {
-	QApplication::setQuitOnLastWindowClosed(false);
-    }
-
     TTCP *ttcp = new TTCP(host, port, ssl, user, password);
 
 // You don't get here unless you are connected to a server
 
-    MainWindow window(ttcp);
     ProjectsTree projects(ttcp);
     Alerts alerts(ttcp);
+
+    if (QSystemTrayIcon::isSystemTrayAvailable()) {
+	QApplication::setQuitOnLastWindowClosed(false);
+    } else {
+	projects.show();
+    }
 
     for (unsigned int i = 0; i < args_info.show_given; ++i) {
 	for (char **str = args_info.show_arg; *str; str++) {
 	    if (!strcmp(args_info.show_arg[i], "project")) {
 		projects.show();
 	    }
+#if 0
 	    if (!strcmp(args_info.show_arg[i], "main")) {
 		window.show();
 	    }
+#endif
 	}
     }
 

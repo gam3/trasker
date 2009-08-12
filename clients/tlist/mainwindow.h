@@ -8,6 +8,8 @@
 #include "ui_mainwindow.h"
 
 class TTCP;
+class ProjectsTree;
+class Alerts;
 
 
 class MainWindow : public QMainWindow, private Ui::MainWindow
@@ -20,6 +22,8 @@ public:
 
 private:
     TTCP *ttcp;
+    ProjectsTree *projectsTree;
+    Alerts *alerts;
 
     QSystemTrayIcon *trayIcon;
     QMenu *trayIconMenu;

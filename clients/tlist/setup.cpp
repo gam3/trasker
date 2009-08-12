@@ -9,12 +9,12 @@ Setup::Setup(QWidget * parent):QDialog (parent)
 {
     setupUi(this);
 
-    QSettings settings("Tasker", "tlist");
+    QSettings settings("Trasker", "tlist");
 
     settings.beginGroup("Host");
     hostEdit->setText(settings.value("host").toString());
     portEdit->setText(settings.value("port").toString());
-    bool x = settings.value("ssl").toBool();
+    bool x = settings.value("ssl", 1).toBool();
     if (x) {
 	useSSL->setCheckState(Qt::Checked);
     } else {
@@ -23,6 +23,7 @@ Setup::Setup(QWidget * parent):QDialog (parent)
     settings.endGroup();
 
     settings.beginGroup("User");
+    loginEdit->setText(settings.value("login").toString());
     userEdit->setText(settings.value("user").toString());
     passwordEdit->setText(settings.value("password").toString());
     settings.endGroup();
@@ -49,11 +50,12 @@ void Setup::saveData()
 {
     QString host = hostEdit->text();
     QString user = userEdit->text();
+    QString login = loginEdit->text();
     QString password = passwordEdit->text();
     qint16 port = portEdit->text().toInt();
     bool ssl = useSSL->isChecked();
 
-    QSettings settings("Tasker", "tlist");
+    QSettings settings("Trasker", "tlist");
 
     settings.beginGroup("Host");
     settings.setValue("host", host);
@@ -62,9 +64,12 @@ void Setup::saveData()
     settings.endGroup();
 
     settings.beginGroup("User");
+    settings.setValue("login", login);
     settings.setValue("user", user);
     if (remPass->isChecked())
 	settings.setValue("password", password);
+    else
+        settings.setValue("password","");
     settings.endGroup();
 
     portEdit->setText(QString("%1").arg(port));
@@ -83,6 +88,8 @@ void Setup::on_done_clicked()
     QString password = passwordEdit->text();
     qint16 port = portEdit->text().toInt();
     bool ssl = useSSL->isChecked();
+
+    saveData();
 
     emit setup(host, port, ssl, user, password);
     close();

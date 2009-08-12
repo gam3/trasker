@@ -87,7 +87,7 @@ QVariant TreeModel::data(const QModelIndex &index, int role) const
     if (role == Qt::SizeHintRole)
 	return QVariant();
     if (role == Qt::ToolTipRole)
-	return QString("ToolTip %1").arg("a");
+        return QString("%1").arg(item->getLongName());
     if (role == Qt::StatusTipRole)
 	return QString("StatusTip %1").arg("a");
 

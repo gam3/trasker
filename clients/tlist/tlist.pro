@@ -19,6 +19,7 @@ INSTALLS += target
 HEADERS += addproject.h \
     alerts.h \
     auto_select.h \
+    automodel.h \
     conf.h \
     config.h \
     connection.h \
@@ -38,7 +39,8 @@ HEADERS += addproject.h \
     timeitem.h \
     multipagewidget.h \
     cmdline.h \
-    alertdisplay.h
+    alertdisplay.h \
+    projectlist.h
 FORMS += addproject.ui \
     auto_select.ui \
     error.ui \
@@ -52,6 +54,7 @@ FORMS += addproject.ui \
     alertdisplay.ui
 SOURCES += addproject.cpp \
     auto_select.cpp \
+    automodel.cpp \
     alerts.cpp \
     connection.cpp \
     error.cpp \
@@ -70,7 +73,8 @@ SOURCES += addproject.cpp \
     timeitem.cpp \
     multipagewidget.cpp \
     cmdline.c \
-    alertdisplay.cpp
+    alertdisplay.cpp \
+    projectlist.cpp
 DISTFILES += tlist.ggo
 cmdline_c.target = cmdline.c
 cmdline_c.commands = gengetopt \

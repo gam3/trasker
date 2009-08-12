@@ -12,6 +12,7 @@
 
 #include <QtCore>
 #include <QtGui>
+#include <QtDebug>
 
 #include "projects.h"
 #include "notes.h"
@@ -42,6 +43,21 @@ ProjectsTree::ProjectsTree(TTCP *ttcp, QWidget *parent)
 
     this->ttcp = ttcp;
 
+    trayIcon = new QSystemTrayIcon();
+    trayIconMenu = new QMenu();
+    QIcon icon = QIcon(":/pics/active-icon-0.xpm");
+
+    trayIconMenu->addAction(selectCurrentAction);
+    trayIconMenu->addAction(timeEditAction);
+    trayIconMenu->addAction(minimizeAction);
+    trayIconMenu->addAction(maximizeAction);
+    trayIconMenu->addAction(restoreAction);
+    trayIconMenu->addAction(quitAction);
+
+    trayIcon->setIcon(icon);
+    trayIcon->setContextMenu(trayIconMenu);
+
+    trayIcon->show();
 
     QStringList headers;
     headers << tr("Title") << tr("Description");
@@ -61,6 +77,7 @@ ProjectsTree::ProjectsTree(TTCP *ttcp, QWidget *parent)
      * ProjectsTree::itemMenu()
      */
     connect(ttcp, SIGNAL(error(const QString &)), this, SLOT(p_error(const QString &)));
+    connect(ttcp, SIGNAL(recentprojects(QList<int>&)), this, SLOT(updateRecentMenu(QList<int>&)));
     connect(view, SIGNAL(popMenu()), this, SLOT(itemMenu()));
     connect(view, SIGNAL(projPopMenu(int)), this, SLOT(projItemMenu(int)));
 
@@ -101,6 +118,9 @@ ProjectsTree::ProjectsTree(TTCP *ttcp, QWidget *parent)
                                     const QItemSelection &)),
             this, SLOT(updateActions()));
 
+    connect(trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
+	    this, SLOT(iconActivated(QSystemTrayIcon::ActivationReason)));
+
 #if defined (Q_WS_X11)
     x11();
 #endif
@@ -136,6 +156,7 @@ void ProjectsTree::x11()
                  StructureNotifyMask |
 		 VisibilityChangeMask);
 }
+
 #endif
 
 ProjectsTree::~ProjectsTree()
@@ -237,10 +258,11 @@ void ProjectsTree::updateActions()
 
         int row = view->selectionModel()->currentIndex().row();
         int column = view->selectionModel()->currentIndex().column();
-        if (view->selectionModel()->currentIndex().parent().isValid())
+        if (view->selectionModel()->currentIndex().parent().isValid()) {
             statusBar()->showMessage(tr("Position: (%1,%2)").arg(row).arg(column));
-        else
+        } else {
             statusBar()->showMessage(tr("Position: (%1,%2) in top level").arg(row).arg(column));
+        }
     }
 }
 
@@ -250,7 +272,7 @@ void ProjectsTree::updateActions()
 void ProjectsTree::setCurrent(int id)
 {
     if (id) {
-	updateActions();
+        updateActions();  //
 	TreeModel *model = (TreeModel *)view->model();
 	TreeItem *item = model->getItem(id);
 
@@ -312,6 +334,10 @@ void ProjectsTree::myShow()
 	move(savePos);
 	showNormal();
     }
+#if defined (Q_WS_X11)
+    static Atom ATOM_WIN_STATE = XInternAtom(QX11Info::display(), "_WIN_STATE", False);
+    x11::wmMessage(winId(), ATOM_WIN_STATE, 1, 1, CurrentTime, 0, 0);
+#endif
 }
 
 void ProjectsTree::exposeCurrentProject()
@@ -396,6 +422,8 @@ void ProjectsTree::iconActivated(QSystemTrayIcon::ActivationReason reason)
         {
 	    QMenu *recentMenu = new QMenu;
 
+	    ttcp->getRecentProjects();
+
             if (!recentMenuClean) {
 		int numRecentFiles = qMin(recent_projects.size(), 10);
 
@@ -407,13 +435,28 @@ void ProjectsTree::iconActivated(QSystemTrayIcon::ActivationReason reason)
 		recentMenu->addSeparator();
 		recentMenu->addAction("Hello");
             }
-	    recentMenu->exec( QCursor::pos() );
+//FIX	    recentMenu->exec( QCursor::pos() );
 	}
         break;
     default:
         qWarning("Mouse unknown reason %d", reason);
         break;
     }
+}
+
+void ProjectsTree::updateRecentMenu(QList<int> &list)
+{
+    QMenu *recentMenu = new QMenu(this);
+
+    QList<int>::iterator i;
+    recentMenu->setTitle(tr("projects"));
+    recentMenu->setObjectName("project menu");
+    recentMenu->setTearOffEnabled(true);
+    for (i = list.begin(); i != list.end(); ++i) {
+        TreeItem *item = view->model()->getItem(*i);
+        recentMenu->addAction(item->getName());
+    }
+    recentMenu->exec( QCursor::pos() );
 }
 
 void ProjectsTree::mousePressEvent(QMouseEvent *event)
@@ -432,9 +475,9 @@ void ProjectsTree::mousePressEvent(QMouseEvent *event)
 
 void ProjectsTree::readSettings()
 {
-    QSettings settings("Tasker", "tlist");
+    QSettings settings("Trasker", "tlist");
 
-    settings.beginGroup("mainwindow");
+    settings.beginGroup("projectsTree");
     QPoint pos = settings.value("pos", QPoint(-1, -1)).toPoint();
     QSize size = settings.value("size", QSize(573, 468)).toSize();
     settings.endGroup();
@@ -446,8 +489,8 @@ void ProjectsTree::readSettings()
 
 void ProjectsTree::writeSettings()
 {
-    QSettings settings("Tasker", "tlist");
-    settings.beginGroup("mainwindow");
+    QSettings settings("Trasker", "tlist");
+    settings.beginGroup("projectsTree");
     settings.setValue("pos", pos());
     settings.setValue("size", size());
     settings.endGroup();

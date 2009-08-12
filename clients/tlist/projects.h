@@ -83,6 +83,8 @@ public slots:
     void p_task();
     void timeEdit();
 
+    void updateRecentMenu(QList<int>&);
+
 private slots:
     void insertChild();
     bool insertColumn(const QModelIndex &parent = QModelIndex());
@@ -110,6 +112,9 @@ private:
     QAction *maximizeAction;
     QAction *restoreAction;
     QAction *quitAction;
+
+    QSystemTrayIcon *trayIcon;
+    QMenu *trayIconMenu;
 
     QSize saveSize;
     QPoint savePos;

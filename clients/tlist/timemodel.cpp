@@ -99,7 +99,7 @@ QVariant TimeModel::headerData(int section, Qt::Orientation orientation, int rol
 }
 
 void TimeModel::timeSlice(QString user,
-                          int timeclice_id,
+                          int timeslice_id,
                           int project_id,
                           int auto_id,
                           QString from, QDateTime startTime, QString duration)
@@ -107,10 +107,9 @@ void TimeModel::timeSlice(QString user,
     TimeItem *item;
 
     beginInsertRows(QModelIndex(), 0, ids.size());
-    ids.append(timeclice_id);
-    item = new TimeItem(user, timeclice_id, project_id, auto_id, from, startTime, duration, displayDate);
-    timelist[timeclice_id] = item;
-
+    ids.append(timeslice_id);
+    item = new TimeItem(user, timeslice_id, project_id, auto_id, from, startTime, duration, displayDate);
+    timelist[timeslice_id] = item;
     endInsertRows();
 
     refreshTimer.start();
