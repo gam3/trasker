@@ -92,7 +92,7 @@ sub get_user
     my $user;
 
     my $a = $hash->{'_clients'}{$client}{authorized};
-    unless ($a->ok) {
+    unless ($a && $a->ok) {
         die "You must be authorized.";
     }
 
@@ -547,8 +547,10 @@ sub timesplit
     my $time;
 
     my $user = get_user($userid, $client);
-
     my $tdate = Trasker::Date->new($date);
+    if ($tdate) {
+        $date = $tdate;
+    }
 warn $date;
     my $tsl = $user->timesplit(
 	timeslice_id => $timeslice_id,
@@ -751,6 +753,16 @@ sub gettime
     undef;
 }
 
+=head3 getauto
+
+  getauto userid projectid
+
+replies with a list of autoselects for the given user/project
+
+   auto gam3 20081 102 host name class role desktop title  normal
+
+=cut
+
 sub getauto()
 {
     my $client = shift;
@@ -764,16 +776,17 @@ sub getauto()
 
     for my $auto ($project->get_all_auto()) {
         printf("auto %d\n", $auto->id);
-        printf($client "auto\t%s\t%d\t%d\t%s\t%s\t%s\t%s\t%s\t%s\n",
-	    $auto->user_id,
-	    $auto->project_id,
+        printf($client "auto\t%s\t%d\t%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n",
+	    $user->name,
 	    $auto->id,
+	    $auto->project_id,
 	    $auto->host,
 	    $auto->name,
 	    $auto->class,
 	    $auto->role,
 	    $auto->desktop,
 	    $auto->title,
+	    $auto->state
 	);
     }
 
@@ -865,43 +878,6 @@ print "FAIL\n";
     }
 }
 
-=head3 getauto
-
-  getauto userid projectid
-
-=cut
-
-sub getauto()
-{
-    my $client = shift;
-    my $data = shift;
-    my $userid = shift;
-
-    print $client "Need 6 arguments (" . join(' ', @_) . ")\n" unless @_ == 6;
-
-    my $user = get_user($userid, $client);
-
-    my $host = shift;
-    my $class = shift;
-    my $name = shift;
-    my $role = shift;
-    my $title = shift;
-    my $desktop = shift;
-
-    if (my $pid = $user->auto_set_project(
-		    host => $host,
-		    desktop => $desktop,
-		    class => $class,
-		    name => $name,
-		    role => $role,
-		    title => $title,
-		   )
-		   ) {
-print "OK\n";
-    } else {
-print "FAIL\n";
-    }
-}
 
 =head2 Control
 
@@ -1081,15 +1057,20 @@ sub xtracker
 
 sub add_alert
 {
+    my $client = shift;
+    print($client "error\tadd_alert is not implimented ", join(' ', @_), "\n");
 }
 
 sub update_alert
 {
+    my $client = shift;
+    print($client "error\tupdate_alert is not implimented ", join(' ', @_), "\n");
 }
 
 sub alert
 {
-
+    my $client = shift;
+    print($client "error\talert is not implimented ", join(' ', @_), "\n");
 }
 
 =head3 alerts
@@ -1174,8 +1155,9 @@ sub recent_projects
     my $count = 0;
     my $max = @{$response->{projects}};
 
+    printf($client "recentprojects\t%s\t%s\n", $user->name, join("\t", @{$response->{projects}}));
     for my $p (@{$response->{projects}}) {
-        printf($client "recentproject\t%d\t%d\t%d\n", $p, $count++, $max);
+        printf($client "recentproject\t%s\t%d\t%d\t%d\n", $user->name, $p, $count++, $max);
     }
 }
 
@@ -1373,8 +1355,14 @@ print $client "error\t" . $@;
         if ($time[1] != $min) {
             # once a minute
             for my $client_key (keys %{$hash->{_clients}}) {
-                my $client = $hash->{_clients}{$client_key}{client};
-                print $client "alert\t11\tgam3\tThis is an alert\n";
+                my $client = $hash->{_clients}{$client_key};
+		if ($client->{_list}) {
+		    for my $user_key (keys %{$client->{_list}}) {
+		        my $user = $client->{_list}->{$user_key};
+			my $sclient = $client->{'client'};
+			printf $sclient "alert\t%d\t%s\tThis is an alert for %s\n", $user->id + 10, $user->name, $user->fullname;
+		    }
+		}
             }
         }
         if ($time[2] != $hour) {

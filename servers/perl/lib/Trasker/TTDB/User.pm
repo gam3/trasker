@@ -260,6 +260,10 @@ sub project
     Trasker::TTDB::UserProject->new(project => $project, user => $self);
 }
 
+=item set_current_project
+
+=cut
+
 sub set_current_project
 {
     my $self = shift;
@@ -328,8 +332,8 @@ SQL
         if ($rows == 1) {
             ($id, $current_project_id, $type, $old_rid) = ($sths->fetchrow_array);
 
-            if ($project_id == $id) {
-#               warn("Not updating $id == $project_id");
+            if ($project_id == $current_project_id) {
+warn("Not updating $current_project_id == $project_id");
                 $dbh->rollback;
                 return 0;
             }
@@ -472,6 +476,10 @@ SQL
     $pid;
 }
 
+=item auto_set_project
+
+=cut
+
 sub auto_set_project
 {
     my $self = shift;
@@ -494,6 +502,9 @@ sub auto_set_project
     );
 
     if (defined $auto) {
+#        my $newproject = $self->project($auto->project_id);
+#        my $curproject = $self->current_project();
+
         return $self->set_current_project(project_id => $auto->project_id, temporary => 'window', auto_id => $auto->id, host => $p{host});
     } else {
         $self->revert(type => 'window', host => $p{host});
@@ -584,6 +595,12 @@ sub add_task
     Trasker::TTDB::Projects::flush();
 
     Trasker::TTDB::UserProject->new(user => $self, project_id => $id);
+}
+
+sub get_alerts
+{
+    require Trasker::TTDB::Alerts;
+    die "not impliemnted";
 }
 
 sub add_note
@@ -815,7 +832,7 @@ select *
  where user_id = ?
        $date_clause
  order by start_time
- limit 100
+ limit 10000
 SQL
     $sth->execute($self->id, @args);
 
@@ -936,6 +953,8 @@ SQL
     return @timeslices;
 }
 
+
+
 1;
 __END__
 
@@ -959,13 +978,11 @@ This is an alias to the userid function
 
 =item project
 
-=item set_current_project
 
 =item revert
 
 =item auto_revert_project
 
-=item auto_set_project
 
 =item auto_get_project
 

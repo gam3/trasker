@@ -322,6 +322,13 @@ sub title
     $self->{title};
 }
 
+sub state
+{
+    my $self = shift;
+
+    'normal';
+}
+
 sub desktop
 {
     my $self = shift;
