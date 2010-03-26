@@ -1,3 +1,9 @@
+trasker (0.0.4) unstable; urgency=low
+
+  * SQLlite version
+
+ -- G. Allen Morris III <gam3@gam3.net>  Tue, 28 Jul 2009 13:49:32 -0400
+
 trasker (0.0.3) unstable; urgency=low
 
   * Changed name to Trasker

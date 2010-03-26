@@ -1,7 +1,7 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT([trasker],[0.0.2],[trasker-bugs@gam3.net])
+AC_INIT([trasker],[0.0.4],[trasker-bugs@gam3.net])
 AC_PREREQ(2.61)
 AC_COPYRIGHT([Copyright (c) 2008 G. Allen Morris III])
 AC_CANONICAL_TARGET
@@ -34,6 +34,8 @@ if test "x$with_perl" = "xyes" ; then
    else
        pkgvdatadir=$(perl -MConfig -e 'print "$Config{installvendorlib}"')
    fi
+
+   AC_SUBST(PERL_PATH)
 
    AC_SUBST(pkgvdatadir)
 fi

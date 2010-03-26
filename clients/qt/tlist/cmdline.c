@@ -136,7 +136,7 @@ cmdline_parser_init (struct gengetopt_args_info *args_info)
 void
 cmdline_parser_params_init(struct cmdline_parser_params *params)
 {
-  if (params)
+  if (params) {
       params->override = 0;
       params->initialize = 1;
       params->check_required = 1;

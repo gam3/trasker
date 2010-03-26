@@ -19,8 +19,6 @@
 
 #SUBDIRS = tests
 
-perllibdir = $(pkgvdatadir)/Trasker
-
 man_MANS = traskerd.1p
 
 traskerd.1p : scripts/traskerd
@@ -35,8 +33,17 @@ bin_SCRIPTS = \
     scripts/merge \
     scripts/traskers
 
+perllibdir = $(pkgvdatadir)
+perltlibdir = $(pkgvdatadir)/Trasker
+perlttdblibdir = $(pkgvdatadir)/Trasker/TTDB
+
 dist_perllib_DATA = \
-    lib/Trasker.pm \
+    lib/Trasker.pm
+
+dist_perltlib_DATA = \
+    lib/Trasker/Date.pm
+
+dist_perlttdblib_DATA = \
     lib/Trasker/TTDB/Notes.pm \
     lib/Trasker/TTDB/Note.pm \
     lib/Trasker/TTDB/User.pm \
@@ -50,8 +57,7 @@ dist_perllib_DATA = \
     lib/Trasker/TTDB/UserProject.pm \
     lib/Trasker/TTDB/Time.pm \
     lib/Trasker/TTDB/Projects.pm \
-    lib/Trasker/TTDB.pm \
-    lib/Trasker/Date.pm
+    lib/Trasker/TTDB.pm
 
 nodist_perllib_DATA =
 
@@ -64,6 +70,7 @@ do_subst = in=`echo $@ | sed 's/\.[^.]*$$//'`; sed \
   -e 's,[@]APIVERSION[@],$(APIVERSION),g' \
   -e 's,[@]PACKAGE[@],$(PACKAGE),g' \
   -e 's,[@]PERL[@],$(PERL),g' \
+  -e 's,[@]PERL_PATH[@],$(PERL_PATH),g' \
   -e 's,[@]SHELL[@],$(SHELL),g' \
   -e 's,[@]VERSION[@],$(VERSION),g' \
   -e "s,[@]configure_input[@],Generated from $$in.in; do not edit by hand.,g" \
