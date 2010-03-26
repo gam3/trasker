@@ -129,7 +129,7 @@ data security is important.
 There is an email client for trasker. With it you can control some of
 the feature of Trasker by sending emails to a known address.
 
-The Trasker email client is called tremail and is normally run as an
+The Trasker email client is called trail and is normally run as an
 alias on a mail system.
 
 As security can be a problem with email the tremail can require mail to

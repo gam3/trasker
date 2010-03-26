@@ -22,11 +22,11 @@ require Exporter;
 our @ISA = qw (Exporter);
 our @EXPORT_OK = qw(get_dbh dbi_setup);  # symbols to export on request
 
-our $database = 'test_trasker';
-our $host = 'harpo';
-our $user = 'trasker';
-our $password = 'seviceforward';
-our $db = 'Pg';
+our $database = '/tmp/test_trasker';
+our $host = '';
+our $user = '';
+our $password = '';
+our $db = 'SQLite';
 
 use Params::Validate qw( validate );
 
@@ -55,7 +55,8 @@ sub dbi_setup
 sub get_dbh
 {
     if (!$dbi) {
-	$dbi = DBI->connect("DBI:${db}:database=" . $database . ";host=$host", $user, $password,
+#	$dbi = DBI->connect("DBI:${db}:database=" . $database . ";host=$host", $user, $password,
+	$dbi = DBI->connect("DBI:${db}:database=" . $database, $user, $password,
 	    {
 		RaiseError => 1,
 		PrintError => 0,

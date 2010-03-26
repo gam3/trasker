@@ -79,8 +79,14 @@ do_subst = in=`echo $@ | sed 's/\.[^.]*$$//'`; sed \
 #        chmod a-w Config.tmp
 #        mv -f Config.tmp Config.pm
 
-TESTS = \
-   t/00setup.t
+scripts/traskerd : scripts/traskerd.in
+	$(do_subst) scripts/traskerd.in > scripts/traskerd
+
+
+check:
+	./Build test
+#TESTS = \
+#   t/00setup.t
 
 EXTRA_DIST = $(bin_SCRIPTS) $(TESTS)
 

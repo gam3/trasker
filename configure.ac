@@ -8,6 +8,8 @@ AC_CANONICAL_TARGET
 
 AM_INIT_AUTOMAKE
 
+AC_CONFIG_HEADERS(config.h)
+
 #
 # Check for perl
 #
@@ -17,6 +19,24 @@ AC_ARG_WITH(perl,
 	[with_perl=yes])
 
 AM_CONDITIONAL(HAVE_PERL, test "x$with_perl" = "xyes")
+
+if test "x$with_perl" = "xyes" ; then
+   AC_CHECK_PROG(PERL, [perl], [perl])
+   AC_PATH_PROG(PERL_PATH, [perl], [/usr/bin/perl])
+
+   if test "x$prefix" != xNONE; then
+     my_ac_prefix=$prefix
+   else
+     my_ac_prefix=$ac_default_prefix
+   fi
+   if echo $my_ac_prefix | grep "^/usr/local"  > /dev/null ; then
+       pkgvdatadir=$(perl -MConfig -e 'print "$Config{installsitelib}"')
+   else
+       pkgvdatadir=$(perl -MConfig -e 'print "$Config{installvendorlib}"')
+   fi
+
+   AC_SUBST(pkgvdatadir)
+fi
 
 AC_ARG_VAR([BUILDFLAGS], [Flags passed to Build.PL])
 
@@ -57,19 +77,28 @@ if test "x$enable_debug" = "xyes" ; then
     AC_DEFINE(DEBUG, 1, [Define if debugging is enabled.])
 fi
 
+echo HERE
+
 if test "x$with_perl" = "xyes" ; then
-    AC_CONFIG_SUBDIRS( servers )
-fi
-if test "x$with_x11" = "xyes" ; then
-    AC_CONFIG_FILES( [ trasker-x11/configure.ac ] )
-    AC_CONFIG_SUBDIRS( trasker-x11 )
-fi
-if test "x$with_qt4" = "xyes" ; then
-    AC_CONFIG_SUBDIRS( clients/tlist )
+    AC_CONFIG_FILES( servers/perl/Makefile )
+    AC_CONFIG_FILES( clients/perl/Makefile )
 fi
 
-AC_CONFIG_FILES([ Makefile docs/configure.ac ])
-AC_CONFIG_SUBDIRS( docs )
+if test "x$with_x11" = "xyes" ; then
+    AC_PROG_CC
+    AC_CONFIG_FILES( [ clients/x11/src/Makefile ] )
+fi
+
+if test "x$with_qt4" = "xyes" ; then
+    AC_CONFIG_FILES( clients/qt/tlist/Makefile )
+    AC_CONFIG_FILES( clients/qt/ttcp/Makefile )
+fi
+
+AC_CONFIG_FILES([
+Makefile
+docs/Makefile
+])
+
 
 AC_OUTPUT
 

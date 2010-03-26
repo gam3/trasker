@@ -45,6 +45,8 @@ Trasker::TTDB::User - Perl interface to the tasker user
 This creates a user object.  Use I<create> to make this object
 preminate.
 
+=back
+
 =cut
 
 sub new
@@ -58,6 +60,12 @@ sub new
 
     return bless { %p }, $class;
 }
+
+=head2 Methods
+
+=over
+
+=cut
 
 sub create
 {
@@ -92,7 +100,6 @@ SQL
 I<get> returns a user object that describes the user requested
 by either I<name> or I<id>.
 
-=back
 =cut
 
 sub get
@@ -597,6 +604,14 @@ sub add_task
     Trasker::TTDB::UserProject->new(user => $self, project_id => $id);
 }
 
+=item get_alerts
+
+  $user->get_alerts();
+
+will die
+
+=cut
+
 sub get_alerts
 {
     require Trasker::TTDB::Alerts;
@@ -760,8 +775,6 @@ SQL
 }
 
 
-=over
-
 =item recent_projects
 
   return the last (10) or fewer projects that have been used in the last 10 days.
@@ -847,8 +860,6 @@ SQL
     @data;
 }
 
-=over
-
 =item timesplit
 
   $user->timesplit(
@@ -857,8 +868,6 @@ SQL
   );
 
 returns a list of the timeslice ids for the timeslices created or updated.
-
-=back
 
 =cut
 
@@ -958,12 +967,6 @@ SQL
 1;
 __END__
 
-=back
-
-=head2 Methods
-
-=over
-
 =item  id
 
 =item  userid
@@ -978,11 +981,9 @@ This is an alias to the userid function
 
 =item project
 
-
 =item revert
 
 =item auto_revert_project
-
 
 =item auto_get_project
 

@@ -10,7 +10,7 @@ Package: trasker-tlist
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: A QT 4 client to control trasker
- This is the most popular (and currently the only> client for trasker.
+ This is the most popular (and currently the only) client for trasker.
 
 Package: trasker-doc
 Architecture: all
@@ -40,6 +40,6 @@ Package: trasker-server-c
 Architecture: any
 Depends: postgresql | sqlite
 Description: An implimentation of the Tasker server writen in C.
- This server should be more rubust and faster than the perl server, but will
+ This server is more rubust and faster than the perl server, but does
  not have as many features.
 

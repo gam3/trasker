@@ -65,13 +65,13 @@ sub main
 	Proto    => 'tcp',
         (
 	    SSL_use_cert => 1,
-	    SSL_cert_file => '/etc/tasker/cert.pem',
-	    SSL_key_file => '/etc/tasker/key.pem',
+	    SSL_cert_file => '/etc/trasker/cert.pem',
+	    SSL_key_file => '/etc/trasker/key.pem',
 	) x!! 0,
         (
 	    SSL_verify_mode => 0x01, 
-	    SSL_ca_file => '/etc/tasker/cacert.pem',
-	) x!! 1,
+	    SSL_ca_file => '/etc/trasker/cacert.pem',
+	) x!! 0,
     );
 
     nonblock($client);
@@ -101,7 +101,7 @@ sub main
     } else {
 	warn "I encountered a problem: ", IO::Socket::SSL::errstr();
     }
-    print("bill\n");
+    print("\nbill\n");
 }
 
 GetOptions(
@@ -122,11 +122,11 @@ main;
 __END__
 =head1 NAME
 
- tasker_client.pl
+ trasker_client.pl
 
 =head1 SYNOPSIS
 
- tasker_client.pl
+ trasker_client.pl
 
 =head1 DESCRIPTION
 

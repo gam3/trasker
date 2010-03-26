@@ -5,13 +5,15 @@ use Module::Build;
 # Tasker version 0.0.1
 
 my $builder = Module::Build->new(
-    module_name   => 'Tasker::TTCP',
+    module_name   => 'Trasker::TTCP',
     dist_version => '0.01',
+    dist_author => 'G. Allen Morris III <gam3-cpan@gam3.net>',
+    dist_abstract => "Trasker perl clients and trasker perl library",
     license       => 'perl',
     requires => {
         'perl'          => '5.6.0',
     },
-    script_files => [ 'scripts/tasker_client' ],
+    script_files => [ 'scripts/' ],
     build_requires => {
 	'Getopt::Long' => 0,
 	'Pod::Usage' => 0,

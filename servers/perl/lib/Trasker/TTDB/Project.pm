@@ -228,7 +228,7 @@ sub parent_id
 
   $project->is_decendent($other_project);
 
-returns i<true> if <$other_project> is a descendant of D<$project>.
+returns B<true> if B<$other_project> is a descendant of B<$project>.
 
 =cut
 
@@ -248,7 +248,7 @@ sub is_descendant
 
   $project->is_ancestor($other_project);
 
-returns i<true> if <$other_project> is an ancestor of D<$project>.
+returns I<true> if I<$other_project> is an ancestor of I<$project>.
 
 =cut
 

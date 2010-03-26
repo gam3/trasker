@@ -46,7 +46,7 @@ int TimeModel::rowCount(QModelIndex const& parent) const
 
 int TimeModel::columnCount(QModelIndex const&) const
 {
-    return 4;
+    return 5;
 }
 
 QVariant TimeModel::data(const QModelIndex &index, int role) const
@@ -68,7 +68,9 @@ QVariant TimeModel::data(const QModelIndex &index, int role) const
 	    return item->datetime();
 	  case 2:
             return item->duration();
-	  case 3:
+          case 3:
+            return item->autoSelect();
+          case 4:
 	    return item->project();
 	  default:
 	    return QString("1234");
@@ -144,4 +146,4 @@ Qt::ItemFlags TimeModel::flags( const QModelIndex& index ) const
     }
     return flag;
 }
-
+/* eof */

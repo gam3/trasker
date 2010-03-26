@@ -12,7 +12,8 @@ trasker_TEXINFOS=gpl.texi fdl.texi
 EXTRA_DIST=trasker.html trasker.dvi
 
 trasker : trasker.texi
-	texi2html --split=chapter $<
+	mkdir -p trasker
+	cd trasker && texi2html --split=chapter ../trasker.texi
 
 trasker.html : trasker.texi
 	texi2html $<

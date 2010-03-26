@@ -137,7 +137,6 @@ void
 cmdline_parser_params_init(struct cmdline_parser_params *params)
 {
   if (params)
-    {
       params->override = 0;
       params->initialize = 1;
       params->check_required = 1;
@@ -215,9 +214,6 @@ cmdline_parser_release (struct gengetopt_args_info *args_info)
 {
 
   free_multiple_string_field (args_info->show_given, &(args_info->show_arg), &(args_info->show_orig));
-
-
-
   clear_given (args_info);
 }
 
@@ -260,7 +256,6 @@ cmdline_parser_dump(FILE *outfile, struct gengetopt_args_info *args_info)
   write_multiple_into_file(outfile, args_info->show_given, "show", args_info->show_orig, 0);
   if (args_info->setup_given)
     write_into_file(outfile, "setup", 0, 0 );
-
 
   i = EXIT_SUCCESS;
   return i;

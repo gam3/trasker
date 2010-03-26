@@ -9,12 +9,15 @@ INCLUDES = $(X_CFLAGS) \
 
 INTLLIBS = -lX11 -lXt -lXmu -lXss
 
-bin_PROGRAMS = winselect focus
+bin_PROGRAMS = winselect focus winraise
 
 winselect_SOURCES = winselect.c
+winraise_SOURCES = winraise.c
 focus_SOURCES = focus.c
 
 winselect_LDADD = $(INTLLIBS) $(X_LIBS)
+
+winraise_LDADD = $(INTLLIBS) $(X_LIBS)
 
 focus_LDADD = $(INTLLIBS) $(X_LIBS)
 
@@ -25,3 +28,4 @@ common.o client.o : common.h
 
 client : common.o client.o
 	gcc -o client client.o common.o  -lssl -lcrypto -lpthread
+

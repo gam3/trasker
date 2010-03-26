@@ -9,10 +9,10 @@ TimeItem::TimeItem (TimeItem * parent)
 
 TimeItem::TimeItem (QString user_in, int timeclice_id_in, int project_id,
 		    int auto_id, QString from, QDateTime startTime_in,
-                    QString duration_in, QDate currentDate) : id(timeclice_id_in), project_id(project_id), dateTime(startTime_in), elapsed(duration_in), displayDate(currentDate)
+                    QString duration_in, QDate currentDate)
+ : id(timeclice_id_in), project_id(project_id), auto_id(auto_id), dateTime(startTime_in), elapsed(duration_in), displayDate(currentDate)
 {
     Q_UNUSED(user_in);
-    Q_UNUSED(auto_id);
     Q_UNUSED(from);
 }
 
@@ -52,3 +52,7 @@ QString TimeItem::project()
     return QString("%1").arg(project_id);
 }
 
+QString TimeItem::autoSelect()
+{
+    return QString("%1").arg(auto_id);
+}

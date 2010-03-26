@@ -543,7 +543,9 @@ int pid;
 char *user;
 int verbose = 0;
 
-char *config_file = "/home/gam3/.config/Tasker/user.conf";
+char *login_name = "gam3";
+char *password = "ab12cd34";
+char *config_file = "/home/gam3/.config/Trasker/user.conf";
 
 void get_password()
 {
@@ -552,7 +554,8 @@ void get_password()
     char *ptr;
 
     if (!(config = fopen(config_file, "r"))) {
-	perror("Could not open logfile");
+	sprintf(buffer, "Could not open logfile %s ", config_file);
+	perror(buffer);
 	exit(-3);
     }
     while (ptr = fgets(buffer, 1024, config)) {
@@ -808,7 +811,9 @@ void loop(int rfd, long idletime, char **desktops, int desktopcnt)
     }
 
     if (frfd) {
-	fprintf(frfd, "host\t%s:%d\n", host_name, display_name);
+/* this is now done latter.
+	fprintf(frfd, "authorize\t%s/%s\n", login_name, password);
+	fprintf(frfd, "host\t%s:%d\n", host_name, display_name); */
     }
 
     memset(&current_window_info, 0, sizeof(current_window_info));
@@ -854,7 +859,13 @@ void loop(int rfd, long idletime, char **desktops, int desktopcnt)
 		} */
 	    } else {
 		buffer[strlen(buffer) - 1] = '\0';
-		printf("buffer: %s\n", buffer);
+		if (0 == strncmp(buffer, "TTCP\t", 5)) {
+		    printf("buffer: TTCP %s\n", buffer);
+		    fprintf(frfd, "authorize\t%s/%s\n", login_name, password);
+		    fprintf(frfd, "host\t%s:%d\n", host_name, display_name);
+		} else {
+		    printf("buffer: %s\n", buffer);
+		}
 	    }
 	}
 
@@ -945,7 +956,7 @@ void loop(int rfd, long idletime, char **desktops, int desktopcnt)
 	if (frfd) {
 	    int ref = fflush(frfd);
 	    if (ref < 0) {
-		fprintf(stderr, "Disconected\n");
+		fprintf(stderr, "Disconected 2\n");
 		if (log) {
 		    fprintf(log, "%ld %ld Disconected\n", time(NULL),
 			    time(NULL));

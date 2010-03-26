@@ -29,11 +29,13 @@ public:
     QString datetime(void);
     QString duration(void);
     QString project(void);
+    QString autoSelect(void);
 
 private:
     QString user;
     int id;
     int project_id;
+    int auto_id;
     QDateTime dateTime;
     QString elapsed;
     QDate displayDate;

@@ -52,7 +52,7 @@ our $opt_port;
 our $password;
 our $user;
 
-our $config_file = $ENV{HOME} . '/.config/Tasker/user.conf';
+our $config_file = $ENV{HOME} . '/.config/Trasker/user.conf';
 
 our $server = 'localhost';
 our $port   = '8001';

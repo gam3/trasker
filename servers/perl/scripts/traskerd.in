@@ -1,4 +1,4 @@
-#!@PERL@
+##!@PERL@
 
 =head1 NAME
 
@@ -16,12 +16,14 @@
 
 =head1 OPTIONS
 
- --versions   print Modules, Perl, OS, Program info
- --debug 0    don't print debugging information (default)
- --debug 1    print debugging information
+ --config {file}  defaults to /etc/trasker.conf
 
- --help      print Options and Arguments instead
- --man       print complete man page
+ --versions       print Modules, Perl, OS, Program info
+ --debug 0        don't print debugging information (default)
+ --debug 1        print debugging information
+
+ --help           print Options and Arguments instead
+ --man            print complete man page
 
 =cut
 
@@ -529,9 +531,13 @@ sub times
 #    printf($client qq(timeslice_done\n));
 }
 
+=over
+
 =item timesplit
 
   timesplit user timeslice_id {time | +duration | -duration}
+
+=back
 
 =cut
 
@@ -839,6 +845,8 @@ sub addauto()
 }
 
 =head3 setauto
+
+=over
 
 =item setauto userid host class name role title desktop
 

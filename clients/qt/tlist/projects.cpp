@@ -144,6 +144,7 @@ ProjectsTree::ProjectsTree(TTCP *ttcp, QWidget *parent)
 
 void ProjectsTree::x11()
 {
+    // follow the events listed here
     XSelectInput(QX11Info::display(), internalWinId(),
                  KeyPressMask | KeyReleaseMask |
                  ButtonPressMask | ButtonReleaseMask |
@@ -278,6 +279,7 @@ void ProjectsTree::setCurrent(int id)
 
         if (item) {
 	    statusBar()->showMessage(tr("Long.name.%1").arg(item->getName()));
+             trayIcon->showMessage("Change", item->getName());
 	} else {
 	    statusBar()->showMessage(tr("Bad Project: (%1)").arg(id));
 	}
@@ -454,7 +456,11 @@ void ProjectsTree::updateRecentMenu(QList<int> &list)
     recentMenu->setTearOffEnabled(true);
     for (i = list.begin(); i != list.end(); ++i) {
         TreeItem *item = view->model()->getItem(*i);
-        recentMenu->addAction(item->getName());
+        QAction *action = new QAction(item->getName(), recentMenu);
+        action->setToolTip("bob");
+	action->setData( QVariant(*i) );
+	connect(action, SIGNAL(triggered()), this, SLOT(startProject()));
+        recentMenu->addAction(action);
     }
     recentMenu->exec( QCursor::pos() );
 }
@@ -503,7 +509,7 @@ void ProjectsTree::writeSettings()
 bool ProjectsTree::x11Event(XEvent *event)
 {
     switch (event->type) {
-      case 15:
+      case VisibilityNotify:
 	switch(event->xvisibility.state) {
 	   case 0:
 	      visible_flag = true;
@@ -514,8 +520,8 @@ bool ProjectsTree::x11Event(XEvent *event)
 	      hidden_flag = false;
 	      break;
 	   case 2:
-	      hidden_flag = true;
 	      visible_flag = false;
+	      hidden_flag = true;
 	      break;
 	}
 	break;
@@ -628,7 +634,7 @@ void ProjectsTree::p_auto()
     if (action) {
 	int projId =  qVariantValue<int>(action->data());
 
-	ttcp->getauto(projId);
+        ttcp->getauto(projId);  /*NOTE: it may be that this should be in the AutoSelect Object */
 
 	Project *projItem = getProject(projId);
 
