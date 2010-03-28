@@ -34,8 +34,11 @@ use IO::Socket;
 use IO::Socket::SSL;
 use IO::Select;
 use Params::Validate qw (validate);
+use Config::Simple;
 
 use Trasker::Date;
+
+use Trasker::TTDB::Authorize;
 
 use Fcntl qw(F_GETFL F_SETFL O_NONBLOCK O_NDELAY);
 
@@ -82,6 +85,7 @@ our $datahash = {};
 
 our $time_count;
 
+our $opt_config = "/etc/trasker.conf";
 our $opt_debug;
 our $opt_help;
 our $opt_man;
@@ -1193,10 +1197,12 @@ sub main
     $| = 1;
     $done=0;
 
+    my $cfg = Config::Simple->new($opt_config);
+
+    my $hash = $cfg->get_block('Database');
+
     dbi_setup(
-        database => 'trasker',
-        user => 'gam3',
-        password => 'awnmwad',
+        %$hash
     );
     for my $sig (keys %SIG) {
         next if $sig eq 'TSTP';
@@ -1405,6 +1411,7 @@ sub daemonize
 }
 
 GetOptions(
+    'config=s'  => \$opt_config,
     'debug=i'   => \$opt_debug,
     'help!'     => \$opt_help,
     'man!'      => \$opt_man,
