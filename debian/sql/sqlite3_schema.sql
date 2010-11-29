@@ -1,0 +1,1 @@
+../../database/trasker.sqlite.schema

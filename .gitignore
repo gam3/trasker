@@ -196,7 +196,7 @@ servers/perl/ts2.pl
 servers/perl/x.pl
 servers/perl/xmakefile
 stamp-h1
-trasker-*
+trasker-*/
 trasker-*.tar.bz2
 trasker-*.tar.gz
 trasker-x11/COPYING
