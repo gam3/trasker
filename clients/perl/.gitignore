@@ -1,4 +1,6 @@
 /Build
 /_build/
 /blib/
+/pmakefile
 /scripts/tnote
+/inc/

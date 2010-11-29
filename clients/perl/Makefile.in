@@ -18,3 +18,13 @@ distclean:
 
 test:
 	make -f pmakefile test
+
+check:
+	make -f pmakefile test
+
+install:
+	echo make -f pmakefile $(DISTDIR)
+
+info:
+
+install-info:

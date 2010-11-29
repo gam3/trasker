@@ -1,5 +1,5 @@
 
-#include <QtTest/QtTest>
+#include <QtTest/QTest>
 #include <QObject>
 
 class TestQString: public QObject

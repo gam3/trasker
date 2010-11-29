@@ -1,3 +1,9 @@
+trasker (0.0.5) unstable; urgency=low
+
+  * db_conf support added
+
+ -- G. Allen Morris III <gam3@gam3.net>  Sat, 27 Nov 2010 11:33:12 -0800
+
 trasker (0.0.4) unstable; urgency=low
 
   * SQLlite version

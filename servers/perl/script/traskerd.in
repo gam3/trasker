@@ -55,6 +55,11 @@ my $connections=0;
 
 our $progname = 'tskrsrvr';
 
+sub OpenMax {
+    my $openmax = POSIX::sysconf( &POSIX::_SC_OPEN_MAX );
+    (!defined($openmax) || $openmax < 0) ? 64 : $openmax;
+}
+
 sub print_log {
     print strftime("%b %e %T", localtime)." ";
     print @_;
@@ -1410,10 +1415,13 @@ sub daemonize
     open STDIN, '/dev/null' or die "Can't read /dev/null: $!";
     open STDOUT, '>/dev/null'
                             or die "Can't write to /dev/null: $!";
+
+    foreach $i (0 .. OpenMax) { POSIX::close($i); }
+
     defined(my $pid = fork) or die "Can't fork: $!";
     exit if $pid;
     setsid                  or die "Can't start a new session: $!";
-    open STDERR, '>&STDOUT' or die "Can't dup stdout: $!";
+#    open STDERR, '>&STDOUT' or die "Can't dup stdout: $!";
 }
 
 GetOptions(

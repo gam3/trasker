@@ -14,7 +14,7 @@
 export DH_VERBOSE=1
 
 # This has to be exported to make some magic below work.
-export DH_OPTIONS
+export DH_OPTIONS=-v
 
 # These are used for cross-compiling and for saving the configure script
 # from having to guess our platform (since we know it already)
@@ -43,8 +43,12 @@ endif
 	            CFLAGS="$(CFLAGS)" LDFLAGS="-Wl,-z,defs" BUILDFLAGS="installdirs=vendor"
 
 
+configure: configure.ac
+	autogen.sh
+
 #Architecture
 build: build-arch build-indep
+	dh_auto_test
 
 build-arch: build-arch-stamp
 build-arch-stamp:  config.status
@@ -62,8 +66,9 @@ build-indep-stamp:  config.status
 
 clean:
 	dh_testdir
-	dh_testroot
-	rm -f build-arch-stamp build-indep-stamp
+	dh_auto_clean
+
+#	rm -f build-arch-stamp build-indep-stamp
 
 	# Add here commands to clean up after the build process.
 	[ ! -f Makefile ] || $(MAKE) distclean
@@ -86,6 +91,11 @@ install-indep:
 #	$(MAKE) DESTDIR=$(CURDIR)/debian/trasker-doc install-info
 #	$(MAKE) DESTDIR=$(CURDIR)/debian/trasker-doc install-html
 #	$(MAKE) DESTDIR=$(CURDIR)/debian/trasker-doc install-pdf
+
+	cp debian/sql/mysql_schema.sql  debian/trasker-server/usr/share/dbconfig-common/data/trasker-server/install/mysql
+	cp debian/sql/psql_schema.sql  debian/trasker-server/usr/share/dbconfig-common/data/trasker-server/install/psql
+	cp debian/sql/sqlite_schema.sql  debian/trasker-server/usr/share/dbconfig-common/data/trasker-server/install/sqlite
+	cp debian/sql/sqlite3_schema.sql  debian/trasker-server/usr/share/dbconfig-common/data/trasker-server/install/sqlite
 
 	dh_install -i
 
@@ -110,7 +120,7 @@ binary-common:
 	dh_installdocs
 	dh_installexamples
 #	dh_installmenu
-#	dh_installdebconf	
+	dh_installdebconf	
 #	dh_installlogrotate	
 #	dh_installemacsen
 #	dh_installpam
@@ -118,7 +128,7 @@ binary-common:
 #	dh_python
 	dh_installinit
 #	dh_installcron
-#	dh_installinfo
+	dh_installinfo
 	dh_installman
 	dh_link
 	dh_strip

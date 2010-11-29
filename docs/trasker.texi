@@ -1,6 +1,6 @@
-\input texinfo @c -*-mode:texinfo; compile-command: "makeinfo tasker.texi"-*-
+\input texinfo @c -*-mode:texinfo; compile-command: "makeinfo trasker.texi"-*-
 
-@setfilename tasker.info
+@setfilename trasker.info
 @documentlanguage en
 @documentencoding iso-8859-1
 @include version.texi
@@ -29,7 +29,7 @@ included in the section entitled ``GNU Free Documentation License.''
 
 @dircategory Business and productivity
 @direntry
-* Trasker: (trasker). Documentation of the tasker task management system.
+* Trasker: (trasker). Documentation of the trasker task management system.
 @end direntry
 
 @titlepage
@@ -51,11 +51,11 @@ included in the section entitled ``GNU Free Documentation License.''
 @end ifnottex
 
 @menu
-* Distribution::            Where to find tasker: source, packages etc.
+* Distribution::            Where to find trasker: source, packages etc.
 * Introduction::            Important concepts you need to know as a user
-* Invoking::                How to invoke tasker
+* Invoking::                How to invoke trasker
 * Protocol::                The Trasker client/server protocol
-* Environment Variables::   Environment variables which affect tasker
+* Environment Variables::   Environment variables which affect trasker
 * Errors and omissions::    Known problems
 * History::                 History of Trasker
 * Copying this manual::     The GNU Free Documentation License
@@ -73,7 +73,7 @@ comes with this program and can be found here: @uref{http://www.gnu.org/copyleft
 You can obtain Trasker from a friend or from the Internet:
 
 @table @asis
-@item Home page @uref{http://tasker.sourceforge.net/}
+@item Home page @uref{http://trasker.sourceforge.net/}
 @end table
 
 @c @node Copying, Introduction, Distribution, Top
@@ -112,7 +112,7 @@ The server must be running on a know computer for proper operation.
 
 @section Server
 
-The tasker server is normally run on a single computer. All of the
+The trasker server is normally run on a single computer. All of the
 client software then attaches to the server. Thera are some
 administration programs that my by pass the server.
 
@@ -176,7 +176,7 @@ focus -k
 @node Protocol, Environment Variables, Invoking, Top
 @chapter Protocol
 
-When the tasker server is first connected to it returns a string that give
+When the trasker server is first connected to it returns a string that give
 the version of TTCP that the server is using.
 
 @emph{TTCP 0.01} for example.
@@ -278,7 +278,7 @@ There are no errors.
 The initial system was designed and written by G. Allen Morris III.
 @end itemize
 
-I started writing tasker because I hate keeping timesheets. I always saw
+I started writing trasker because I hate keeping timesheets. I always saw
 Trasker as a client/server based system, because I work on more that one
 computer often.
 

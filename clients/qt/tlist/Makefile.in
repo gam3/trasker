@@ -19,7 +19,17 @@ distdir:
 
 distclean: clean
 	rm -f Makefile
+	rm -f qmakefile
+	rm -f tmakefile
 
+check: test
+	./test
+
+test: tmakefile
+	make -f tmakefile
+
+tmakefile : tlist.pro Makefile
+	qmake "MAKEFILE=tmakefile" test.pro
 
 .PRECIOUS: Makefile
 Makefile: Makefile.in
@@ -27,6 +37,8 @@ Makefile: Makefile.in
 
 install:
 	make INSTALL_ROOT=${DESTDIR} -f qmakefile install
+
+info:
 
 install-info:
 

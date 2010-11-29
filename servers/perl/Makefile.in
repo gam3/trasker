@@ -20,3 +20,10 @@ distclean:
 
 install:
 	$(MAKE) -f pmakefile install
+
+check:
+	$(MAKE) -f pmakefile test
+
+info:
+
+install-info:

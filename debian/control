@@ -19,7 +19,7 @@ Description: Documentation for trasker
 
 Package: trasker-server-perl
 Architecture: any
-Depends: perl, postgresql | sqlite
+Depends: perl, postgresql | sqlite | mysql
 Description: An implimentation of the Tasker server writen in perl.
  This package also contains the Tasker::TTDB perl package that can be
  used to write other servers.
@@ -28,7 +28,7 @@ Package: trasker-server
 Architecture: any
 Depends: trasker-server-perl | trasker-server-c
 Description: The common trasker-server files
-  This file has the trasker-server keys and init.d files.
+ This file has the trasker-server keys and init.d files.
 
 Package: trasker-x11
 Architecture: any
@@ -38,7 +38,7 @@ Description: trasker clients for X11 desktops
 
 Package: trasker-server-c
 Architecture: any
-Depends: postgresql | sqlite
+Depends: postgresql | sqlite3 | mysql
 Description: An implimentation of the Tasker server writen in C.
  This server is more rubust and faster than the perl server, but does
  not have as many features.

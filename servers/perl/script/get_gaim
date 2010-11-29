@@ -8,12 +8,12 @@ use Pod::Usage;
 
 our $VERSION = "0.0.1";
 
-use TTDB::Notes;
-use TTDB::Time;
+use Trasker::TTDB::Notes;
+use Trasker::TTDB::Time;
 
 use Date::Calc::MySQL;
 
-use TTDB::DBI qw (dbi_setup);
+use Trasker::TTDB::DBI qw (dbi_setup);
 
 our ( $opt_help, $opt_man, $opt_versions, $opt_user);
 our ( $opt_debug, $opt_help, $opt_man, $opt_versions );
@@ -109,13 +109,13 @@ dbi_setup(
     password => $cntrl_hash->{database}{password} || '',
 );
 
-use TTDB::User;
+use Trasker::TTDB::User;
 
 my $user_name = $ENV{LOGNAME} || $ENV{USER};
 
 print $opt_start, $opt_end, "\n";
 
-my $user = TTDB::User->get(user => $user_name);
+my $user = Trasker::TTDB::User->get(user => $user_name);
 
 if ($opt_start) {
     require Date::Parse;
@@ -140,7 +140,7 @@ END {
     if (defined $opt_versions) {
 	print
 	  "\nModules, Perl, OS, Program info:\n",
-	  "  TTDB::User            $TTDB::VERSION\n",
+	  "  Trasker::TTDB::User            $Trasker::TTDB::VERSION\n",
 	  "  Date::Parse           $Date::Parse::VERSION\n",
 	  "  Pod::Usage            $Pod::Usage::VERSION\n",
 	  "  Getopt::Long          $Getopt::Long::VERSION\n",

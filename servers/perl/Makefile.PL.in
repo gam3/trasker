@@ -24,7 +24,7 @@ recommends 'WWW::Mechanize' => 0;
 
 sign 1;
 
-scripts 'traskerd';
+install_script 'traskerd';
 
 makefile 'pmakefile';
 

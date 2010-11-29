@@ -1,24 +1,21 @@
 This package was debianized by G. Allen Morris III <gam3@gam3.net> on
 Tue, 14 Oct 2008 16:41:26 -0400.
 
-It was downloaded from <url://example.com>
+It was downloaded from <http://www.gam3.net/trasker>
 
 Upstream Author(s):
 
-    <put author's name and email here>
-    <likewise for another author>
+    G. Allen Morris III <gam3@gam3.net>
 
 Copyright:
 
-    <Copyright (C) YYYY Name OfAuthor>
-    <likewise for another author>
+    <Copyright (C) 2010 G. Allen Morris III>
 
 License:
 
-    <Put the license of the package here indented by 4 spaces>
+    GPL
 
-The Debian packaging is (C) 2008, G. Allen Morris III <gam3@gam3.net> and
+The Debian packaging is (C) 2010, G. Allen Morris III <gam3@gam3.net> and
 is licensed under the GPL, see `/usr/share/common-licenses/GPL'.
 
-# Please also look if there are files or directories which have a
-# different copyright/license attached and list them here.
+
