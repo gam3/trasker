@@ -81,6 +81,8 @@ void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason)
 	    recentMenu->exec( QCursor::pos() );
 	}
         break;
+    case QSystemTrayIcon::Context:
+        break;
     default:
         qWarning("Mouse unknown reason %d", reason);
         break;

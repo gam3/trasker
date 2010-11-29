@@ -298,14 +298,11 @@ test_focus(struct window_info *win_info, XScreenSaverInfo * mit_info,
 
     if (mit_info->idle > idletime) {
 	if (idle == 0) {
-	    fprintf(stderr, "idle\n");
 	    idle = 1;
 	}
-
 	win_info->idle = 1;
     } else {
 	if (idle == 1) {
-	    fprintf(stderr, "active\n");
 	    idle = 0;
 	}
 	win_info->idle = 0;
@@ -332,7 +329,6 @@ test_focus(struct window_info *win_info, XScreenSaverInfo * mit_info,
 	Window root, child, parent, root2, *kids;
 	int x, y, win_x, win_y;
 	unsigned int mask;
-	unsigned int nkids;
 
 	XQueryPointer(my_display, DefaultRootWindow(my_display), &root,
 		      &child, &x, &y, &win_x, &win_y, &mask);
@@ -348,7 +344,6 @@ test_focus(struct window_info *win_info, XScreenSaverInfo * mit_info,
 
 	Window child, parent, root2, *kids;
 	int x, y, win_x, win_y;
-	unsigned int mask;
 	unsigned int nkids;
 
 	if (XQueryTree(my_display, new, &root2, &parent, &kids, &nkids))
@@ -492,6 +487,7 @@ static struct option long_options[] = {
     {"help", 0, NULL, '?'},
     {"home", 1, NULL, 'h'},
     {"idle", 1, NULL, 'i'},
+    {"kill", 0, NULL, 'k'},
     {"log", 1, NULL, 'l'},
     {"pid", 1, NULL, 'P'},
     {"port", 1, NULL, 'p'},
@@ -543,9 +539,10 @@ int pid;
 char *user;
 int verbose = 0;
 
-char *login_name = "gam3";
-char *password = "ab12cd34";
-char *config_file = "/home/gam3/.config/Trasker/user.conf";
+char *login_name = "guest";
+char *password = "guest";
+char *config_tail = ".config/Trasker/user.conf";
+char *config_file;
 
 void get_password()
 {
@@ -554,12 +551,12 @@ void get_password()
     char *ptr;
 
     if (!(config = fopen(config_file, "r"))) {
-	sprintf(buffer, "Could not open logfile %s ", config_file);
+	sprintf(buffer, "Could not open configuration file %s ", config_file);
 	perror(buffer);
 	exit(-3);
     }
     while (ptr = fgets(buffer, 1024, config)) {
-printf("%s", ptr);
+	printf("%s", ptr);
     }
 }
 
@@ -573,6 +570,13 @@ void parse_command_line(int argc, char **argv, struct cmdlineopt *opt)
 	    getopt_long(argc, argv, "d:D?i:kP:p:s:u:v", long_options,
 			NULL)) != -1) {
 	switch (c) {
+	case 'c':
+	    if (optarg != NULL) {
+		config_file = optarg;
+	    } else {
+		usage(argv[0]);
+	    }
+	    break;
 	case 'D':
 	    opt->debug = 1;
 	    break;
@@ -981,6 +985,7 @@ void loop(int rfd, long idletime, char **desktops, int desktopcnt)
 	x = (x + 1) % SLOTS;
 
 	usleep(DELAY);
+//	fprintf(stderr, "sleep\n");
 
 	desktop[x] = get_desktop();
 	test_focus(&win_info[x], mit_info, idletime);
@@ -1148,6 +1153,11 @@ int main(int argc, char *argv[])
     }
 
     parse_command_line(argc, argv, &options);
+    if (config_file == NULL) {
+        int len = strlen(home) + strlen(config_tail) + 2;
+	config_file = calloc(1, len);
+	snprintf(config_file, len, "%s/%s", home, config_tail);
+    }
     get_password();
 
     long idletime = 3 * 60 * 1000L;

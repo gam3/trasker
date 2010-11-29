@@ -130,28 +130,14 @@ sub create
     my $hidden = $self->hidden || "N";
     my $description = $self->description;
 
-    my $st_id;
     my $sth;
-
-    if (0) {
-        $st_id = $dbh->prepare('select LAST_INSERT_ID()');
-    } else {
-        $st_id = $dbh->prepare("select currval('project_id_seq')");
-    }
-
-    if (0) {
-	$sth = $dbh->prepare(<<EOP) or die $dbh->err_str;
+   $sth = $dbh->prepare(<<EOP) or die $dbh->err_str;
 insert into project (parent_id, name, user_id, hide, description) values (?, ?, ?, ?, ?);
 EOP
-    } else {
-	$sth = $dbh->prepare(<<EOP) or die $dbh->err_str;
-insert into project (parent_id, name, user_id, hide, description) values (?, ?, ?, ?, ?);
-EOP
-    }
+
     $sth->execute($pid, $name, $user_id, $hidden, $description);
 
-    $st_id->execute();
-    my $id = $st_id->fetchrow();
+    my $id = $dbh->last_insert_id("","","","");
     $self->{id} = $id;
     
     Trasker::TTDB::Projects::flush();

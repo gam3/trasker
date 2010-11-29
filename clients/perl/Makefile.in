@@ -1,0 +1,20 @@
+
+
+all: pmakefile
+	make -f pmakefile
+
+pmakefile: Makefile.PL
+	perl Makefile.PL
+
+
+distdir:
+	echo $(distdir)
+
+clean:
+	if [ -f pmakefile ] ; then make -f pmakefile clean; fi
+
+distclean:
+	if [ -f pmakefile ] ; then make -f pmakefile clean; fi
+
+test:
+	make -f pmakefile test

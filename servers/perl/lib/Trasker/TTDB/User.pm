@@ -11,11 +11,9 @@ use strict;
 #
 package Trasker::TTDB::User;
 
-use Trasker::TTDB::DBI qw (get_dbh);
+use Trasker::TTDB::DBI qw (get_dbh dbtype);
 
-use Trasker::TTDB::Projects;
-
-our $VERSION = '0.001';
+our $VERSION = '0.002_000';
 
 use Params::Validate qw( validate validate_pos SCALAR BOOLEAN HASHREF OBJECT ARRAYREF );
 
@@ -30,8 +28,9 @@ Trasker::TTDB::User - Perl interface to the tasker user
   use Trasker::TTDB::User;
 
   $user = Trasker::TTDB::User->new(user => 'bob', fullname => 'Robert Smith'):
-
   $user->create();
+
+  $user = Trasker::TTDB::User->create(user => 'bob', fullname => 'Robert Smith'):
 
   $user = Trasker::TTDB::User->get(user => 'bob'):
   $user = Trasker::TTDB::User->get(id => 1):
@@ -42,8 +41,9 @@ Trasker::TTDB::User - Perl interface to the tasker user
 
 =item new(name => I<required>, fullname => I<required>)
 
-This creates a user object.  Use I<create> to make this object
-preminate.
+This creates a user object.  Use I<create> to make this object preminate.
+
+In most case I<create> constructor should be used in place of this constructor.
 
 =back
 
@@ -59,40 +59,6 @@ sub new
     });
 
     return bless { %p }, $class;
-}
-
-=head2 Methods
-
-=over
-
-=cut
-
-sub create
-{
-    my $self = shift;
-
-    die if $self->{id};
-
-    my $dbh = get_dbh;
-
-    my $sth_id;
-    if (0) {
-        $sth_id = $dbh->prepare('select LAST_INSERT_ID()');
-    } else {
-        $sth_id = $dbh->prepare("select currval('users_id_seq')");
-    }
-    my $sth = $dbh->prepare(<<SQL);
-insert into users (name, fullname) values (?, ?)
-SQL
-
-    $sth->execute($self->{name}, $self->{fullname});
-    $sth_id->execute();
-    my $id = $sth_id->fetchrow_array();
-    $self->{id} = $id;
-
-    $dbh->commit();
-
-    $self;
 }
 
 =item get( { id => # | name => 'name' } )
@@ -144,10 +110,50 @@ SQL
 
     my $data = $sth->fetchrow_hashref();
 
-    die "No User $p{id}" unless $data;
+    die sprintf("No User with %s: %s", $p{user} ? 'name' : 'id',  $p{user} || $p{id}) unless $data;
 
     return bless { %$data }, $class;
 }
+
+=item $user->create()
+
+=item Trasker::TTDB::User->create(user => 'name', fullname => 'Full Name'):
+
+I<create> creates an entry in the database from an User object or arguments.
+
+=cut
+
+sub create
+{
+    my $self = shift;
+
+    if (ref($self)) {
+	die 'User already exists' if $self->{id};
+    } else {
+        $self = bless({ @_ }, $self);
+    }
+
+    my $dbh = get_dbh;
+
+    my $sth = $dbh->prepare(<<SQL);
+insert into users (name, fullname) values (?, ?)
+SQL
+
+    $sth->execute($self->{name}, $self->{fullname});
+
+    my $id = $dbh->last_insert_id("","","","");
+    $self->{id} = $id;
+
+    $dbh->commit();
+
+    $self;
+}
+
+=head2 Accessor Methods
+
+=over
+
+=cut
 
 sub id
 {
@@ -221,6 +227,44 @@ sub fullname
     my $self = shift;
     $self->{fullname};
 }
+
+=head2 Methods
+
+=over
+
+=cut
+
+=item current_project
+
+returns a C<UserProject> that represents the Current Project for a user.
+
+=cut
+
+sub current_project
+{
+    my $self = shift;
+    my $user_id = $self->id();
+
+    my $dbh = get_dbh;
+    my $sth = $dbh->prepare(<<SQL);
+select project_id from timeslice where elapsed is NULL and user_id = ?;
+SQL
+
+    $sth->execute($user_id);
+
+    my $current = $sth->fetchrow_array;
+
+    croak("No current project") unless $current;
+
+    require Trasker::TTDB::Project;
+    require Trasker::TTDB::UserProject;
+
+    Trasker::TTDB::UserProject->new(project => Trasker::TTDB::Project->get(id => $current), user => $self);
+}
+
+=item current_project
+
+=cut
 
 sub projects
 {
@@ -303,8 +347,8 @@ select id, project_id, temporary, revert_to
   from timeslice
  where end_time is NULL
    and user_id = ?
-   for update
 SQL
+#  for update
 
     my $sthu;
     if (0) {
@@ -312,6 +356,13 @@ SQL
 update timeslice
    set elapsed = timediff(NOW(), start_time),
    end_time = NOW(),
+ where id = ?
+SQL
+    } elsif (dbtype eq 'sqlite') {
+        $sthu = $dbh->prepare(<<'SQL') or die $dbh->err_str();
+update timeslice
+   set elapsed = julianday('now') - julianday(start_time),
+   end_time = date('now')
  where id = ?
 SQL
     } else {
@@ -322,11 +373,15 @@ update timeslice
  where id = ?
 SQL
     }
+    my $now = 'now()';
+    if (dbtype eq 'sqlite') {
+        $now = q[date('now')];
+    }
 
     my $sthi = $dbh->prepare(<<SQL) or die $dbh->err_str();
 insert into timeslice
        (user_id, project_id, temporary, start_time, auto_id, revert_to, host)
-values (      ?,          ?,         ?,      now(),       ?,         ?,    ?)
+values (      ?,          ?,         ?,      $now,       ?,         ?,    ?)
 SQL
 
     eval {
@@ -366,6 +421,10 @@ warn("Not updating $current_project_id == $project_id");
           $p{host},
         ) || die $sthi->{Statement} . ' ' . $dbh->errstr ;
     };
+    $sths->finish();
+    $sthu->finish();
+    $sthi->finish();
+
     if ($@) {
         $dbh->rollback;
 	die $@;
@@ -399,17 +458,22 @@ select id,
   from timeslice
  where revert_to is not NULL
    and elapsed is NULL
-   and user_id = ? for update;
+   and user_id = ?
 SQL
+# for update
+    my $now = 'now()';
+    if (dbtype eq 'sqlite') {
+        $now = q[date('now')];
+    }
 
     my $stha = $dbh->prepare(<<SQL) or die;
 update timeslice
-   set elapsed = now() - start_time, end_time = now()
+   set elapsed = $now - start_time, end_time = $now
  where id = ?
 SQL
     my $sthi = $dbh->prepare(<<SQL) or die $dbh->err_str();
 insert into timeslice (user_id, project_id, temporary, auto_id, start_time, host)
-               SELECT user_id, project_id, 'revert', auto_id, now(), host FROM timeslice where id = ?
+               SELECT user_id, project_id, 'revert', auto_id, $now, host FROM timeslice where id = ?
 SQL
 
     $sth->execute($user_id);
@@ -518,29 +582,6 @@ sub auto_set_project
         return -1;
     }
 }
-
-sub current_project
-{
-    my $self = shift;
-    my $user_id = $self->id();
-
-    my $dbh = get_dbh;
-    my $sth = $dbh->prepare(<<SQL);
-select project_id from timeslice where elapsed is NULL and user_id = ?;
-SQL
-
-    $sth->execute($user_id);
-
-    my $current = $sth->fetchrow_array;
-
-    croak("No current project") unless $current;
-
-    require Trasker::TTDB::Project;
-    require Trasker::TTDB::UserProject;
-
-    Trasker::TTDB::UserProject->new(project => Trasker::TTDB::Project->get(id => $current), user => $self);
-}
-
 sub has_project
 {
     my $self = shift;
@@ -631,13 +672,17 @@ sub add_note
     });
 
     my $st;
+    my $now = 'now()';
+    if (dbtype eq 'sqlite') {
+        $now = q[date('now')];
+    }
 
     if ($p{time}) {
         $st = $dbh->prepare("insert into notes (type, time, user_id, note) values (2, ?, ?, ?)");
 
         $st->execute($p{time}->mysql, $self->id(), $p{note}) or die $dbh->err_str();
     } else {
-        $st = $dbh->prepare("insert into notes (type, time, user_id, note) values (2, now(), ?, ?)");
+        $st = $dbh->prepare("insert into notes (type, time, user_id, note) values (2, $now, ?, ?)");
 
         $st->execute($self->id(), $p{note}) or die $dbh->err_str();
     }
@@ -683,19 +728,30 @@ sub day
 
     }
 
-    my $sth = $dbh->prepare(<<SQL);
+    my $sth;
+
+    $sth = $dbh->prepare(<<SQL);
 select
-       sum(
-           coalesce(
-           case when date(end_time) >= date(?) + interval '1 day' then date(?) + interval '1 day' else end_time end,
-           now())  -
-           case when date(start_time) < date(?) then date(?) else start_time end) as time
+       sum(1)
   from timeslice
-  where start_time < date(?) + interval '1 day'
-    and coalesce(end_time, now()) >= date(?)
+  where start_time < date(?) + 1
+    and coalesce(end_time, date('now')) >= date(?)
     and user_id = ?
     $project_id_clause
 SQL
+#    my $sth = $dbh->prepare(<<SQL);
+#select
+#       sum(
+#           coalesce(
+#           case when date(end_time) >= date(?) + interval '1 day' then date(?) + interval '1 day' else end_time end,
+#           now())  -
+#           case when date(start_time) < date(?) then date(?) else start_time end) as time
+#  from timeslice
+#  where start_time < date(?) + interval '1 day'
+#    and coalesce(end_time, now()) >= date(?)
+#    and user_id = ?
+#    $project_id_clause
+#SQL
 
     $sth->execute(
         $start->mysql,
@@ -987,7 +1043,6 @@ This is an alias to the userid function
 
 =item auto_get_project
 
-=item current_project
 
 =item has_project
 

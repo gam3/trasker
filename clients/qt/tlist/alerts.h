@@ -8,6 +8,7 @@
  */
 
 #include "ui_alerts.h"
+#include <QHash>
 
 class AlertDisplay;
 class TTCP;

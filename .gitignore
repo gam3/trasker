@@ -96,7 +96,6 @@ ms_windows/
 /servers/perl/Build.PL
 /servers/perl/META.yml
 /servers/perl/Makefile
-/servers/perl/Makefile.in
 /servers/perl/README
 /servers/perl/Tasker-0.0.2/
 /servers/perl/_build/
@@ -181,7 +180,6 @@ clients/perl/MANIFEST
 clients/perl/MANIFEST.SKIP
 clients/perl/MANIFEST.SKIP.bak
 clients/perl/MYMETA.yml
-clients/perl/Makefile.in
 clients/qt/tlist/COPYING
 clients/qt/tlist/auto_model.h
 clients/qt/tlist/pics/active-clock.gif
@@ -243,3 +241,4 @@ servers/perl/t/002_datastore_setup.t
 servers/perl/t/bob.db
 servers/perl/t/old/
 stamp-h1
+trasker-*

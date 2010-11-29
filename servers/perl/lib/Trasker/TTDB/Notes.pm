@@ -1,4 +1,3 @@
-use strict;
 
 ## @file
 ## The Notes object
@@ -11,10 +10,11 @@ use strict;
 # This Object simply holds a list of Note objects
 # 
 package Trasker::TTDB::Notes;
+use strict;
 
 use Params::Validate qw (validate ARRAYREF);
 
-use Trasker::TTDB::DBI qw (get_dbh);
+use Trasker::TTDB::DBI qw (get_dbh dbtype);
 
 sub new
 {
@@ -68,8 +68,13 @@ sub entries
 	push(@args, @$a);
     }
 
+    my $now = 'now()';
+    if (dbtype eq 'sqlite') {
+        $now = q[date('now')];
+    }
+
     if ($self->{today}) {
-        $sql .= ' and date(time) = date(now())';
+        $sql .= ' and date(time) = date($now)';
     }
     if ($self->{date}) {
         $sql .= ' and date(time) = date(?)';

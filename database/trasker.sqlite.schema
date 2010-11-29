@@ -1,0 +1,67 @@
+
+DROP TABLE IF EXISTS auto;
+create table auto (
+  id INTEGER PRIMARY KEY,
+  project_id int(11) default NULL,
+  user_id int(11) default NULL,
+  host varchar(40) default NULL,
+  class varchar(40) default NULL,
+  title varchar(30) default NULL,
+  role varchar(30) default NULL,
+  name varchar(100) default NULL,
+  desktop varchar(30) default NULL,
+  presidence int(11) default NULL,
+  enabled char(1) default 'T'
+);
+
+
+DROP TABLE IF EXISTS notes;
+CREATE TABLE notes (
+  id INTEGER PRIMARY KEY,
+  time datetime default NULL,
+  type int(11) default '1',
+  user_id int(11) NOT NULL default '0',
+  project_id int(11) default NULL,
+  note text
+);
+
+DROP TABLE IF EXISTS project;
+CREATE TABLE project (
+  id INTEGER PRIMARY KEY,
+  parent_id int(11) default NULL,
+  name varchar(30) default NULL,
+  user_id int(11) default NULL,
+  hide char(1),  -- ('N','Y') default NULL,
+  description text,
+  UNIQUE (parent_id,name,user_id)
+);
+
+DROP TABLE IF EXISTS timeslice;
+CREATE TABLE timeslice (
+  id INTEGER PRIMARY KEY,
+  user_id int(11) default NULL,
+  project_id int(11) default NULL,
+  start_time datetime default NULL,
+  elapsed time default NULL,
+  end_time datetime default NULL,
+  temporary varchar(10),
+  auto_id int(11) default '0',
+  revert_to int(11) default NULL,
+  host varchar(30) default NULL
+);
+
+DROP TABLE IF EXISTS users;
+CREATE TABLE users (
+    id INTEGER PRIMARY KEY,
+    name varchar(50),
+    fullname varchar(50),
+    UNIQUE (name)
+);
+
+DROP TABLE IF EXISTS user_project;
+CREATE TABLE user_project (
+  user_id int(11) default NULL,
+  project_id int(11) default NULL,
+  UNIQUE (user_id, project_id)
+);
+

@@ -54,19 +54,13 @@ sub create
     my $self;
     my $dbh = get_dbh;
 
-    my $sth_id;
-    if (0) {
-        $sth_id = $dbh->prepare('select LAST_INSERT_ID()');
-    } else {
-        $sth_id = $dbh->prepare("select currval('users_id_seq')");
-    }
     my $sth = $dbh->prepare(<<SQL);
 insert into alert (name, fullname) values (?, ?)
 SQL
 
-#    $sth->execute($self->{name}, $self->{fullname});
-#    $sth_id->execute();
-    my $id = $sth_id->fetchrow_array();
+    $sth->execute($self->{name}, $self->{fullname});
+
+    my $id = $dbh->last_insert_id("","","","");
     $self->{id} = $id;
 
     $dbh->commit();

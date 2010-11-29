@@ -1,7 +1,7 @@
 use strict;
 
 ## @file
-# The Alers package
+# The Alerts package
 #
 
 ## @class

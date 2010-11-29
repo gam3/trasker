@@ -8,13 +8,13 @@ winselect \- get information about a window
 .B \--help
 ]
 .SH DESCRIPTION
-track the actions of and X user for the tasker system
+track the actions of an X user for the trasker system
 .B winselect
 a daemon that helps track the actions of a user.
 .SH OPTIONS
 .TP
 .B \-s {server}
-The host IP address running the tasker server.
+The host IP address running the trasker server.
 .TP
 .B \-V
 Display the program version.
@@ -29,8 +29,8 @@ The server switch does not accept host names.  However the line below solves thi
  winselect --server `host google.com | grep address | head -1 | awk '{print $4 }'`
 .SH AVAILABILITY
 .B winselect
-is part of the tasker task tracking system and is available from
-http://tasker.sourceforge.net.
+is part of the trasker task tracking system and is available from
+http://trasker.sourceforge.net.
 .SH SEE ALSO
-.BR tasker (1)
+.BR trasker (1)
 

@@ -1,0 +1,34 @@
+use inc::Module::Install;
+
+# Tasker version @VERSION@
+# @pkgvdatadir@
+
+install_as_vendor;
+
+# Define metadata
+name 'Trasker';
+version '@VERSION@';
+license 'GPL';
+
+requires 'IO::Socket::SSL' => 0;
+requires 'Config::Simple' => 0;
+
+test_requires 'Getopt::Long' => 0;
+test_requires 'Pod::Usage' => 0;
+test_requires 'Params::Validate' => 0;
+
+recommends 'Test::Pod' => 0;
+recommends 'Test::Pod::Coverage' => 0;
+recommends 'Test::Spelling' => 0;
+recommends 'WWW::Mechanize' => 0;
+
+sign 1;
+
+scripts 'traskerd';
+
+makefile 'pmakefile';
+
+WriteAll(
+    sign => $ENV{SIGN}
+);
+

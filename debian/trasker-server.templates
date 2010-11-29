@@ -1,0 +1,8 @@
+Template: database
+Type: select
+Default: sqlite3
+Description: The database you would like to use
+ trasker stores lots of data and uses a database to do it.  If you have more
+ than one or two users your choice should be mysql to postgresql.  For a single
+ user system sqlite3 would be a good choice as it does not require any extra set up.
+

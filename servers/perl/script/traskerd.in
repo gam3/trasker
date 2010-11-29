@@ -408,6 +408,7 @@ sub user
     my $client = shift;
     my $data = shift;
     my $userid = shift;
+    my $count = 0;
 
     my $user = get_user($userid, $client);
 
@@ -417,7 +418,7 @@ sub user
 	for my $entry ($user->projects) {
 	    my $time = $entry->time;
 	    my $atime = $entry->alltime;
-
+	    $count++:
 	    printf($client "entry\t%s\t%s\t%d\t%d\t%s\t%s\t%s\n",
 		   $userid,
 		   $entry->project->name,
@@ -428,8 +429,13 @@ sub user
 	    );
 	}
     }
-    if (my $current_proj = $user->current_project()) {
-	printf($client "current\t%s\t%d\n", $userid, $current_proj->project->id);
+print "count $count\n";
+    if ($count) {
+	if (my $current_proj = $user->current_project()) {
+	    printf($client "current\t%s\t%d\n", $userid, $current_proj->project->id);
+	}
+    } else {
+	printf($client "bob\t%s\n", $userid);
     }
     undef;
 }

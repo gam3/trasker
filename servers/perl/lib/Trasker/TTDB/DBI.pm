@@ -20,7 +20,7 @@ use DBI;
 require Exporter;
 
 our @ISA = qw (Exporter);
-our @EXPORT_OK = qw(get_dbh dbi_setup);  # symbols to export on request
+our @EXPORT_OK = qw(get_dbh dbi_setup dbtype);  # symbols to export on request
 
 our $database = '/tmp/test_trasker';
 our $host = '';
@@ -30,6 +30,11 @@ our $db = 'SQLite';
 
 use Params::Validate qw( validate );
 
+sub dbtype
+{
+    'sqlite';
+}
+
 sub dbi_setup
 {
     my %p = validate(@_, {
@@ -37,6 +42,7 @@ sub dbi_setup
 	user => 0,
 	password => 0,
 	host => 0,
+	type => 0,
     });
     if (my $value = $p{host}) {
         $host = $value;
@@ -50,13 +56,16 @@ sub dbi_setup
     if (my $value = $p{password}) {
         $password = $value;
     }
+    if (my $value = $p{type}) {
+        $db = $value;
+    }
 }
 
 sub get_dbh
 {
     if (!$dbi) {
 #	$dbi = DBI->connect("DBI:${db}:database=" . $database . ";host=$host", $user, $password,
-	$dbi = DBI->connect("DBI:${db}:database=" . $database, $user, $password,
+	$dbi = DBI->connect("dbi:SQLite:dbname=" . $database, $user, $password,
 	    {
 		RaiseError => 1,
 		PrintError => 0,

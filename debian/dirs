@@ -1,0 +1,6 @@
+
+usr/share/dbconfig-common/data/trasker-server/install
+usr/share/dbconfig-common/data/trasker-server/upgrade/mysql
+usr/share/dbconfig-common/data/trasker-server/upgrade/pgsql
+usr/share/dbconfig-common/data/trasker-server/upgrade/sqlite
+

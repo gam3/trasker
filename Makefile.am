@@ -5,7 +5,6 @@ MAYBE_OPT =
 
 if HAVE_X11
     MAYBE_OPT += clients/x11
-    MAYBE_OPT += clients/x11/src
 endif
 
 if HAVE_QT4
@@ -19,5 +18,4 @@ if HAVE_PERL
 endif
  
 SUBDIRS = docs ${MAYBE_OPT}
-
 

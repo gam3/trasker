@@ -10,7 +10,7 @@ use strict;
 #
 package Trasker::TTDB::Note;
 
-use Trasker::TTDB::DBI qw (get_dbh);
+use Trasker::TTDB::DBI qw (get_dbh dbtype);
 
 use Params::Validate qw (validate);
 
@@ -87,11 +87,16 @@ sub create
     my $user_id = $self->user_id;
     my $project_id = $self->project_id;
 
+    my $now = 'now()';
+    if (dbtype eq 'sqlite') {
+        $now = q[date('now')];
+    }
+
     if (my $time = $self->time) {
 	$st = $dbh->prepare("insert into notes (type, user_id, project_id, note, time) values (?, ?, ?, ?, ?)");
 	push @extra, $time->mysql;
     } else {
-	$st = $dbh->prepare("insert into notes (type, user_id, project_id, note, time) values (?, ?, ?, ?, now())");
+	$st = $dbh->prepare("insert into notes (type, user_id, project_id, note, time) values (?, ?, ?, ?, $now)");
     }
 
     eval {

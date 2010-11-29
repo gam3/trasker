@@ -20,7 +20,7 @@ use Trasker::TTDB::Project;
 
 use Carp qw (croak);
 
-use Trasker::TTDB::DBI qw (get_dbh dbi_setup);
+use Trasker::TTDB::DBI qw (get_dbh dbi_setup dbtype);
 
 use Trasker::Date;
 
@@ -293,12 +293,17 @@ sub get_time
 	return $get_time->{data}{$id} || Trasker::Date->new([1], 0, 0, 0, 0,0,0);
     }
 
+    my $now = 'now()';
+    if (dbtype eq 'sqlite') {
+        $now = q[date('now')];
+    }
+
     my $dbh = get_dbh();
 
     my $sth = $dbh->prepare(<<SQL) or die $dbh->err_str();
 select project_id,
   SUM(
-     coalesce(end_time, now()) - case when start_time >= 'today' then start_time else 'today' end
+     coalesce(end_time, $now) - case when start_time >= 'today' then start_time else 'today' end
   )
   from timeslice
  where date(coalesce(end_time, 'today')) = 'today'
@@ -381,18 +386,21 @@ sub add_note
         type => { default => 1 },
     });
 
+    my $now = 'now()';
+    if (dbtype eq 'sqlite') {
+        $now = q[date('now')];
+    }
+
     my $st;
 
     my $type = $p{type} || 1;
-
-    my $st_id = $dbh->prepare(qq/select nextval('note_id_seq')/);
 
     my @extra = ();
     if ($p{time}) {
 	$st = $dbh->prepare("insert into notes (type, user_id, project_id, note, time) values (?, ?, ?, ?, ?)");
 	push @extra, $p{time}->mysql;
     } else {
-	$st = $dbh->prepare("insert into notes (type, user_id, project_id, note, time) values (?, ?, ?, ?, now())");
+	$st = $dbh->prepare("insert into notes (type, user_id, project_id, note, time) values (?, ?, ?, ?, $now)");
     }
 
     require Trasker::TTDB::Note;
@@ -448,14 +456,10 @@ sub add_task
         name => 1,
         description => 1,
     });
-    my $st_id = $dbh->prepare(qq/select nextval('project_id_seq')/);
     my $st = $dbh->prepare("insert into project (id, user_id, parent_id, name, description) values (?, ?, ?, ?, ?)");
 
-    my $id;
-    eval {
-	$st_id->execute();
-	$id = $st_id->fetchrow();
-	$st->execute($id, $self->user->id(), $self->project->id(), $p{name}, $p{description}) or die $dbh->errstr();
+    my $id = eval {
+	$dbh->last_insert_id("","","","");
     };
     if ($@) {
         $dbh->rollback;

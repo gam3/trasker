@@ -15,6 +15,9 @@ use warnings;
 # project that is being worked on from information gleaned from the user interface.
 #
 
+use constant TRUE => 1;
+use constant FALSE => 1;
+
 =head1 NAME
 
 Trasker::TTDB::Auto - Perl interface to the tasker auto table
@@ -23,7 +26,7 @@ Trasker::TTDB::Auto - Perl interface to the tasker auto table
 
 package Trasker::TTDB::Auto;
 
-use Trasker::TTDB::DBI qw (get_dbh);
+use Trasker::TTDB::DBI qw (get_dbh dbtype);
 
 use Trasker::TTDB::User;
 use Trasker::TTDB::Project;
@@ -227,15 +230,14 @@ sub create
 
     my $dbh = get_dbh;
 
-    my $sth_id;
-    if (0) {
-        $sth_id = $dbh->prepare('select LAST_INSERT_ID()');
-    } else {
-        $sth_id = $dbh->prepare("select currval('auto_id_seq')");
+    my $true = 'TRUE';
+    if (dbtype eq 'sqlite') {
+	$true = "'T'";
     }
+
     my $sth = $dbh->prepare(<<SQL);
 insert into auto (project_id, user_id, host, name, class, role, title, desktop, presidence, enabled)
-          values (         ?,       ?,    ?,    ?,     ?,    ?,     ?,       ?,          ?, TRUE)
+          values (         ?,       ?,    ?,    ?,     ?,    ?,     ?,       ?,          ?,    $true)
 SQL
 
     $sth->execute(
@@ -249,9 +251,8 @@ SQL
         $p{desktop} || '%',
         $p{presidence} || 32767,
     );
-    $sth_id->execute();
 
-    my $id = $sth_id->fetchrow_array();
+    my $id = $dbh->last_insert_id("","","","");
 
     my $self = Trasker::TTDB::Auto->new(
         %p,

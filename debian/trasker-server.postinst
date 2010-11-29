@@ -1,0 +1,45 @@
+#!/bin/sh
+# postinst maintainer script for trasker-server
+
+set -e
+
+. /usr/share/debconf/confmodule
+. /usr/share/dbconfig-common/dpkg/postinst 
+
+if [ -f /etc/trasker.conf ] ; then
+	echo bob > /dev/null
+fi
+
+dbc_generate_include=template:/etc/trasker.conf
+dbc_generate_include_owner="root:www-data"
+dbc_generate_include_perms="640"
+dbc_dbfile_owner="root:www-data"
+dbc_dbfile_perms="0660"
+
+fCode=0
+db_get trasker-server/database-type || fCode=$?
+echo "DATA " $RET >> /tmp/xxxasdf
+if [ $fCode -eq 0 -a "$RET" = "sqlite3" ]; then
+    dbc_generate_include_args="-o template_infile=/usr/share/trasker/trasker.conf.template.sqlite"
+else
+    dbc_generate_include_args="-o template_infile=/usr/share/trasker/trasker.conf.template"
+fi
+
+fCode=0
+db_get trasker-server/db/dbname || fCode=$?
+if [ $fCode -eq 0 -a -n "$RET" ]; then
+	dbc_dbname="$RET"
+else
+	dbc_dbname=traskerserver
+fi
+
+fCode=0
+db_get trasker-server/db/basepath || fCode=$?
+if [ $fCode -eq 0 -a -n "$RET" ]; then
+	dbc_basepath="$RET"
+fi
+
+dbc_go trasker-server $@
+
+#DEBHELPER#
+

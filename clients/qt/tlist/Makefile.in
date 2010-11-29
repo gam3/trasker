@@ -15,7 +15,7 @@ clean :
 	make -f qmakefile clean
 
 distdir:
-	echo distdir
+	echo $(distdir)
 
 distclean: clean
 	rm -f Makefile

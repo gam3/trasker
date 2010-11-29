@@ -1,0 +1,22 @@
+
+
+all: pmakefile
+	make -f pmakefile
+
+pmakefile: Makefile.PL
+	perl Makefile.PL
+
+distdir:
+	make -f pmakefile DISTVNAME=$(distdir) distdir
+
+test:
+	make -f pmakefile test
+
+clean:
+	if [ -f pmakefile ] ; then make -f pmakefile clean; fi
+
+distclean:
+	if [ -f pmakefile ] ; then make -f pmakefile clean; fi
+
+install:
+	$(MAKE) -f pmakefile install

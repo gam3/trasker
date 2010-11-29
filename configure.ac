@@ -47,7 +47,7 @@ AC_ARG_VAR([BUILDFLAGS], [Flags passed to Build.PL])
 #
 AC_ARG_WITH(x11,
         AS_HELP_STRING([--without-x11],[Disable building of X11 applications @<:@default=check@:>@]),
-        [with_x11=no],
+        with_x11=no,
         with_x11=yes)
 
 AM_CONDITIONAL(HAVE_X11, test "x$with_x11" = "xyes")
@@ -61,14 +61,14 @@ AC_ARG_WITH(qt4,
         [with_qt4=yes])
 
 if test "x$with_qt4" = "xyes" ; then
-        PKG_CHECK_MODULES( QT4, [ QtCore >= 4.0.0 ])
+        PKG_CHECK_MODULES([QT4], [ QtCore >= 4.0.0 ])
         AC_SUBST(QT4_CFLAGS)
         AC_SUBST(QT4_LIBS)
-            QT4_PREFIX="`$PKG_CONFIG --variable=prefix QtCore`/bin"
+	QT4_PREFIX="`$PKG_CONFIG --variable=prefix QtCore`/bin"
         MOC_QT4="no"
-            AC_CHECK_FILE( "$QT4_PREFIX/moc-qt4", [ MOC_QT4=$QT4_PREFIX/moc-qt4 ], [
-               AC_CHECK_FILE("$QT4_PREFIX/moc", [ MOC_QT4=$QT4_PREFIX/moc ], [
-               AC_MSG_ERROR([Couldn't find QT4 moc])])])
+	AC_CHECK_FILE( "$QT4_PREFIX/moc-qt4", [ MOC_QT4=$QT4_PREFIX/moc-qt4 ], [
+	   AC_CHECK_FILE("$QT4_PREFIX/moc", [ MOC_QT4=$QT4_PREFIX/moc ], [
+	   AC_MSG_ERROR([Couldn't find QT4 moc])])])
         AC_SUBST(MOC_QT4)
 fi
 AM_CONDITIONAL(HAVE_QT4, test "x$with_qt4" = "xyes")
@@ -79,16 +79,17 @@ if test "x$enable_debug" = "xyes" ; then
     AC_DEFINE(DEBUG, 1, [Define if debugging is enabled.])
 fi
 
-echo HERE
+#echo HERE
 
 if test "x$with_perl" = "xyes" ; then
+    AC_CONFIG_FILES( servers/perl/Makefile.PL )
     AC_CONFIG_FILES( servers/perl/Makefile )
+    AC_CONFIG_FILES( clients/perl/Makefile.PL )
     AC_CONFIG_FILES( clients/perl/Makefile )
 fi
 
 if test "x$with_x11" = "xyes" ; then
     AC_PROG_CC
-    AC_CONFIG_FILES( [ clients/x11/src/Makefile ] )
 fi
 
 if test "x$with_qt4" = "xyes" ; then
@@ -97,9 +98,10 @@ if test "x$with_qt4" = "xyes" ; then
 fi
 
 AC_CONFIG_FILES([
-Makefile
-docs/Makefile
+    Makefile
+    docs/Makefile
 ])
+AC_CONFIG_SUBDIRS( [clients/x11/] )
 
 
 AC_OUTPUT

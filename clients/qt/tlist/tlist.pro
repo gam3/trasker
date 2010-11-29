@@ -45,6 +45,7 @@ FORMS += addproject.ui \
     auto_select.ui \
     error.ui \
     help.ui \
+    mainwindow.ui \
     notes.ui \
     projects.ui \
     setup.ui \
