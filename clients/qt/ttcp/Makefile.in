@@ -1,0 +1,22 @@
+
+all: 
+	echo ok
+
+distdir:
+	echo Distdir $(distdir)
+
+clean:
+	echo clean
+
+distclean:
+	echo distclean
+
+install:
+	echo install
+
+check:
+	echo check
+
+info:
+
+install-info:
