@@ -35,17 +35,25 @@ use IO::Socket::SSL;
 use IO::Select;
 use Params::Validate qw (validate);
 use Config::Simple;
-
-use Trasker::Date;
-
-use Trasker::TTDB::Authorize;
+use Log::Dispatch;
+use Date::Format qw();
 
 use Fcntl qw(F_GETFL F_SETFL O_NONBLOCK O_NDELAY);
 
 use Net::TCPwrappers qw(RQ_DAEMON RQ_FILE request_init fromhost hosts_access);
 
+use  Log::Dispatch::Syslog;
+use  Log::Dispatch::Screen;
+
 use Getopt::Long;            # support options+arguments
 use Pod::Usage;              # avoid redundant &Usage()
+
+use Trasker::TTDB::DBI qw (dbi_setup);
+use Trasker::Date;
+use Trasker::TTDB::Authorize;
+use Trasker::TTDB::User;
+use Trasker::TTDB::Project;
+use Trasker::TTDB::Authorize;
 
 my $done=0;
 my $select;
@@ -53,29 +61,39 @@ my $server;
 my $sslserver;
 my $connections=0;
 
-our $progname = 'tskrsrvr';
+our $progname = 'traskerd';
 
 sub OpenMax {
     my $openmax = POSIX::sysconf( &POSIX::_SC_OPEN_MAX );
     (!defined($openmax) || $openmax < 0) ? 64 : $openmax;
 }
 
+our $HOSTNAME = `hostname`;
+chomp $HOSTNAME;
+our $ME = $0; $ME =~ s|.*/||;
+
+our $log = new Log::Dispatch(
+    callbacks => sub {
+        my %h=@_;
+        return Date::Format::time2str('%B %e %T', time)." ".$HOSTNAME." $ME\[$$]: ".$h{message}."\n";
+    }
+);
+$log->add( Log::Dispatch::Syslog->new( name => 'trasker', min_level => 'info' ));
+$log->add( Log::Dispatch::Screen->new( name => 'trasker', min_level => 'info' ));
+
+$SIG{'__DIE__'} = sub { $log->critical("DIE: @_"); die @_; };
+$SIG{'__WARN__'} = sub { $log->warning("WARN: @_"); warn @_; };
+$log->warning("Starting Process:  " . $$);
+
 sub print_log {
-    print strftime("%b %e %T", localtime)." ";
-    print @_;
-    print "\n";
+    $log->alert( @_ );
 }
-
-use Trasker::TTDB::User;
-use Trasker::TTDB::Project;
-
-use Trasker::TTDB::DBI qw (dbi_setup);
 
 sub nonblock
 {
     my $socket = shift;
     my $flags;
-print join(' ', caller) unless $socket;
+print_log join(' ', caller) unless $socket;
     return unless $socket;
     $flags = fcntl($socket, F_GETFL, 0)
         or print_log "Can't get flags for socket: $!\n";
@@ -223,7 +241,6 @@ sub authorize
 	printf $client "error Can't reauthorized %s\n", $part[0];
     } else {
 	if (@part == 2) {
-	    require Trasker::TTDB::Authorize;
 	    my $a = $hash->{'_clients'}{$client}{authorized} = Trasker::TTDB::Authorize->authorize(login => $part[0], password => $part[1]);
 	    $ok = $a->ok();
 	}
@@ -423,7 +440,7 @@ sub user
 	for my $entry ($user->projects) {
 	    my $time = $entry->time;
 	    my $atime = $entry->alltime;
-	    $count++:
+	    $count++;
 	    printf($client "entry\t%s\t%s\t%d\t%d\t%s\t%s\t%s\n",
 		   $userid,
 		   $entry->project->name,
@@ -434,7 +451,7 @@ sub user
 	    );
 	}
     }
-print "count $count\n";
+print_log "count $count\n";
     if ($count) {
 	if (my $current_proj = $user->current_project()) {
 	    printf($client "current\t%s\t%d\n", $userid, $current_proj->project->id);
@@ -895,9 +912,9 @@ sub setauto()
 		    title => $title,
 		   )
 		   ) {
-print "OK\n";
+print_log "OK\n";
     } else {
-print "FAIL\n";
+print_log "FAIL\n";
     }
 }
 
@@ -1027,7 +1044,7 @@ sub tracker
     my $user = get_user($userid, $client);
 
     if ($opt_debug) {
-        printf("%s %s dsk %s win %s host (%s) name (%s) class (%s) role (%s) title (%s)\n",
+        print_log("%s %s dsk %s win %s host (%s) name (%s) class (%s) role (%s) title (%s)\n",
                $host1, $idle, $desktop, $window, $host, $name, $class, $role, $title);
     }
 
@@ -1044,7 +1061,7 @@ sub tracker
             update_user($user);
             printf $client "OK revert %d\n", $pid;
         } else {
-print "idle NOK\n";
+print_log "idle NOK\n";
         }
     } else {
         if (my $pid = $user->auto_set_project(host => $host,
@@ -1058,7 +1075,7 @@ print "idle NOK\n";
             printf $client "OK set %d\n", $pid;
             update_user($user);
         } else {
-print "set NOK\n";
+print_log "set NOK\n";
         }
     }
 
@@ -1209,8 +1226,9 @@ sub main
     $done=0;
 
     my $cfg = Config::Simple->new($opt_config);
+    die "No configuration file: $opt_config" unless $cfg;
 
-    my $hash = $cfg->get_block('Database');
+    my $hash = $cfg->get_block('database');
 
     dbi_setup(
         %$hash
@@ -1225,30 +1243,32 @@ sub main
     $SIG{PIPE} = 'IGNORE';
     $SIG{INT} = $SIG{TERM} = $SIG{QUIT} = $SIG{ABRT} = sub { $done = 1; };
 
+    daemonize() unless $opt_debug;
+
     $server = IO::Socket::INET->new(LocalPort => 8000,
                     Listen => 10,
                     Proto => "TCP",
                     ReuseAddr => 1,
                     )
         or die "Can't create a server socket: $@";
-    $sslserver = IO::Socket::SSL->new(
-                    LocalPort => 8001,
-                    Listen => 10,
-                    Proto => "TCP",
-                    ReuseAddr => 1,
-                    SSL_key_file => $key_file,
-                    SSL_cert_file => $crt_file,
-                    )
-        or die "Can't create a server socket: $@";
+    if (0) {
+	$sslserver = IO::Socket::SSL->new(
+			LocalPort => 8001,
+			Listen => 10,
+			Proto => "TCP",
+			ReuseAddr => 1,
+			SSL_key_file => $key_file,
+			SSL_cert_file => $crt_file,
+			)
+	    or die "Can't create a server socket: $@";
+    }
     setsockopt($server,SOL_SOCKET,SO_LINGER,pack("l*",0,0)) || return undef;
     nonblock($server);
     $select = IO::Select->new();
     $select->add($server);
-    $select->add($sslserver);
+    $select->add($sslserver) if ($sslserver);
 
     print_log "Started";
-
-    daemonize() unless $opt_debug;
 
     my $line_count;
     my $x = 0;
@@ -1260,12 +1280,12 @@ sub main
         my $ssl = 0;
 
         foreach $client ($select->can_read(1)) {
-            if ($client == $server || $client == $sslserver) {
+            if ($client == $server || ($sslserver && $client == $sslserver)) {
                 if ( $connections < 10 ) {
                     if ($client == $sslserver) {
                         $client = $sslserver->accept();
                         $ssl = 1;
-print "accept $client\n";
+print_log "accept $client\n";
                     } else {
                         $client = $server->accept();
                     }
@@ -1292,11 +1312,11 @@ print "accept $client\n";
                     $client->shutdown(2);
                     close($client);
                 }
-            } elsif ($client == $sslserver) {
+            } elsif ($sslserver && $client == $sslserver) {
                 if ( $connections < 10 ) {
                     $client = $sslserver->accept();
                     next unless $client;
-print "accept $client\n";
+print_log "accept $client\n";
                     my $req = request_init(RQ_DAEMON, $progname, RQ_FILE, $client->fileno());
                     fromhost($req);
 
@@ -1351,20 +1371,20 @@ warn "FIX autoselect here";
                     }
                     next unless length $cmd;
                     if (my $function = $cmd_hash->{$cmd}) {
-print("Got $cmd\n") if $cmd ne "ping";
+print_log("Got $cmd\n") if $cmd ne "ping";
                         my $action;
                         eval {
                             $action = $function->($client, $data, @args);
                         };
                         if ($@) {
-                            print "Error: ", $@;
+                            print_log "Error: ", $@;
 print $client "error\t" . $@;
                         }
                         if ($action eq 'QUIT') {
                             goto QUIT;
                         }
                     } else {
-                        print("Warning no command $cmd ", join(' ', @args), "\n");
+                        print_log("Warning no command $cmd ", join(' ', @args), "\n");
                         printf($client "Unknown command %s\n", $cmd);
                     }
                 }
@@ -1412,16 +1432,12 @@ warn "day";
 sub daemonize
 {
     chdir '/'               or die "Can't chdir to /: $!";
-    open STDIN, '/dev/null' or die "Can't read /dev/null: $!";
-    open STDOUT, '>/dev/null'
-                            or die "Can't write to /dev/null: $!";
 
-    foreach $i (0 .. OpenMax) { POSIX::close($i); }
+    foreach my $i (0 .. 4) { POSIX::close($i); }
 
     defined(my $pid = fork) or die "Can't fork: $!";
     exit if $pid;
     setsid                  or die "Can't start a new session: $!";
-#    open STDERR, '>&STDOUT' or die "Can't dup stdout: $!";
 }
 
 GetOptions(

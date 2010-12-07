@@ -1,21 +1,29 @@
 
+@SET_MAKE@
+VPATH = @srcdir@
 bindir=@bindir@
 exec_prefix = @exec_prefix@
 prefix = @prefix@
+mandir = @mandir@
+man1dir = $(mandir)/man1
+datarootdir = @datarootdir@
+srcdir = @srcdir@
+top_builddir = @top_builddir@
+MKDIR_P = @MKDIR_P@
 
 all : tlist
 
-tlist : qmakefile
-	make -f qmakefile
+tlist : $(srcdir)/qmakefile
+	$(MAKE) -f $(srcdir)/qmakefile
 
-qmakefile : tlist.pro Makefile
-	qmake "CONFIG+=release" "MAKEFILE=qmakefile" "target.path = $(bindir)"
+$(srcdir)/qmakefile : tlist.pro Makefile
+	cd $(srcdir) && qmake "CONFIG+=release" "MAKEFILE=qmakefile" "target.path = $(bindir)"
 
 clean :
 	make -f qmakefile clean
 
 distdir:
-	echo $(distdir)
+	make -f qmakefile dist
 
 distclean: clean
 	rm -f Makefile
@@ -32,19 +40,33 @@ tmakefile : tlist.pro Makefile
 	qmake "MAKEFILE=tmakefile" test.pro
 
 .PRECIOUS: Makefile
-Makefile: Makefile.in
-	sh config.status
+Makefile: $(srcdir)/Makefile.in
+	sh $(top_builddir)/config.status
 
-install:
+install: install-code install-man
+
+install-code:
 	make INSTALL_ROOT=${DESTDIR} -f qmakefile install
 
 info:
 
 install-info:
 
+html:
+
 install-html:
+
+pdf:
 
 install-pdf:
 
+dvi:
 
+install-dvi:
+
+install-man: install-man1
+
+install-man1: $(man1_MANS) $(man_MANS)
+	test -z "$(DESTDIR)$(man1dir)" || $(MKDIR_P) "$(DESTDIR)$(man1dir)"
+	cp tlist.man $(DESTDIR)$(man1dir)/tlist.1
 

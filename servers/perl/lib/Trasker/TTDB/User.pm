@@ -3,6 +3,8 @@ use strict;
 # The User object
 #
 
+use v5.10.0;
+
 ## @class
 # The User Object.
 #
@@ -43,9 +45,7 @@ Trasker::TTDB::User - Perl interface to the tasker user
 
 This creates a user object.  Use I<create> to make this object preminate.
 
-In most case I<create> constructor should be used in place of this constructor.
-
-=back
+In most cases the I<create> constructor should be used in place of this constructor.
 
 =cut
 
@@ -120,6 +120,8 @@ SQL
 =item Trasker::TTDB::User->create(user => 'name', fullname => 'Full Name'):
 
 I<create> creates an entry in the database from an User object or arguments.
+
+=back
 
 =cut
 
@@ -228,6 +230,8 @@ sub fullname
     $self->{fullname};
 }
 
+=back 
+
 =head2 Methods
 
 =over
@@ -251,6 +255,7 @@ select project_id from timeslice where elapsed is NULL and user_id = ?;
 SQL
 
     $sth->execute($user_id);
+    $sth->finish();
 
     my $current = $sth->fetchrow_array;
 
@@ -332,13 +337,15 @@ sub set_current_project
         },
     });
 
-    $p{host} ||= '_unknown_';
+    $p{host} //= '_unknown_';
 
-    $p{temporary} ||= 'normal';
+    $p{temporary} //= 'normal';
 
-    $p{auto_id} ||= 0;
+    $p{auto_id} //= 0;
 
     my $project_id = defined $p{project} ? $p{project}->id() : $p{project_id};
+
+    die "Need a project_id" unless defined $project_id;
 
     my $dbh = get_dbh('commit');
 
@@ -362,7 +369,7 @@ SQL
         $sthu = $dbh->prepare(<<'SQL') or die $dbh->err_str();
 update timeslice
    set elapsed = julianday('now') - julianday(start_time),
-   end_time = date('now')
+   end_time = datetime('now')
  where id = ?
 SQL
     } else {
@@ -375,7 +382,7 @@ SQL
     }
     my $now = 'now()';
     if (dbtype eq 'sqlite') {
-        $now = q[date('now')];
+        $now = q[datetime('now')];
     }
 
     my $sthi = $dbh->prepare(<<SQL) or die $dbh->err_str();
@@ -400,7 +407,7 @@ warn("Not updating $current_project_id == $project_id");
                 return 0;
             }
             $sthu->execute($id);   # end current timeslice
-            die 'No update' unless $sthu->rows == 1;
+            die 'No update: ' . $sthu->rows unless $sthu->rows == 1;
         } elsif ($rows == 0) {
 #           warn "new";
         } else {
@@ -426,8 +433,9 @@ warn("Not updating $current_project_id == $project_id");
     $sthi->finish();
 
     if ($@) {
+        my $bob = $@;
         $dbh->rollback;
-	die $@;
+	die $bob;
     } else {
         $dbh->commit;
     }
@@ -463,7 +471,7 @@ SQL
 # for update
     my $now = 'now()';
     if (dbtype eq 'sqlite') {
-        $now = q[date('now')];
+        $now = q[datetime('now')];
     }
 
     my $stha = $dbh->prepare(<<SQL) or die;
@@ -674,7 +682,7 @@ sub add_note
     my $st;
     my $now = 'now()';
     if (dbtype eq 'sqlite') {
-        $now = q[date('now')];
+        $now = q[datetime('now')];
     }
 
     if ($p{time}) {
@@ -735,7 +743,7 @@ select
        sum(1)
   from timeslice
   where start_time < date(?) + 1
-    and coalesce(end_time, date('now')) >= date(?)
+    and coalesce(end_time, datetime('now')) >= date(?)
     and user_id = ?
     $project_id_clause
 SQL

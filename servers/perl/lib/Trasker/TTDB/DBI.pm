@@ -26,7 +26,7 @@ our $database = '/tmp/test_trasker';
 our $host = '';
 our $user = '';
 our $password = '';
-our $db = 'SQLite';
+our $db = 'sqlite';
 
 use Params::Validate qw( validate );
 
@@ -44,6 +44,7 @@ sub dbi_setup
 	host => 0,
 	type => 0,
     });
+
     if (my $value = $p{host}) {
         $host = $value;
     }
@@ -64,15 +65,25 @@ sub dbi_setup
 sub get_dbh
 {
     if (!$dbi) {
-#	$dbi = DBI->connect("DBI:${db}:database=" . $database . ";host=$host", $user, $password,
-	$dbi = DBI->connect("dbi:SQLite:dbname=" . $database, $user, $password,
-	    {
-		RaiseError => 1,
-		PrintError => 0,
-		PrintWarn => 0,
-		AutoCommit => 0,
-	    }
-	);
+        if ($db eq 'sqlite3' or $db eq 'sqlite') {
+	    $dbi = DBI->connect("dbi:SQLite:dbname=" . $database, $user, $password,
+		{
+		    RaiseError => 1,
+		    PrintError => 0,
+		    PrintWarn => 0,
+		    AutoCommit => 0,
+		}
+	    );
+	} else {
+	    $dbi = DBI->connect("DBI:${db}:database=" . $database . ";host=$host", $user, $password,
+		{
+		    RaiseError => 1,
+		    PrintError => 0,
+		    PrintWarn => 0,
+		    AutoCommit => 0,
+		}
+	    );
+	}
     }
     return $dbi;
 }

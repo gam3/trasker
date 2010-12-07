@@ -20,3 +20,15 @@ check:
 info:
 
 install-info:
+
+html:
+
+install-html:
+
+dvi:
+
+install-dvi:
+
+pdf:
+
+install-pdf:

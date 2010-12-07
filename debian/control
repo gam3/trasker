@@ -8,7 +8,7 @@ Homepage: http://trasker.gam3.net/
 
 Package: trasker-tlist
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}
 Description: A QT 4 client to control trasker
  This is the most popular (and currently the only) client for trasker.
 
@@ -18,32 +18,34 @@ Architecture: all
 Description: Documentation for trasker
  This documentation is only needed for server-client information
 
-Package: trasker-server-perl
-Architecture: any
-Section: perl
-Depends: ${perl:Depends}, postgresql | sqlite | mysql, trasker-server
-Description: An implimentation of the Tasker server writen in perl.
- This package also contains the Tasker::TTDB perl package that can be
- used to write other servers.
-
 Package: trasker-server
-Architecture: any
+Architecture: all
 Depends: trasker-server-perl | trasker-server-c, debconf
 Description: The common trasker-server files
  This file has the trasker-server keys and init.d files.
 
-Package: trasker-x11
-Section: x11
-Architecture: any
-Depends: libxmu6, libx11-6
-Description: trasker clients for X11 desktops
- This package has programs to help you track your actions on an X11 desktop.
- If you are using 'XWindows' (XFree86 or Xorg) you should install this package.
+Package: trasker-server-perl
+Architecture: all
+Section: perl
+Depends: ${perl:Depends}, postgresql | sqlite | mysql
+Recommends: trasker-server
+Description: An implimentation of the Tasker server written in Perl
+ This package also contains the Tasker::TTDB Perl package that can be
+ used to write other Perl servers.
 
 Package: trasker-server-c
 Architecture: any
 Depends: postgresql | sqlite3 | mysql, trasker-server
-Description: An implimentation of the Tasker server writen in C.
+Recommends: trasker-server
+Description: An implimentation of the Tasker server writen in C
  This server is more rubust and faster than the perl server, but does
  not have as many features.
+
+Package: trasker-x11
+Section: x11
+Architecture: any
+Depends: ${shlibs:Depends}, libxmu6, libx11-6
+Description: trasker clients for X11 desktops
+ This package has programs to help you track your actions on an X11 desktop.
+ If you are using XFree86 or Xorg you should install this package.
 

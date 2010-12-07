@@ -1,0 +1,26 @@
+.\" -*- nroff -*-
+.TH tlist 1 "December 2010" "trasker version 0.01"
+.SH NAME
+tlist \- qt gui tool for the trasker system
+.SH SYNOPSIS
+.B tlist
+
+.SH DESCRIPTION
+
+.SH OPTIONS
+
+.SH AUTHOR
+
+.B tlist
+was written by G. Allen Morris III <gam3@gam3.com>. 
+
+.SH BUGS
+
+.SH AVAILABILITY
+.B tlist
+is part of the trasker task tracking system and is available from
+http://www.gam3.org/trasker.html
+
+.SH SEE ALSO
+.BR trasker (1)
+

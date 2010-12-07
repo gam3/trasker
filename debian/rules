@@ -44,7 +44,7 @@ endif
 
 
 configure: configure.ac
-	autogen.sh
+	./autogen.sh
 
 #Architecture
 build: build-arch build-indep
@@ -61,7 +61,7 @@ build-indep: build-indep-stamp
 build-indep-stamp:  config.status
 
 	# Add here commands to compile the indep part of the package.
-	#$(MAKE) doc
+	$(MAKE)
 	touch $@
 
 clean:
@@ -78,6 +78,7 @@ clean:
 
 install: install-indep install-arch
 
+
 install-indep:
 	dh_testdir
 	dh_testroot
@@ -91,11 +92,14 @@ install-indep:
 #	$(MAKE) DESTDIR=$(CURDIR)/debian/trasker-doc install-info
 #	$(MAKE) DESTDIR=$(CURDIR)/debian/trasker-doc install-html
 #	$(MAKE) DESTDIR=$(CURDIR)/debian/trasker-doc install-pdf
-
-	cp debian/sql/mysql_schema.sql  debian/trasker-server/usr/share/dbconfig-common/data/trasker-server/install/mysql
-	cp debian/sql/psql_schema.sql  debian/trasker-server/usr/share/dbconfig-common/data/trasker-server/install/psql
+	$(MAKE) DESTDIR=$(CURDIR)/debian/tmp install
+	cp debian/sql/mysql_schema.sql   debian/trasker-server/usr/share/dbconfig-common/data/trasker-server/install/mysql
+	cp debian/sql/psql_schema.sql    debian/trasker-server/usr/share/dbconfig-common/data/trasker-server/install/psql
 	cp debian/sql/sqlite_schema.sql  debian/trasker-server/usr/share/dbconfig-common/data/trasker-server/install/sqlite
-	cp debian/sql/sqlite3_schema.sql  debian/trasker-server/usr/share/dbconfig-common/data/trasker-server/install/sqlite
+	cp debian/sql/sqlite3_schema.sql debian/trasker-server/usr/share/dbconfig-common/data/trasker-server/install/sqlite3
+
+	cp debian/templates/trasker.conf.template debian/trasker-server/usr/share/trasker/templates/
+	cp debian/templates/trasker.conf.template-sqlite debian/trasker-server/usr/share/trasker/templates/
 
 	dh_install -i
 

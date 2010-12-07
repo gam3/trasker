@@ -1,7 +1,7 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT([trasker],[0.0.4],[trasker-bugs@gam3.net])
+AC_INIT([trasker],[0.0.5],[trasker-bugs@gam3.net])
 AC_PREREQ(2.61)
 AC_COPYRIGHT([Copyright (c) 2008 G. Allen Morris III])
 AC_CANONICAL_TARGET
@@ -84,6 +84,8 @@ fi
 if test "x$with_perl" = "xyes" ; then
     AC_CONFIG_FILES( servers/perl/Makefile.PL )
     AC_CONFIG_FILES( servers/perl/Makefile )
+    AC_CONFIG_FILES( servers/perl/script/traskerd )
+    AC_CONFIG_FILES( servers/perl/script/traskers )
     AC_CONFIG_FILES( clients/perl/Makefile.PL )
     AC_CONFIG_FILES( clients/perl/Makefile )
 fi
@@ -94,6 +96,7 @@ fi
 
 if test "x$with_qt4" = "xyes" ; then
     AC_CONFIG_FILES( clients/qt/tlist/Makefile )
+    AC_CONFIG_FILES( clients/qt/tlist/tlist.man )
     AC_CONFIG_FILES( clients/qt/ttcp/Makefile )
 fi
 

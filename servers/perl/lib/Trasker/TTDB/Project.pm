@@ -100,10 +100,10 @@ sub get
 	    $p{id} = $k;
 	    last;
 	}
-	die "No Project $p{name}" unless $p{id};
+	croak("No Project $p{name}") unless $p{id};
     }
 
-    my $project = $projects->{data}{$p{id}};
+    my $project = $projects->{'data'}{$p{'id'}};
 
     return $project || croak "No project $p{id}.";
 }

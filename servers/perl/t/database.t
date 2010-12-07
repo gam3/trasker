@@ -1,6 +1,6 @@
 use strict;
 
-use Test::More tests => 4;
+use Test::More tests => 5;
 use DBI;
 
 use_ok('Trasker::TTDB::User');
@@ -28,17 +28,42 @@ $user = Trasker::TTDB::User->create(
     name => 'bob',
     fullname => 'Bob Smith',
 );
+
 $user = Trasker::TTDB::User->create(
     name => 'bill',
     fullname => 'Bill Smith',
 );
 
-#print Dumper $dbh->{mock_all_history};
 is($user->id, 2, "create id");
 
+$dbh->{mock_clear_history} = 1;
+
 eval {
-our $up = $user->current_project();
+    $user->current_project();
+};
+like($@, qr/^No current project/, 'no project');
+
+$dbh->{mock_clear_history} = 1;
+
+$dbh->{mock_add_resultset} = [[ 'project_id'], [ 1 ]];
+
+my $project =
+eval {
+    $user->current_project();
 };
 
-print Dumper $dbh->{mock_all_history};
+#die Dumper $project, $dbh->{mock_all_history};
+
+$dbh->{mock_clear_history} = 1;
+
+$dbh->{mock_add_resultset} = [[ 'name', 'id', 'parent_id', 'user_id', 'description', 'eof' ],
+                              [ 'bob', '1', undef, '1', 'Bob Smith', 'eof' ]];
+
+$dbh->{mock_add_resultset} = [[ 'count(*)' ],
+                              [ '1', ]];
+
+my @projects = $user->projects();
+
+print Dumper $dbh->{mock_all_history}, \@projects;
+
 

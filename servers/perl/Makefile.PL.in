@@ -26,6 +26,8 @@ sign 1;
 
 install_script 'traskerd';
 
+author_tests('xt');
+
 makefile 'pmakefile';
 
 WriteAll(

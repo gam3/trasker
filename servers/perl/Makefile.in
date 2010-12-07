@@ -7,10 +7,7 @@ pmakefile: Makefile.PL
 	perl Makefile.PL
 
 distdir:
-	make -f pmakefile DISTVNAME=$(distdir) distdir
-
-test:
-	make -f pmakefile test
+	$(MAKE) -f pmakefile DISTVNAME=$(distdir) distdir
 
 clean:
 	if [ -f pmakefile ] ; then make -f pmakefile clean; fi
@@ -21,9 +18,24 @@ distclean:
 install:
 	$(MAKE) -f pmakefile install
 
+test:
+	$(MAKE) -f pmakefile test
+
 check:
 	$(MAKE) -f pmakefile test
 
 info:
 
 install-info:
+
+html:
+
+install-html:
+
+dvi:
+
+install-dvi:
+
+pdf:
+
+install-pdf:

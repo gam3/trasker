@@ -1,0 +1,8 @@
+Template: trasker-server/admin_user
+Type: string
+Description: Admin User
+
+Template: trasker-server/local_user
+Type: string
+Description: Local User
+
