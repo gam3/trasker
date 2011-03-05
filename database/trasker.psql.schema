@@ -27,7 +27,7 @@ SET default_tablespace = '';
 SET default_with_oids = false;
 
 --
--- Name: auto; Type: TABLE; Schema: public; Owner: tasker; Tablespace: 
+-- Name: auto; Type: TABLE; Schema: public; Owner: trasker; Tablespace: 
 --
 
 CREATE TABLE auto (
@@ -44,10 +44,10 @@ CREATE TABLE auto (
 );
 
 
-ALTER TABLE public.auto OWNER TO tasker;
+ALTER TABLE public.auto OWNER TO trasker;
 
 --
--- Name: billable_info; Type: TABLE; Schema: public; Owner: tasker; Tablespace: 
+-- Name: billable_info; Type: TABLE; Schema: public; Owner: trasker; Tablespace: 
 --
 
 CREATE TABLE billable_info (
@@ -59,10 +59,10 @@ CREATE TABLE billable_info (
 );
 
 
-ALTER TABLE public.billable_info OWNER TO tasker;
+ALTER TABLE public.billable_info OWNER TO trasker;
 
 --
--- Name: notes; Type: TABLE; Schema: public; Owner: tasker; Tablespace: 
+-- Name: notes; Type: TABLE; Schema: public; Owner: trasker; Tablespace: 
 --
 
 CREATE TABLE notes (
@@ -75,10 +75,10 @@ CREATE TABLE notes (
 );
 
 
-ALTER TABLE public.notes OWNER TO tasker;
+ALTER TABLE public.notes OWNER TO trasker;
 
 --
--- Name: project; Type: TABLE; Schema: public; Owner: tasker; Tablespace: 
+-- Name: project; Type: TABLE; Schema: public; Owner: trasker; Tablespace: 
 --
 
 CREATE TABLE project (
@@ -91,10 +91,10 @@ CREATE TABLE project (
 );
 
 
-ALTER TABLE public.project OWNER TO tasker;
+ALTER TABLE public.project OWNER TO trasker;
 
 --
--- Name: project_hide_constraint_table; Type: TABLE; Schema: public; Owner: tasker; Tablespace: 
+-- Name: project_hide_constraint_table; Type: TABLE; Schema: public; Owner: trasker; Tablespace: 
 --
 
 CREATE TABLE project_hide_constraint_table (
@@ -102,10 +102,10 @@ CREATE TABLE project_hide_constraint_table (
 );
 
 
-ALTER TABLE public.project_hide_constraint_table OWNER TO tasker;
+ALTER TABLE public.project_hide_constraint_table OWNER TO trasker;
 
 --
--- Name: timeslice; Type: TABLE; Schema: public; Owner: tasker; Tablespace: 
+-- Name: timeslice; Type: TABLE; Schema: public; Owner: trasker; Tablespace: 
 --
 
 CREATE TABLE timeslice (
@@ -122,10 +122,10 @@ CREATE TABLE timeslice (
 );
 
 
-ALTER TABLE public.timeslice OWNER TO tasker;
+ALTER TABLE public.timeslice OWNER TO trasker;
 
 --
--- Name: timeslice_temporary_constraint_table; Type: TABLE; Schema: public; Owner: tasker; Tablespace: 
+-- Name: timeslice_temporary_constraint_table; Type: TABLE; Schema: public; Owner: trasker; Tablespace: 
 --
 
 CREATE TABLE timeslice_temporary_constraint_table (
@@ -133,10 +133,10 @@ CREATE TABLE timeslice_temporary_constraint_table (
 );
 
 
-ALTER TABLE public.timeslice_temporary_constraint_table OWNER TO tasker;
+ALTER TABLE public.timeslice_temporary_constraint_table OWNER TO trasker;
 
 --
--- Name: user_project; Type: TABLE; Schema: public; Owner: tasker; Tablespace: 
+-- Name: user_project; Type: TABLE; Schema: public; Owner: trasker; Tablespace: 
 --
 
 CREATE TABLE user_project (
@@ -145,10 +145,10 @@ CREATE TABLE user_project (
 );
 
 
-ALTER TABLE public.user_project OWNER TO tasker;
+ALTER TABLE public.user_project OWNER TO trasker;
 
 --
--- Name: users; Type: TABLE; Schema: public; Owner: tasker; Tablespace: 
+-- Name: users; Type: TABLE; Schema: public; Owner: trasker; Tablespace: 
 --
 
 CREATE TABLE users (
@@ -158,7 +158,7 @@ CREATE TABLE users (
 );
 
 
-ALTER TABLE public.users OWNER TO tasker;
+ALTER TABLE public.users OWNER TO trasker;
 
 --
 -- Name: _group_concat(text, text); Type: FUNCTION; Schema: public; Owner: postgres
@@ -196,7 +196,7 @@ CREATE AGGREGATE group_concat (
 ALTER AGGREGATE public.group_concat(text) OWNER TO postgres;
 
 --
--- Name: auto_id_seq; Type: SEQUENCE; Schema: public; Owner: tasker
+-- Name: auto_id_seq; Type: SEQUENCE; Schema: public; Owner: trasker
 --
 
 CREATE SEQUENCE auto_id_seq
@@ -206,10 +206,10 @@ CREATE SEQUENCE auto_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.auto_id_seq OWNER TO tasker;
+ALTER TABLE public.auto_id_seq OWNER TO trasker;
 
 --
--- Name: billable_info_id_seq; Type: SEQUENCE; Schema: public; Owner: tasker
+-- Name: billable_info_id_seq; Type: SEQUENCE; Schema: public; Owner: trasker
 --
 
 CREATE SEQUENCE billable_info_id_seq
@@ -219,10 +219,10 @@ CREATE SEQUENCE billable_info_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.billable_info_id_seq OWNER TO tasker;
+ALTER TABLE public.billable_info_id_seq OWNER TO trasker;
 
 --
--- Name: notes_id_seq; Type: SEQUENCE; Schema: public; Owner: tasker
+-- Name: notes_id_seq; Type: SEQUENCE; Schema: public; Owner: trasker
 --
 
 CREATE SEQUENCE notes_id_seq
@@ -232,10 +232,10 @@ CREATE SEQUENCE notes_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.notes_id_seq OWNER TO tasker;
+ALTER TABLE public.notes_id_seq OWNER TO trasker;
 
 --
--- Name: project_id_seq; Type: SEQUENCE; Schema: public; Owner: tasker
+-- Name: project_id_seq; Type: SEQUENCE; Schema: public; Owner: trasker
 --
 
 CREATE SEQUENCE project_id_seq
@@ -245,10 +245,10 @@ CREATE SEQUENCE project_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.project_id_seq OWNER TO tasker;
+ALTER TABLE public.project_id_seq OWNER TO trasker;
 
 --
--- Name: timeslice_id_seq; Type: SEQUENCE; Schema: public; Owner: tasker
+-- Name: timeslice_id_seq; Type: SEQUENCE; Schema: public; Owner: trasker
 --
 
 CREATE SEQUENCE timeslice_id_seq
@@ -258,10 +258,10 @@ CREATE SEQUENCE timeslice_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.timeslice_id_seq OWNER TO tasker;
+ALTER TABLE public.timeslice_id_seq OWNER TO trasker;
 
 --
--- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: tasker
+-- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: trasker
 --
 
 CREATE SEQUENCE users_id_seq
@@ -272,17 +272,17 @@ CREATE SEQUENCE users_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.users_id_seq OWNER TO tasker;
+ALTER TABLE public.users_id_seq OWNER TO trasker;
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: tasker
+-- Name: id; Type: DEFAULT; Schema: public; Owner: trasker
 --
 
 ALTER TABLE billable_info ALTER COLUMN id SET DEFAULT nextval('billable_info_id_seq'::regclass);
 
 
 --
--- Name: auto_pkey; Type: CONSTRAINT; Schema: public; Owner: tasker; Tablespace: 
+-- Name: auto_pkey; Type: CONSTRAINT; Schema: public; Owner: trasker; Tablespace: 
 --
 
 ALTER TABLE ONLY auto
@@ -290,7 +290,7 @@ ALTER TABLE ONLY auto
 
 
 --
--- Name: notes_pkey; Type: CONSTRAINT; Schema: public; Owner: tasker; Tablespace: 
+-- Name: notes_pkey; Type: CONSTRAINT; Schema: public; Owner: trasker; Tablespace: 
 --
 
 ALTER TABLE ONLY notes
@@ -298,7 +298,7 @@ ALTER TABLE ONLY notes
 
 
 --
--- Name: project_hide_constraint_table_pkey; Type: CONSTRAINT; Schema: public; Owner: tasker; Tablespace: 
+-- Name: project_hide_constraint_table_pkey; Type: CONSTRAINT; Schema: public; Owner: trasker; Tablespace: 
 --
 
 ALTER TABLE ONLY project_hide_constraint_table
@@ -306,7 +306,7 @@ ALTER TABLE ONLY project_hide_constraint_table
 
 
 --
--- Name: project_pkey; Type: CONSTRAINT; Schema: public; Owner: tasker; Tablespace: 
+-- Name: project_pkey; Type: CONSTRAINT; Schema: public; Owner: trasker; Tablespace: 
 --
 
 ALTER TABLE ONLY project
@@ -314,7 +314,7 @@ ALTER TABLE ONLY project
 
 
 --
--- Name: timeslice_pkey; Type: CONSTRAINT; Schema: public; Owner: tasker; Tablespace: 
+-- Name: timeslice_pkey; Type: CONSTRAINT; Schema: public; Owner: trasker; Tablespace: 
 --
 
 ALTER TABLE ONLY timeslice
@@ -322,7 +322,7 @@ ALTER TABLE ONLY timeslice
 
 
 --
--- Name: timeslice_temporary_constraint_table_pkey; Type: CONSTRAINT; Schema: public; Owner: tasker; Tablespace: 
+-- Name: timeslice_temporary_constraint_table_pkey; Type: CONSTRAINT; Schema: public; Owner: trasker; Tablespace: 
 --
 
 ALTER TABLE ONLY timeslice_temporary_constraint_table
@@ -330,7 +330,7 @@ ALTER TABLE ONLY timeslice_temporary_constraint_table
 
 
 --
--- Name: user_pkey; Type: CONSTRAINT; Schema: public; Owner: tasker; Tablespace: 
+-- Name: user_pkey; Type: CONSTRAINT; Schema: public; Owner: trasker; Tablespace: 
 --
 
 ALTER TABLE ONLY users
@@ -338,14 +338,14 @@ ALTER TABLE ONLY users
 
 
 --
--- Name: uk_notes_time_user; Type: INDEX; Schema: public; Owner: tasker; Tablespace: 
+-- Name: uk_notes_time_user; Type: INDEX; Schema: public; Owner: trasker; Tablespace: 
 --
 
 CREATE UNIQUE INDEX uk_notes_time_user ON notes USING btree ("time", note);
 
 
 --
--- Name: fk_auto_project_id; Type: FK CONSTRAINT; Schema: public; Owner: tasker
+-- Name: fk_auto_project_id; Type: FK CONSTRAINT; Schema: public; Owner: trasker
 --
 
 ALTER TABLE ONLY auto
@@ -353,7 +353,7 @@ ALTER TABLE ONLY auto
 
 
 --
--- Name: fk_auto_user_id; Type: FK CONSTRAINT; Schema: public; Owner: tasker
+-- Name: fk_auto_user_id; Type: FK CONSTRAINT; Schema: public; Owner: trasker
 --
 
 ALTER TABLE ONLY auto
@@ -361,7 +361,7 @@ ALTER TABLE ONLY auto
 
 
 --
--- Name: fk_notes_project_id; Type: FK CONSTRAINT; Schema: public; Owner: tasker
+-- Name: fk_notes_project_id; Type: FK CONSTRAINT; Schema: public; Owner: trasker
 --
 
 ALTER TABLE ONLY notes
@@ -369,7 +369,7 @@ ALTER TABLE ONLY notes
 
 
 --
--- Name: fk_notes_user_id; Type: FK CONSTRAINT; Schema: public; Owner: tasker
+-- Name: fk_notes_user_id; Type: FK CONSTRAINT; Schema: public; Owner: trasker
 --
 
 ALTER TABLE ONLY notes
@@ -377,7 +377,7 @@ ALTER TABLE ONLY notes
 
 
 --
--- Name: fk_timeslice_auto_id; Type: FK CONSTRAINT; Schema: public; Owner: tasker
+-- Name: fk_timeslice_auto_id; Type: FK CONSTRAINT; Schema: public; Owner: trasker
 --
 
 ALTER TABLE ONLY timeslice
@@ -385,7 +385,7 @@ ALTER TABLE ONLY timeslice
 
 
 --
--- Name: fk_timeslice_project_id; Type: FK CONSTRAINT; Schema: public; Owner: tasker
+-- Name: fk_timeslice_project_id; Type: FK CONSTRAINT; Schema: public; Owner: trasker
 --
 
 ALTER TABLE ONLY timeslice
@@ -393,7 +393,7 @@ ALTER TABLE ONLY timeslice
 
 
 --
--- Name: fk_timeslice_revert_to; Type: FK CONSTRAINT; Schema: public; Owner: tasker
+-- Name: fk_timeslice_revert_to; Type: FK CONSTRAINT; Schema: public; Owner: trasker
 --
 
 ALTER TABLE ONLY timeslice
@@ -401,7 +401,7 @@ ALTER TABLE ONLY timeslice
 
 
 --
--- Name: fk_timeslice_user_id; Type: FK CONSTRAINT; Schema: public; Owner: tasker
+-- Name: fk_timeslice_user_id; Type: FK CONSTRAINT; Schema: public; Owner: trasker
 --
 
 ALTER TABLE ONLY timeslice
@@ -409,7 +409,7 @@ ALTER TABLE ONLY timeslice
 
 
 --
--- Name: fk_user_project_project_id; Type: FK CONSTRAINT; Schema: public; Owner: tasker
+-- Name: fk_user_project_project_id; Type: FK CONSTRAINT; Schema: public; Owner: trasker
 --
 
 ALTER TABLE ONLY user_project
@@ -417,7 +417,7 @@ ALTER TABLE ONLY user_project
 
 
 --
--- Name: fk_user_project_user_id; Type: FK CONSTRAINT; Schema: public; Owner: tasker
+-- Name: fk_user_project_user_id; Type: FK CONSTRAINT; Schema: public; Owner: trasker
 --
 
 ALTER TABLE ONLY user_project
@@ -425,7 +425,7 @@ ALTER TABLE ONLY user_project
 
 
 --
--- Name: project_hide_constraint; Type: FK CONSTRAINT; Schema: public; Owner: tasker
+-- Name: project_hide_constraint; Type: FK CONSTRAINT; Schema: public; Owner: trasker
 --
 
 ALTER TABLE ONLY project
@@ -433,7 +433,7 @@ ALTER TABLE ONLY project
 
 
 --
--- Name: timeslice_temporary_constraint; Type: FK CONSTRAINT; Schema: public; Owner: tasker
+-- Name: timeslice_temporary_constraint; Type: FK CONSTRAINT; Schema: public; Owner: trasker
 --
 
 ALTER TABLE ONLY timeslice
@@ -451,151 +451,151 @@ GRANT ALL ON SCHEMA public TO PUBLIC;
 
 
 --
--- Name: auto; Type: ACL; Schema: public; Owner: tasker
+-- Name: auto; Type: ACL; Schema: public; Owner: trasker
 --
 
 REVOKE ALL ON TABLE auto FROM PUBLIC;
-REVOKE ALL ON TABLE auto FROM tasker;
-GRANT INSERT,SELECT,UPDATE,DELETE,REFERENCES,TRIGGER ON TABLE auto TO tasker;
+REVOKE ALL ON TABLE auto FROM trasker;
+GRANT INSERT,SELECT,UPDATE,DELETE,REFERENCES,TRIGGER ON TABLE auto TO trasker;
 GRANT INSERT,SELECT,UPDATE,DELETE,REFERENCES,TRIGGER ON TABLE auto TO gam3;
 
 
 --
--- Name: billable_info; Type: ACL; Schema: public; Owner: tasker
+-- Name: billable_info; Type: ACL; Schema: public; Owner: trasker
 --
 
 REVOKE ALL ON TABLE billable_info FROM PUBLIC;
-REVOKE ALL ON TABLE billable_info FROM tasker;
-GRANT INSERT,SELECT,UPDATE,DELETE,REFERENCES,TRIGGER ON TABLE billable_info TO tasker;
+REVOKE ALL ON TABLE billable_info FROM trasker;
+GRANT INSERT,SELECT,UPDATE,DELETE,REFERENCES,TRIGGER ON TABLE billable_info TO trasker;
 
 
 --
--- Name: notes; Type: ACL; Schema: public; Owner: tasker
+-- Name: notes; Type: ACL; Schema: public; Owner: trasker
 --
 
 REVOKE ALL ON TABLE notes FROM PUBLIC;
-REVOKE ALL ON TABLE notes FROM tasker;
-GRANT INSERT,SELECT,UPDATE,DELETE,REFERENCES,TRIGGER ON TABLE notes TO tasker;
+REVOKE ALL ON TABLE notes FROM trasker;
+GRANT INSERT,SELECT,UPDATE,DELETE,REFERENCES,TRIGGER ON TABLE notes TO trasker;
 GRANT INSERT,SELECT,UPDATE,DELETE,REFERENCES,TRIGGER ON TABLE notes TO gam3;
 
 
 --
--- Name: project; Type: ACL; Schema: public; Owner: tasker
+-- Name: project; Type: ACL; Schema: public; Owner: trasker
 --
 
 REVOKE ALL ON TABLE project FROM PUBLIC;
-REVOKE ALL ON TABLE project FROM tasker;
-GRANT INSERT,SELECT,UPDATE,DELETE,REFERENCES,TRIGGER ON TABLE project TO tasker;
+REVOKE ALL ON TABLE project FROM trasker;
+GRANT INSERT,SELECT,UPDATE,DELETE,REFERENCES,TRIGGER ON TABLE project TO trasker;
 GRANT INSERT,SELECT,UPDATE,DELETE,REFERENCES,TRIGGER ON TABLE project TO gam3;
 
 
 --
--- Name: project_hide_constraint_table; Type: ACL; Schema: public; Owner: tasker
+-- Name: project_hide_constraint_table; Type: ACL; Schema: public; Owner: trasker
 --
 
 REVOKE ALL ON TABLE project_hide_constraint_table FROM PUBLIC;
-REVOKE ALL ON TABLE project_hide_constraint_table FROM tasker;
-GRANT INSERT,SELECT,UPDATE,DELETE,REFERENCES,TRIGGER ON TABLE project_hide_constraint_table TO tasker;
+REVOKE ALL ON TABLE project_hide_constraint_table FROM trasker;
+GRANT INSERT,SELECT,UPDATE,DELETE,REFERENCES,TRIGGER ON TABLE project_hide_constraint_table TO trasker;
 GRANT INSERT,SELECT,UPDATE,DELETE,REFERENCES,TRIGGER ON TABLE project_hide_constraint_table TO gam3;
 
 
 --
--- Name: timeslice; Type: ACL; Schema: public; Owner: tasker
+-- Name: timeslice; Type: ACL; Schema: public; Owner: trasker
 --
 
 REVOKE ALL ON TABLE timeslice FROM PUBLIC;
-REVOKE ALL ON TABLE timeslice FROM tasker;
-GRANT INSERT,SELECT,UPDATE,DELETE,REFERENCES,TRIGGER ON TABLE timeslice TO tasker;
+REVOKE ALL ON TABLE timeslice FROM trasker;
+GRANT INSERT,SELECT,UPDATE,DELETE,REFERENCES,TRIGGER ON TABLE timeslice TO trasker;
 GRANT INSERT,SELECT,UPDATE,DELETE,REFERENCES,TRIGGER ON TABLE timeslice TO gam3;
 
 
 --
--- Name: timeslice_temporary_constraint_table; Type: ACL; Schema: public; Owner: tasker
+-- Name: timeslice_temporary_constraint_table; Type: ACL; Schema: public; Owner: trasker
 --
 
 REVOKE ALL ON TABLE timeslice_temporary_constraint_table FROM PUBLIC;
-REVOKE ALL ON TABLE timeslice_temporary_constraint_table FROM tasker;
-GRANT INSERT,SELECT,UPDATE,DELETE,REFERENCES,TRIGGER ON TABLE timeslice_temporary_constraint_table TO tasker;
+REVOKE ALL ON TABLE timeslice_temporary_constraint_table FROM trasker;
+GRANT INSERT,SELECT,UPDATE,DELETE,REFERENCES,TRIGGER ON TABLE timeslice_temporary_constraint_table TO trasker;
 GRANT INSERT,SELECT,UPDATE,DELETE,REFERENCES,TRIGGER ON TABLE timeslice_temporary_constraint_table TO gam3;
 
 
 --
--- Name: user_project; Type: ACL; Schema: public; Owner: tasker
+-- Name: user_project; Type: ACL; Schema: public; Owner: trasker
 --
 
 REVOKE ALL ON TABLE user_project FROM PUBLIC;
-REVOKE ALL ON TABLE user_project FROM tasker;
-GRANT INSERT,SELECT,UPDATE,DELETE,REFERENCES,TRIGGER ON TABLE user_project TO tasker;
+REVOKE ALL ON TABLE user_project FROM trasker;
+GRANT INSERT,SELECT,UPDATE,DELETE,REFERENCES,TRIGGER ON TABLE user_project TO trasker;
 GRANT INSERT,SELECT,UPDATE,DELETE,REFERENCES,TRIGGER ON TABLE user_project TO gam3;
 
 
 --
--- Name: users; Type: ACL; Schema: public; Owner: tasker
+-- Name: users; Type: ACL; Schema: public; Owner: trasker
 --
 
 REVOKE ALL ON TABLE users FROM PUBLIC;
-REVOKE ALL ON TABLE users FROM tasker;
-GRANT INSERT,SELECT,UPDATE,DELETE,REFERENCES,TRIGGER ON TABLE users TO tasker;
+REVOKE ALL ON TABLE users FROM trasker;
+GRANT INSERT,SELECT,UPDATE,DELETE,REFERENCES,TRIGGER ON TABLE users TO trasker;
 GRANT INSERT,SELECT,UPDATE,DELETE,REFERENCES,TRIGGER ON TABLE users TO gam3;
 GRANT SELECT ON TABLE users TO PUBLIC;
 
 
 --
--- Name: auto_id_seq; Type: ACL; Schema: public; Owner: tasker
+-- Name: auto_id_seq; Type: ACL; Schema: public; Owner: trasker
 --
 
 REVOKE ALL ON TABLE auto_id_seq FROM PUBLIC;
-REVOKE ALL ON TABLE auto_id_seq FROM tasker;
-GRANT SELECT,UPDATE ON TABLE auto_id_seq TO tasker;
+REVOKE ALL ON TABLE auto_id_seq FROM trasker;
+GRANT SELECT,UPDATE ON TABLE auto_id_seq TO trasker;
 GRANT SELECT,UPDATE ON TABLE auto_id_seq TO gam3;
 
 
 --
--- Name: billable_info_id_seq; Type: ACL; Schema: public; Owner: tasker
+-- Name: billable_info_id_seq; Type: ACL; Schema: public; Owner: trasker
 --
 
 REVOKE ALL ON TABLE billable_info_id_seq FROM PUBLIC;
-REVOKE ALL ON TABLE billable_info_id_seq FROM tasker;
-GRANT SELECT,UPDATE ON TABLE billable_info_id_seq TO tasker;
+REVOKE ALL ON TABLE billable_info_id_seq FROM trasker;
+GRANT SELECT,UPDATE ON TABLE billable_info_id_seq TO trasker;
 
 
 --
--- Name: notes_id_seq; Type: ACL; Schema: public; Owner: tasker
+-- Name: notes_id_seq; Type: ACL; Schema: public; Owner: trasker
 --
 
 REVOKE ALL ON TABLE notes_id_seq FROM PUBLIC;
-REVOKE ALL ON TABLE notes_id_seq FROM tasker;
-GRANT SELECT,UPDATE ON TABLE notes_id_seq TO tasker;
+REVOKE ALL ON TABLE notes_id_seq FROM trasker;
+GRANT SELECT,UPDATE ON TABLE notes_id_seq TO trasker;
 GRANT SELECT,UPDATE ON TABLE notes_id_seq TO gam3;
 
 
 --
--- Name: project_id_seq; Type: ACL; Schema: public; Owner: tasker
+-- Name: project_id_seq; Type: ACL; Schema: public; Owner: trasker
 --
 
 REVOKE ALL ON TABLE project_id_seq FROM PUBLIC;
-REVOKE ALL ON TABLE project_id_seq FROM tasker;
-GRANT SELECT,UPDATE ON TABLE project_id_seq TO tasker;
+REVOKE ALL ON TABLE project_id_seq FROM trasker;
+GRANT SELECT,UPDATE ON TABLE project_id_seq TO trasker;
 GRANT SELECT,UPDATE ON TABLE project_id_seq TO gam3;
 
 
 --
--- Name: timeslice_id_seq; Type: ACL; Schema: public; Owner: tasker
+-- Name: timeslice_id_seq; Type: ACL; Schema: public; Owner: trasker
 --
 
 REVOKE ALL ON TABLE timeslice_id_seq FROM PUBLIC;
-REVOKE ALL ON TABLE timeslice_id_seq FROM tasker;
-GRANT SELECT,UPDATE ON TABLE timeslice_id_seq TO tasker;
+REVOKE ALL ON TABLE timeslice_id_seq FROM trasker;
+GRANT SELECT,UPDATE ON TABLE timeslice_id_seq TO trasker;
 GRANT SELECT,UPDATE ON TABLE timeslice_id_seq TO gam3;
 
 
 --
--- Name: users_id_seq; Type: ACL; Schema: public; Owner: tasker
+-- Name: users_id_seq; Type: ACL; Schema: public; Owner: trasker
 --
 
 REVOKE ALL ON TABLE users_id_seq FROM PUBLIC;
-REVOKE ALL ON TABLE users_id_seq FROM tasker;
-GRANT SELECT,UPDATE ON TABLE users_id_seq TO tasker;
+REVOKE ALL ON TABLE users_id_seq FROM trasker;
+GRANT SELECT,UPDATE ON TABLE users_id_seq TO trasker;
 GRANT SELECT,UPDATE ON TABLE users_id_seq TO gam3;
 
 

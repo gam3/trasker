@@ -451,7 +451,7 @@ sub user
 	    );
 	}
     }
-print_log "count $count\n";
+print_log " - count $count\n";
     if ($count) {
 	if (my $current_proj = $user->current_project()) {
 	    printf($client "current\t%s\t%d\n", $userid, $current_proj->project->id);
@@ -1228,11 +1228,13 @@ sub main
     my $cfg = Config::Simple->new($opt_config);
     die "No configuration file: $opt_config" unless $cfg;
 
-    my $hash = $cfg->get_block('database');
+    {
+	my $dbhash = $cfg->get_block('database');
 
-    dbi_setup(
-        %$hash
-    );
+	dbi_setup(
+	    %$dbhash
+	);
+    }
     for my $sig (keys %SIG) {
         next if $sig eq 'TSTP';
         $SIG{$sig} = sub { print_log('Signal '.$_[0].' caught!'); };
@@ -1371,14 +1373,13 @@ warn "FIX autoselect here";
                     }
                     next unless length $cmd;
                     if (my $function = $cmd_hash->{$cmd}) {
-print_log("Got $cmd\n") if $cmd ne "ping";
-                        my $action;
-                        eval {
-                            $action = $function->($client, $data, @args);
-                        };
+print_log("Got $cmd") if $cmd ne "ping";
+                        my $action = eval {
+				$function->($client, $data, @args);
+			    };
                         if ($@) {
                             print_log "Error: ", $@;
-print $client "error\t" . $@;
+			    print $client "error\t" . $@;
                         }
                         if ($action eq 'QUIT') {
                             goto QUIT;

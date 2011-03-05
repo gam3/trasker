@@ -16,7 +16,7 @@
 /servers/perl/Build
 /servers/perl/Build.PL
 /servers/perl/META.yml
-/servers/perl/Makefile
+/servers/perl/Makefile$
 /servers/perl/README
 /servers/perl/Tasker-0.0.2/
 /servers/perl/_build/
@@ -31,7 +31,7 @@
 /servers/perl/scripts/traskers
 /servers/perl/temp
 INSTALL
-Makefile
+Makefile$
 aclocal.m4
 auto.sh
 autom4te.cache/
@@ -167,9 +167,7 @@ servers/libtasker-perl_0.0.1-1.tar.gz
 servers/libtasker-perl_0.0.1-1_all.deb
 servers/libtasker-perl_0.0.1-1_amd64.build
 servers/libtasker-perl_0.0.1-1_amd64.changes
-servers/perl/.Makefile.am.swp
 servers/perl/MYMETA.yml
-servers/perl/Makefile.PL
 servers/perl/database=trasker
 servers/perl/debian/
 servers/perl/lib/Trasker/TTDB/Setup/

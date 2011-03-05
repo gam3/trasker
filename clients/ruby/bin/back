@@ -1,0 +1,35 @@
+require 'xmpp4r'
+require 'xmpp4r/roster'
+require 'xmpp4r/jid'
+
+jid = Jabber::JID::new("trasker@jabber.org/")
+client = Jabber::Client::new(jid)
+
+client.connect('jabber.org')
+
+client.auth('asdfasdf')
+
+client.send(Jabber::Presence.new.set_type(:available))
+
+# Send an Instant Message.
+body = 'Hi XMPP'
+to_jid = Jabber::JID.new('gam3@jabber.org')
+message = Jabber::Message::new(to_jid, body).set_type(:normal).set_id('1')
+client.send(message)
+client.add_message_callback do |m|
+    if m.type != :error
+	puts m.body
+	puts m.inspect;
+	puts m.from;
+	puts m.type;
+# get the user name and make a database of jids -> users
+	body = 'Hi XMPP ' + m.body
+	to_jid = Jabber::JID.new(m.from)
+	message = Jabber::Message::new(to_jid, body).set_type(:normal).set_id('2')
+	client.send(message)
+    end
+end
+
+while true do
+end
+

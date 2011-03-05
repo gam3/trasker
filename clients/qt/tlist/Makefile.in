@@ -11,16 +11,17 @@ srcdir = @srcdir@
 top_builddir = @top_builddir@
 MKDIR_P = @MKDIR_P@
 
-all : tlist
+all : $(srcdir)/tlist
 
-tlist : $(srcdir)/qmakefile
+$(srcdir)/tlist : $(srcdir)/qmakefile $(srcdir)/*.cpp $(srcdir)/*.h
 	$(MAKE) -f $(srcdir)/qmakefile
 
 $(srcdir)/qmakefile : tlist.pro Makefile
 	cd $(srcdir) && qmake "CONFIG+=release" "MAKEFILE=qmakefile" "target.path = $(bindir)"
 
-clean :
+clean : $(srcdir)/qmakefile
 	make -f qmakefile clean
+#	rm qmakefile
 
 distdir:
 	make -f qmakefile dist

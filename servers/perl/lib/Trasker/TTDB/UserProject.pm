@@ -456,10 +456,16 @@ sub add_task
         name => 1,
         description => 1,
     });
-    my $st = $dbh->prepare("insert into project (id, user_id, parent_id, name, description) values (?, ?, ?, ?, ?)");
+    my $st = $dbh->prepare("insert into project (user_id, parent_id, name, description) values (?, ?, ?, ?)");
 
+    $st->execute(
+       $self->user->id,
+       $self->project->id,
+       $p{name},
+       $p{description},
+    );
     my $id = eval {
-	$dbh->last_insert_id("","","","");
+	$dbh->last_insert_id("","","project","");
     };
     if ($@) {
         $dbh->rollback;

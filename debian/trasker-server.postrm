@@ -1,0 +1,10 @@
+#!/bin/sh
+if [ "$1" = "purge" ] ; then
+	ucf --purge /etc/trasker.conf
+	rm -f /etc/trasker.conf
+fi
+
+rm -f /usr/share/trasker/*
+rm -rf /usr/share/trasker
+
+#DEBHELPER#
