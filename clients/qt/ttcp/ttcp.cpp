@@ -6,8 +6,6 @@
 #include "ttcp.h"
 #include "connection.h"
 
-#include "projectlist.h"
-
 TTCP::TTCP(const QString &host_in, quint16 port_in, bool ssl_in, const QString &user_in, const QString &password_in)
     : user(user_in), password(password_in), host(host_in), port(port_in), ssl(ssl_in)
 {

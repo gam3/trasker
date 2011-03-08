@@ -60,17 +60,18 @@ signals:
     void add_timeslice(QString user, int timeclice_id, int project_id, int auto_id, QString from, QDateTime startTime, QString duration);
     void alert_end_message(int alert_id);
     void alert_message(int alert_id, QString title, QString description);
-    void connected();
     void current(int project_id);
     void disable(int project_id);
-    void disconnected();
     void error(QString error_string);
-    void project(QString name, QString action);
-    void settime(int project_id, QTime time, QTime atime);
-    void update_all();
     void hourly();
+    void project(QString name, QString action);
     void recentproject(int project_id, int index, int max, QString uniqueName);
     void recentprojects(QList<int>&);
+    void settime(int project_id, QTime time, QTime atime);
+    void update_all();
+
+    void connected();
+    void disconnected();
 
 public:
     void sendMessage(const QString &message);

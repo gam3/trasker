@@ -1,0 +1,11 @@
+/moc_connection.cpp
+/*.o
+/Makefile
+/libttcp.so
+/libttcp.so.1
+/libttcp.so.1.0
+/libttcp.so.1.0.0
+/moc_ttcp.cpp
+/moc_ttcp.o
+/qmakefile
+/ttcp.o
