@@ -5,15 +5,11 @@
 
 CREATE TABLE alert (
     id integer DEFAULT nextval(('alert_id_seq'::text)::regclass) NOT NULL,
-    project_id integer,
-    user_id integer,
-    host character varying(40),
-    name character varying(30),
-    "class" character varying(30),
-    "role" character varying(30) DEFAULT '%'::character varying,
-    title character varying(100),
-    desktop character varying(30),
-    presidence integer
+    acknoldged_by,
+    acknoldged,
+    title character varying(40),
+    description text,
+    created timestamp,
 );
 
 ALTER TABLE public.alert OWNER TO trasker;
@@ -30,13 +26,6 @@ CREATE SEQUENCE alert_id_seq
 
 
 ALTER TABLE public.alert_id_seq OWNER TO trasker;
-
---
--- Name: fk_timeslice_alert_id; Type: FK CONSTRAINT; Schema: public; Owner: trasker
---
-
-ALTER TABLE ONLY timeslice
-    ADD CONSTRAINT fk_timeslice_alert_id FOREIGN KEY (alert_id) REFERENCES alert(id);
 
 --
 -- Name: alert_id_seq; Type: ACL; Schema: public; Owner: trasker

@@ -1,0 +1,62 @@
+--
+-- PostgreSQL database dump
+--
+
+SET statement_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = off;
+SET check_function_bodies = false;
+SET client_min_messages = warning;
+SET escape_string_warning = off;
+
+SET search_path = public, pg_catalog;
+
+SET default_tablespace = '';
+
+SET default_with_oids = false;
+
+--
+-- Name: invoice; Type: TABLE; Schema: public; Owner: trasker; Tablespace: 
+--
+
+CREATE SEQUENCE invoice_id_seq
+    START WITH 1001
+    INCREMENT BY 2
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+ALTER TABLE public.invoice_id_seq OWNER TO trasker;
+
+CREATE TABLE invoice (
+    id integer DEFAULT nextval(('invoice_id_seq'::text)::regclass) NOT NULL,
+    client_id integer NOT NULL REFERENCES client (id),
+    invoice_year integer NOT NULL,
+    invoice_key integer NOT NULL,
+    invoice_type integer NOT NULL,
+    startdate date CHECK (startdate < enddate),
+    enddate date CHECK (enddate > startdate),
+    description text
+);
+
+ALTER TABLE public.invoice OWNER TO trasker;
+
+--
+-- Name: invoice_pkey; Type: CONSTRAINT; Schema: public; Owner: trasker; Tablespace: 
+--
+
+ALTER TABLE ONLY invoice
+    ADD CONSTRAINT invoice_pkey PRIMARY KEY (id);
+
+--
+-- Name: invoice; Type: ACL; Schema: public; Owner: trasker
+--
+
+REVOKE ALL ON TABLE invoice FROM trasker;
+GRANT ALL ON TABLE invoice TO trasker;
+GRANT ALL ON TABLE invoice TO gam3;
+
+--
+-- PostgreSQL database dump complete
+--
+

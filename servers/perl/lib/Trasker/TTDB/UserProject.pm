@@ -326,7 +326,9 @@ SQL
 	    $get_time->{data}{0} = $ntime;
 	}
     }
-    $get_time->{data}{$id} || Trasker::Date->new([1], 0, 0, 0, 0, 0, 0);
+    my $ret = $get_time->{data}{$id} || Trasker::Date->new([1], 0, 0, 0, 0, 0, 0);
+
+    $ret;
 }
 
 sub time
@@ -485,8 +487,6 @@ sub depth
 
     $p->depth;
 }
-
-use Data::Dumper;
 
 sub get_all_auto
 {

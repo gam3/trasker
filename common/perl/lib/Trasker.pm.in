@@ -1,0 +1,4 @@
+
+our $VERSION = '@VERSION@';
+
+1;

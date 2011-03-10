@@ -45,26 +45,24 @@ void Alerts::update(int x)
 
 void Alerts::update()
 {
-//    qWarning("update");
+//    qWarning() << "update()";
 }
 
 void Alerts::add(int id, const QString title, const QString description)
 {
-    Q_UNUSED(id);
-    if (alertDisplays.contains(id)) {
-        qWarning() << "Dup";
-        return;
+    if (!alertDisplays.contains(id)) {
+	AlertDisplay *alert = new AlertDisplay(this);
+	alertDisplays[id] = alert;
+	alert->setWindowTitle(title);
+	alert->setText(description);
+	CurrentAlert->addPage(alert);
     }
-    AlertDisplay *alert = new AlertDisplay(this);
-    alertDisplays[id] = alert;
-    alert->setWindowTitle(title);
-    alert->setText(description);
-    CurrentAlert->addPage(alert);
     show();
 }
 
 void Alerts::show_help()
 {
+    qWarning() << "Show Help";
 }
 
 /* eof */

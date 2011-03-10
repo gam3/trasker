@@ -22,6 +22,8 @@ recommends 'Test::Pod::Coverage' => 0;
 recommends 'Test::Spelling' => 0;
 recommends 'WWW::Mechanize' => 0;
 
+install_script 'tnote';
+
 sign 1;
 
 makefile 'pmakefile';

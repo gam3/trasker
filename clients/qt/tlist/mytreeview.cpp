@@ -15,6 +15,7 @@
 
 MyTreeView::MyTreeView(QWidget *parent) : QTreeView(parent)
 {
+    setUniformRowHeights(true);
 }
 
 void MyTreeView::contextMenuEvent(QContextMenuEvent *e)
@@ -31,6 +32,16 @@ void MyTreeView::contextMenuEvent(QContextMenuEvent *e)
 
 TreeModel *MyTreeView::model() {
     return (TreeModel *)QTreeView::model();
+}
+
+void MyTreeView::keyPressEvent( QKeyEvent * event)
+{
+    QList<QAction *> bob;
+    qWarning("C %d", event->key());
+    bob = actions();
+    qWarning("t: %d", bob.size());
+
+    QAbstractItemView::keyPressEvent(event);
 }
 
 void MyTreeView::enable()

@@ -106,15 +106,17 @@ select *
    limit 1
 SQL
 
+eval {
     $sth->execute(
         $p{user_id},
-        $p{host} || '',
-        $p{name} || '',
-        $p{class} || '',
-        $p{role} || '',
-        $p{title} || '',
-        $p{desktop} || ''
+        $p{host} // '',
+        $p{name} // '',
+        $p{class} // '',
+        $p{role} // '',
+        $p{title} // '',
+        $p{desktop} // ''
     );
+};
 
     my $data = $sth->fetchrow_hashref();
 
@@ -252,7 +254,7 @@ SQL
         $p{presidence} || 32767,
     );
 
-    my $id = $dbh->last_insert_id("","","","");
+    my $id = $dbh->last_insert_id(undef, "", "auto", undef);
 
     my $self = Trasker::TTDB::Auto->new(
         %p,
@@ -335,6 +337,13 @@ sub desktop
     my $self = shift;
 
     $self->{desktop};
+}
+
+sub enabled
+{
+    my $self = shift;
+
+    $self->{enabled};
 }
 
 # control funtions;

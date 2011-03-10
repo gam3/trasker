@@ -23,6 +23,9 @@ TreeModel::TreeModel(QObject *parent)
     connect(&timer, SIGNAL(timeout()),
             this, SLOT(update_timer()));
     timer.setSingleShot(0);
+    connect(&layout_timer, SIGNAL(timeout()),
+            this, SIGNAL(layoutChanged()));
+    layout_timer.setSingleShot(1);
 }
 
 TreeModel::~TreeModel()
@@ -54,50 +57,37 @@ QVariant TreeModel::data(const QModelIndex &index, int role) const
 
     TreeItem *item = getItem(index);
 
-    if (role == Qt::BackgroundColorRole) {
+    switch (role) {
+      case Qt::DisplayRole:
+	return item->data(index.column());
+      case Qt::StatusTipRole:
+        return QString("StatusTip %1").arg("a");
+      case Qt::ToolTipRole:
+        return QString("%1").arg(item->getLongName());
+      case Qt::DecorationRole:
 	if (index.column() == 0) {
 	    if (item == currentItem) {
-		return QColor(200,210,200);
-	    } else {
-		return QVariant();
+	        return QIcon(":/pics/active-icon-0.xpm");
 	    }
-	} else {
-	    return QVariant();
 	}
-    }
-    if (role == Qt::TextColorRole)
-	return QVariant();
-    if (role == Qt::DecorationRole) {
-        if (index.column() == 0) {
-	    if (item == currentItem) {
-		return QIcon(":/pics/active-icon-0.xpm");
-	    } else {
-		return QVariant();
-	    }
-	} else {
-	    return QVariant();
-	}
-    }
-    if (role == Qt::FontRole)
-	return QVariant();
-    if (role == Qt::TextAlignmentRole)
-	return QVariant();
-    if (role == Qt::CheckStateRole)
-	return QVariant();
-    if (role == Qt::SizeHintRole)
-	return QVariant();
-    if (role == Qt::ToolTipRole)
-        return QString("%1").arg(item->getLongName());
-    if (role == Qt::StatusTipRole)
-	return QString("StatusTip %1").arg("a");
-
-    if (role != Qt::DisplayRole && role != Qt::EditRole) {
-        qWarning("Role: %d", role);
-    }
-    if (role != Qt::DisplayRole && role != Qt::EditRole)
         return QVariant();
+      case Qt::BackgroundColorRole:
+	if (index.column() == 0) {
+	    if (item == currentItem) {
+		return QColor(200,210,200);  // FIXME should be in config file
+	    }
+	}
+	return QVariant();
+      case Qt::TextColorRole:
+      case Qt::FontRole:
+      case Qt::TextAlignmentRole:
+      case Qt::CheckStateRole:
+      case Qt::SizeHintRole:
+        return QVariant();
+    }
 
-    return item->data(index.column());
+    qWarning("Role: %d", role);
+    return QVariant();
 }
 
 Qt::ItemFlags TreeModel::flags(const QModelIndex &index) const
@@ -169,7 +159,6 @@ bool TreeModel::insertRows(int position, int rows, const QModelIndex &parent)
     return success;
 }
 
-//! [7]
 QModelIndex TreeModel::parent(const QModelIndex &index) const
 {
     if (!index.isValid())
@@ -194,6 +183,13 @@ bool TreeModel::removeRows(int position, int rows, const QModelIndex &parent)
     endRemoveRows();
 
     return success;
+}
+
+bool TreeModel::hasChildren(const QModelIndex &index) const
+{
+    TreeItem *parentItem = getItem(index);
+
+    return parentItem->childCount() > 0;
 }
 
 int TreeModel::rowCount(const QModelIndex &parent) const
@@ -237,8 +233,9 @@ bool TreeModel::setHeaderData(int section, Qt::Orientation orientation,
 
 void TreeModel::update_timer()
 {
+    static int x;
     if (currentItem) {
-        if (0) {
+        if ((++x % 30) == 0) {
             for (TreeItem *item = currentItem; item; item = item->parent()) {
                 if (item->getId()) {
                     emit get_time(item->getId());
@@ -322,6 +319,9 @@ void TreeModel::add_entry(QString name, int id, int pid, const QTime time, const
         parents[id] = child;
     }
     endInsertRows();
+
+    layout_timer.start(1000);
+//    emit layoutChanged();
 
     return;
 }

@@ -236,6 +236,7 @@ void Connection::reConnect()
     settings.beginGroup("Host");
     const QString host = settings.value("host", "127.0.0.1").toString();
     const qint16 port = settings.value("port", 8001).toInt();
+qWarning("%s %d", qPrintable(host), port);
     const bool ssl = settings.value("ssl", true).toBool();
     const QString certpath = settings.value("certpath", "/etc/trasker/cacert.pem").toString();
     settings.endGroup();

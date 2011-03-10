@@ -50,17 +50,6 @@ clients/qt/tlist/projectlist.h
 clients/qt/tlist/qrc_tlist.cpp
 clients/qt/tlist/tlist.pro.user
 clients/qt/tlist/x
-clients/qt/ttcp/connection.h
-clients/qt/ttcp/libttcp.so
-clients/qt/ttcp/libttcp.so.1
-clients/qt/ttcp/libttcp.so.1.0
-clients/qt/ttcp/libttcp.so.1.0.0
-clients/qt/ttcp/moc_ttcp.cpp
-clients/qt/ttcp/moc_ttcp.o
-clients/qt/ttcp/projectlist.h
-clients/qt/ttcp/qmakefile
-clients/qt/ttcp/ttcp.o
-clients/qt/ttcp/ttcp.pro
 clients/tlist/COPYING
 clients/tlist/auto_model.h
 clients/tlist/pics/active-clock.gif
@@ -88,6 +77,7 @@ config.status
 config.sub
 configure
 database/alerts.schema
+database/Makefile.in
 database/elect timeslice.id,
 database/ers.id = timeslice.user_id
 database/lice, project, users
@@ -214,3 +204,29 @@ trasker-x11/src/winselect.o
 trasker-x11/src/x
 trasker-x11/x
 web/logs
+/Makefile
+/clients/perl/META.yml
+/clients/perl/Makefile
+/clients/perl/Makefile.PL
+/clients/perl/pm_to_blib
+/clients/perl/pmakefile.old
+/clients/qt/chart/
+/clients/qt/ttcp/bob
+/clients/qt/ttcp/ttcp.man
+/clients/qt/ttcp/ttcp.tex
+/clients/qt/ttcp/usr/
+/clients/ruby/.config
+/clients/ruby/Makefile
+/clients/ruby/bin/trasker
+/clients/ruby/setup.rb
+/clients/ruby/test/
+/clients/x11/Makefile
+/clients/x11/Makefile.in
+/clients/x11/src/Makefile
+/database/trasker.dia
+/database/trasker.dot
+/database/trasker.html
+/database/trasker.neato
+/database/trasker.xml
+/database/trasker.zigzag.dia
+/debian/trasker-server-c.substvars

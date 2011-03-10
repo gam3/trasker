@@ -24,11 +24,27 @@ recommends 'WWW::Mechanize' => 0;
 
 sign 1;
 
-install_script 'traskerd';
-
 author_tests('xt');
 
 makefile 'pmakefile';
+
+postamble <<'EOPOST';
+
+script/traskerd : script/traskerd.in
+	cd ../.. && ./config.status
+
+blib/sbin/traskerd :: script/traskerd
+	mkdir -p blib/sbin/
+	cp script/traskerd blib/sbin/
+
+all :: blib/sbin/traskerd
+
+install :: blib/sbin/traskerd
+	install -d $(DESTDIR)/usr/sbin
+	install blib/sbin/traskerd $(DESTDIR)/usr/sbin
+
+
+EOPOST
 
 WriteAll(
     sign => $ENV{SIGN}

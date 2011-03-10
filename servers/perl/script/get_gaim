@@ -11,7 +11,7 @@ our $VERSION = "0.0.1";
 use Trasker::TTDB::Notes;
 use Trasker::TTDB::Time;
 
-use Date::Calc::MySQL;
+use Trasker::Date;
 
 use Trasker::TTDB::DBI qw (dbi_setup);
 
@@ -29,7 +29,7 @@ use YAML qw (LoadFile);
 
 sub main
 {
-    my $date = shift || Date::Calc::MySQL->today - 1;
+    my $date = shift || Trasker::Date->today - 1;
     my $user = shift || die;
     my $path = shift || die;
     my $skip = shift || die;
@@ -41,7 +41,7 @@ sub main
 	next if -d $fullname;
 	my $file = fileparse($fullname, '.txt');
 	my @d = ($file =~ /^(\d{4})-(\d{2})-(\d{2})/);
-	my $filedate = Date::Calc::MySQL->new(@d);
+	my $filedate = Trasker::Date->new(@d);
 	next if ($date != $filedate);
 
         my $parser = Gaim::Log::Parser->new(file => $fullname);
@@ -50,12 +50,12 @@ sub main
 	    if (my $x = $skip->{$msg->to}) {
 eval {
 		unless ($x =~ /^_/) {
-		    my $project = $user->project(name => $x);
-		    $project->add_note(
-		       time => Date::Calc::MySQL->time2date($msg->date),
-		       type => 99,
-		       note => $msg->as_string,
-		   );
+#		    my $project = $user->project(name => $x);
+#		    $project->add_note(
+#		       time => Trasker::Date->time2date($msg->date),
+#		       type => 99,
+#		       note => $msg->as_string,
+#		   );
 	        } else {
 		    warn "exclude $x " . $msg->to if ($opt_debug);
 	        }
@@ -133,7 +133,7 @@ if ($opt_start) {
     }
     print  $start->string(2), ' ', $end->string(2), "\n";
 } else {
-    main(Date::Calc::MySQL->today - 1, $user, $path, $skip);
+    main(Trasker::Date->today - 1, $user, $path, $skip);
 }
 
 END {

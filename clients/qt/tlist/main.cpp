@@ -68,6 +68,7 @@ main(int argc, char *argv[])
     } else {
 	projects.show();
     }
+    projects.show();
 
     for (unsigned int i = 0; i < args_info.show_given; ++i) {
 	for (char **str = args_info.show_arg; *str; str++) {

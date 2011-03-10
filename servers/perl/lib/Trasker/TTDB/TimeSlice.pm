@@ -11,6 +11,10 @@ use strict;
 #
 package Trasker::TTDB::TimeSlice;
 
+use Carp qw (croak);
+
+$Carp::Internal{__PACKAGE__}++;
+
 use Params::Validate qw( validate validate_pos SCALAR BOOLEAN HASHREF OBJECT );
 
 use Trasker::TTDB::DBI qw (get_dbh);
@@ -92,8 +96,6 @@ sub get
          $extra .= ' and user_id = ?';
     }
 
-#FIX this needs security.  Only find for a certain set of users
-
     my $sth = $dbh->prepare(<<SQL);
 select *
   from timeslice
@@ -112,33 +114,6 @@ SQL
 =head2 Methods
 
 =over
-
-=item split
-
-The I<split> devides a timeslice into multiple pieces.  Normally 2
-pieces.
-
-  $timeslices =
-  $ts->split(
-      time => [Trasker::Date],
-  );
-
-=cut
-
-sub split
-{
-    my $self = shift;
-    my $dbh = get_dbh('write');
-    my %p = validate(@_, {
-        time => {
-	    isa => 'Trasker::Date',
-	},
-    });
-
-    require Trasker::TTDB::TimeSlices;
-
-    return Trasker::TTDB::TimeSlices->new($self);
-}
 
 =item update
 
@@ -163,7 +138,6 @@ sub update
     my $id;
     my $old_value;
     my $new_value = $p{project_id} or die "Need new project id";
-    my $field = "project_id";
 
     if (ref($self)) {
         $id = $self->id;
@@ -185,6 +159,101 @@ SQL
     $dbh->commit;
 
     return $self;
+}
+
+=item split
+
+The I<split> devides a timeslice into 2 pieces.
+pieces.
+
+  $new_timeslice =
+  $ts->split(
+      time => [Trasker::Date],
+  );
+
+=cut
+
+sub split
+{
+    my $self = shift;
+    my $dbh = get_dbh('write');
+    my %p = validate(@_, {
+        time => {
+	    isa => 'Trasker::Date',
+	},
+    });
+
+    $self->reload();
+
+    return Trasker::TTDB::TimeSlice->new;
+}
+
+=item change_time
+
+The I<change_time> method changes the starttime for a timeslice
+
+  $updated_timeslice =
+  $ts->change_time(
+      new_time => Trasker::Date->new();
+  );
+
+  The new time must be in the range of the previous time slice and the current timeslice.
+
+=cut
+
+sub change_time
+{
+    my $self = shift;
+    my $dbh = get_dbh('write');
+    my @ot;
+    my @project_ids = ();
+    my $class = ref($self);
+
+    my %p = validate(@_, {
+        new_time => {
+	    isa => 'Trasker::Date',
+	},
+    });
+    my $id;
+    my $old_value;
+    my $old_time = $self->{start_time};
+    my $new_time = $p{new_time};
+    my $user_id = $self->user_id;
+
+    my $stp = $dbh->prepare(<<'SQL');
+update timeslice
+   set end_time = ?,
+       elapsed = end_time - start_time
+ where end_time = ? and ? > start_time and user_id = ?
+SQL
+    my $stc = $dbh->prepare(<<'SQL');
+update timeslice
+   set start_time = ?,
+       elapsed = end_time - start_time
+ where start_time = ?  and ? < end_time and user_id = ?
+SQL
+    my $sti = $dbh->prepare(<<'SQL');
+select * from timeslice
+ where (end_time = ? or start_time = ?) and user_id = ?
+SQL
+    eval {
+	$stc->execute($new_time, $old_time, $new_time, $user_id);
+	$stp->execute($new_time, $old_time, $new_time, $user_id);
+    }; if ($@) {
+	$dbh->rollback;
+	die "could not update";
+    } else {
+	$dbh->commit;
+	$sti->execute($new_time, $new_time, $user_id);
+        while (my $row = $sti->fetchrow_hashref()) {
+	    push @ot, $class->new(%$row);
+	}
+    }
+    unless ($stc->rows) {
+	$dbh->rollback;
+	die "timeslice not updated.";
+    }
+    return @ot;
 }
 
 =back
@@ -258,7 +327,6 @@ The I<user_id> of the user whos time the timeslice is representing.
 
 sub user_id
 {
-    die;
     shift->{user_id};
 }
 

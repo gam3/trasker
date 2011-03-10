@@ -56,3 +56,5 @@ QString TimeItem::autoSelect()
 {
     return QString("%1").arg(auto_id);
 }
+
+/* eof */

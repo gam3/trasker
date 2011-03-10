@@ -1,0 +1,60 @@
+--
+-- PostgreSQL database dump
+--
+
+SET statement_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = off;
+SET check_function_bodies = false;
+SET client_min_messages = warning;
+SET escape_string_warning = off;
+
+SET search_path = public, pg_catalog;
+
+SET default_tablespace = '';
+
+SET default_with_oids = false;
+
+--
+-- Name: client; Type: TABLE; Schema: public; Owner: trasker; Tablespace: 
+--
+
+CREATE SEQUENCE client_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MAXVALUE
+    NO MINVALUE
+    CACHE 1;
+
+ALTER TABLE public.client_id_seq OWNER TO trasker;
+
+CREATE TABLE client (
+    id integer DEFAULT nextval(('client_id_seq'::text)::regclass) NOT NULL,
+    name character varying(50),
+    address character varying(200),
+    nickname character varying(30),
+    description text
+);
+
+ALTER TABLE public.client OWNER TO trasker;
+
+--
+-- Name: client_pkey; Type: CONSTRAINT; Schema: public; Owner: trasker; Tablespace: 
+--
+
+ALTER TABLE ONLY client
+    ADD CONSTRAINT client_pkey PRIMARY KEY (id);
+
+--
+-- Name: client; Type: ACL; Schema: public; Owner: trasker
+--
+
+REVOKE ALL ON TABLE client FROM trasker;
+GRANT ALL ON TABLE client TO trasker;
+GRANT ALL ON TABLE client TO gam3;
+
+
+--
+-- PostgreSQL database dump complete
+--
+

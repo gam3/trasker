@@ -1,7 +1,7 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT([trasker],[0.0.5],[trasker-bugs@gam3.net])
+AC_INIT([trasker],[0.0.6],[trasker-bugs@gam3.net])
 AC_PREREQ(2.61)
 AC_COPYRIGHT([Copyright (c) 2008 G. Allen Morris III])
 AC_CANONICAL_TARGET
@@ -86,8 +86,11 @@ if test "x$with_perl" = "xyes" ; then
     AC_CONFIG_FILES( servers/perl/Makefile )
     AC_CONFIG_FILES( servers/perl/script/traskerd )
     AC_CONFIG_FILES( servers/perl/script/traskers )
+    AC_CONFIG_FILES( servers/perl/lib/Trasker.pm )
     AC_CONFIG_FILES( clients/perl/Makefile.PL )
     AC_CONFIG_FILES( clients/perl/Makefile )
+    AC_CONFIG_FILES( clients/perl/script/tnote )
+    AC_CONFIG_FILES( clients/perl/script/trasker )
 fi
 
 if test "x$with_x11" = "xyes" ; then
@@ -97,13 +100,16 @@ fi
 if test "x$with_qt4" = "xyes" ; then
     AC_CONFIG_FILES( clients/qt/tlist/Makefile )
     AC_CONFIG_FILES( clients/qt/tlist/tlist.man )
+    AC_CONFIG_FILES( clients/qt/tlist/tlist.ggo )
     AC_CONFIG_FILES( clients/qt/ttcp/Makefile )
+#    AC_CONFIG_FILES( clients/qt/ttcp/ttcp.man )
 fi
 
 AC_CONFIG_FILES([
     Makefile
     docs/Makefile
 ])
+AC_CONFIG_FILES( clients/x11/configure.ac )
 AC_CONFIG_SUBDIRS( [clients/x11/] )
 
 

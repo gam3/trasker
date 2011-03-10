@@ -55,6 +55,7 @@ public:
                       const QModelIndex &parent = QModelIndex()) const;
     QModelIndex parent(const QModelIndex &index) const;
 
+    bool hasChildren(const QModelIndex &parent = QModelIndex()) const;
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
 
@@ -91,6 +92,7 @@ private:
     QHash<int, TreeItem *> parents;
 
     QTimer timer;
+    QTimer layout_timer;
 };
 
 #endif

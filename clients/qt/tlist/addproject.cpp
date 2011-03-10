@@ -22,11 +22,6 @@
 AddProject::AddProject(const TTCP *ttcp_in, QWidget *parent) : QDialog(parent), ttcp(ttcp_in)
 {
     setupUi(this);
-
-/*
-    connect(buttonOk, SIGNAL(clicked()), 
-            this, SLOT(add_project()));
-*/
 }
 
 void AddProject::setParentProject(const Project &parentProject_in)
@@ -49,6 +44,13 @@ void AddProject::add_project()
 
 void AddProject::show_help()
 {
+qWarning("HELP");
 }
+
+void AddProject::done(QString check)
+{
+    Q_UNUSED(check);
+    hide();
+};
 
 /* eof */

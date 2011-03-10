@@ -36,8 +36,10 @@ class TimeEdit:public QMainWindow, private Ui::TimeEdit {
 public slots:
     void myShow(void);
     void dateChanged(const QDate & date);
+    void setDateToday();
     void refresh(void);
     void hourly(void);  // update maxDate etc.
+    void setProjectList(QString name, int id, int pid, const QTime time, const QTime atime); // add project information
 };
 
 #endif

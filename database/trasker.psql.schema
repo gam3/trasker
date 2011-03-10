@@ -121,7 +121,6 @@ CREATE TABLE timeslice (
     elapsed interval
 );
 
-
 ALTER TABLE public.timeslice OWNER TO trasker;
 
 --

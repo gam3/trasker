@@ -1,26 +1,38 @@
 .\" -*- nroff -*-
-.TH tlist 1 "December 2010" "trasker version 0.01"
-.SH NAME
-tlist \- qt gui tool for the trasker system
-.SH SYNOPSIS
-.B tlist
-
+.\"
+.\" Author: G. Allen Morris III <gam3@gam3.net>
+.\" Copyright (c) 2001-2010 G. Allen Morris III <gam3@gam3.net>, Fort Bragg, California, USA
+.\"                    All rights reserved
+.\"
+.Dd tlist 1 "January 2011" "trasker version 0.01"
+.Dt TLIST 1
+.Os
+.Sh NAME
+.Nm tlist
+.Nd A qt gui client for the trasker system
+.Sh SYNOPSIS
+.Nm
+.Bk -words
+.Op Fl asdf
 .SH DESCRIPTION
 
 .SH OPTIONS
 
-.SH AUTHOR
-
-.B tlist
-was written by G. Allen Morris III <gam3@gam3.com>. 
-
-.SH BUGS
-
-.SH AVAILABILITY
-.B tlist
+.Sh FILES
+.Bl -tag -width Ds -compact
+.It ~/.config/Trasker/tlist.conf
+This is the per-user configuration file.
+.Sh BUGS
+The loose connection between the client and the server may cause data to
+be incorrect from time to time.
+.Sh AVAILABILITY
+.Nm
 is part of the trasker task tracking system and is available from
 http://www.gam3.org/trasker.html
 
-.SH SEE ALSO
-.BR trasker (1)
-
+.Sh SEE ALSO
+.Xr trasker 1 ,
+.Xr traskerd 8 ,
+.Sh AUTHOR
+.Nm
+was written by G. Allen Morris III <gam3@gam3.com>. 

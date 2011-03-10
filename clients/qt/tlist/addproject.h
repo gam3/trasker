@@ -18,6 +18,9 @@ public:
     AddProject(const TTCP *ttcp, QWidget *parent = 0);
     void setParentProject(const Project &proj);
 
+public slots:
+    void done(QString Check);
+
 private slots:
     void add_project();
     void show_help();

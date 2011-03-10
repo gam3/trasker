@@ -43,6 +43,8 @@ $dbh->{mock_clear_history} = 1;
 $dbh->{mock_add_resultset} = [[ 'id', 'project_id', 'temporary', 'revert_to' ],
                               [ '99',            1,       undef,       undef ]];
 
+$dbh->{mock_clear_history} = 1;
+
 $dbh->{mock_add_resultset} = {
     sql     => 'update timeslice
    set elapsed = julianday(\'now\') - julianday(start_time),
@@ -52,19 +54,17 @@ $dbh->{mock_add_resultset} = {
     results => [[ 'rows' ], []],
 };
 
-$dbh->{mock_clear_history} = 1;
-
-my $bob =
+my $result =
 eval {
     $user->set_current_project( host => "Host", project_id => 2 );
 };
 if ($@) {
     fail("set_current_project: ". $@);
 } else {
-    ok($bob == 1, "set_current_project");
+    ok($result == 1, "set_current_project");
 }
 
 use Data::Dumper;
-print Dumper $dbh->{mock_all_history};
+#diag Dumper $dbh->{mock_all_history};
 
-#done_testing();
+done_testing();

@@ -122,6 +122,27 @@ data security is important.
 
 @section Clients
 
+@subsection reconcile
+
+reconcile is normally run by a user on a daily bases to verify
+their time.
+
+reconcile can also be run on an entire project or for a client. to
+adjust the times involved.
+
+@subsection invoice
+
+Invoices can be printed.
+
+Invoices a set up on a per client basis.  
+
+Invoices can be printed by the week, or month.
+
+A @LaTeX{} template is used as the base of the invoice.
+
+The invoice will include all the users in the projects that are
+being billed.
+
 @subsection trist
 
 @subsection trail
@@ -259,11 +280,28 @@ to edit text.
 @end table
 
 @section design
+@subsection offline
+
+If a timeslice is added to a reconciled page some sort of error needs to be generated.
+
 @subsection merging
 
 It is possible to merge one project into another.  All of the unreconsiled
-time from the original project will be moved to the new project.
+times from the original project will be moved to the new project.
 
+@subsection alarms
+
+These are notifications and can come from many sources.
+A notification has a start time and my have a endtime and a type.
+
+@itemize @bullet
+@item action required
+
+@item quick
+This type is for quick reminders normally this will just bring up a
+message on the current device.
+
+@end itemize
 
 @node Errors and omissions, History, Environment Variables, Top
 @chapter Errors and Omissions

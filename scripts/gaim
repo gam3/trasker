@@ -5,33 +5,26 @@ use File::Find;
 
 use Gaim::Log::Parser;
 use Date::Calc::Object;
-use Date::Calc::MySQL;
+use Trasker::Date;
 
 use lib qw(perl/blib/lib);
-use TTDB::Note;
-use TTDB::User;
 
 use Data::Dumper;
 
 Date::Calc->date_format(0);
 
-use TTDB::DBI qw (dbi_setup);
-
 my $hash;
 
-use YAML qw(LoadFile);
+use Config::Simple;
+use Config::YAML;
 
-my $configure = LoadFile($ENV{HOME} . "/.tasker/gaim");
+our $opt_config = $ENV{HOME} . "/.config/Trasker/user.conf";
+
+my $configure = Config::Simple->new($opt_config);
 
 my $xhash = {};
 
-our ($opt_db_database, $opt_db_user, $opt_db_password);
-
-dbi_setup(
-    database => $opt_db_database || 'tasker',
-    user => $opt_db_user || 'gam3',
-    password => $opt_db_password || 'awnmwad',
-);
+die Dumper $configure;
 
 for my $i (keys %$configure) {
     next if $i eq '_exclude';

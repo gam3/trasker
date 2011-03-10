@@ -29,6 +29,7 @@ private slots:
 
 public slots:
     void autoDone(QString Check);
+    void update_display(const QModelIndex &index);
 
 private:
     QProcess *process;

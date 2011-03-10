@@ -48,7 +48,8 @@ public:
     int rowCount(const QModelIndex & parent = QModelIndex())const;
     int columnCount(const QModelIndex & parent = QModelIndex())const;
 
-    bool setDate( const QModelIndex & index, const QVariant & value, int role = Qt::EditRole );
+//    bool setDate( const QModelIndex & index, const QVariant & value, int role = Qt::EditRole );
+    bool setData(const QModelIndex &, const QVariant&, int);
     Qt::ItemFlags flags( const QModelIndex& index ) const;
 
     void setDisplayDate(QDate const&);
@@ -56,11 +57,12 @@ public:
 
 public slots:
     void timeSlice(QString user,
-      int timeclice_id,
-      int project_id,
-      int auto_id,
-      QString from, QDateTime startTime,
-      QString duration);
+    int timeclice_id,
+    int project_id,
+    int auto_id,
+    QString from, QDateTime startTime,
+    QString duration);
+    void setProjectList(QString name, int id, int pid, const QTime time, const QTime atime); // add project information
 
 private slots:
     void revert();
@@ -72,7 +74,18 @@ private:
     QList < int >ids;
     QHash < int, TimeItem * >timelist;
     QTimer refreshTimer;
+    QHash < int, const QString * >projects;
 
     QDate displayDate;
 };
+
+enum column {
+  c_id,
+  c_datatime,
+  c_duration,
+  c_autoselect,
+  c_project,
+  c_max,
+};
+
 #endif

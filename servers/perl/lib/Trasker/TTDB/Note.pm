@@ -109,7 +109,6 @@ sub create
     }
     $st->execute();
 
-    use Data::Dumper;
     $st_id->execute();
     $self->{id} = $st_id->fetchrow();
 

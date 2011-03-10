@@ -81,9 +81,11 @@ public slots:
     void p_note();
     void p_auto();
     void p_task();
+    void p_prop();
     void timeEdit();
 
     void updateRecentMenu(QList<int>&);
+    void redrawRecentMenu();
 
 private slots:
     void insertChild();
@@ -100,6 +102,7 @@ private slots:
 
 private:
     void createActions();
+    void createViewActions();
 
 #if defined (Q_WS_X11)
     void x11();
@@ -120,6 +123,7 @@ private:
     QPoint savePos;
 
     void mousePressEvent(QMouseEvent *event);
+    void keyPressEvent(QKeyEvent *event);
 
     void readSettings();
     void writeSettings();
@@ -140,6 +144,9 @@ private:
     QAction *noteAction;
     QAction *taskAction;
     QAction *autoAction;
+    QAction *propAction;
+    QAction *addProjAction;
+
     QAction *selectCurrentAction;
     QAction *timeEditAction;
 
@@ -156,6 +163,8 @@ private:
     bool recentMenuClean;
     QList<int> recent_projects;
     QAction *recentProjectActions[10];
+    QActionGroup *alignmentGroup;
+    int current_project_id;
 };
 
 #endif

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2006-2009 G. Allen Morris III, All rights reserved.
+** Copyright (C) 2006-2011 G. Allen Morris III, All rights reserved.
 **
 ** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
@@ -46,7 +46,13 @@ int TimeModel::rowCount(QModelIndex const& parent) const
 
 int TimeModel::columnCount(QModelIndex const&) const
 {
-    return 5;
+    return c_max;
+}
+
+bool TimeModel::setData(const QModelIndex & index, const QVariant & value, int role = Qt::EditRole)
+{
+    qWarning("update %d", role);
+    return false;
 }
 
 QVariant TimeModel::data(const QModelIndex &index, int role) const
@@ -58,23 +64,47 @@ QVariant TimeModel::data(const QModelIndex &index, int role) const
     TimeItem *item = timelist[id];
     if (role == Qt::EditRole) {
         qWarning("edit");
-    }
-
-    if (role == Qt::DisplayRole) {
 	switch (index.column()) {
-	  case 0:
+	  case c_id:
 	    return id;
-	  case 1:
+	  case c_datatime:
 	    return item->datetime();
-	  case 2:
+	  case c_duration:
             return item->duration();
-          case 3:
+          case c_autoselect:
             return item->autoSelect();
-          case 4:
-	    return item->project();
+          case c_project:
+	    {
+		int id = item->project().toInt();
+		const QString *xproject = projects[id];
+		return *(xproject);
+	    }
 	  default:
 	    return QString("1234");
 	}
+    }
+    if (role == Qt::DisplayRole) {
+	switch (index.column()) {
+	  case c_id:
+	    return id;
+	  case c_datatime:
+	    return item->datetime();
+	  case c_duration:
+            return item->duration();
+          case c_autoselect:
+            return item->autoSelect();
+          case c_project:
+	    {
+		int id = item->project().toInt();
+		const QString *xproject = projects[id];
+		return *(xproject);
+	    }
+	  default:
+	    return QString("1234");
+	}
+    } else if (role == Qt::EditRole) {
+        qWarning("EditRole");
+    } else {
     }
     return QVariant();
 }
@@ -84,13 +114,15 @@ QVariant TimeModel::headerData(int section, Qt::Orientation orientation, int rol
     if (role == Qt::DisplayRole) {
 	if (orientation == Qt::Horizontal) {
 	    switch (section) {
-	      case 0:
+	      case c_id:
                 return QString("Hidden");
-	      case 1:
+	      case c_datatime:
                 return QString("Started");
-	      case 2:
+	      case c_duration:
                 return QString("Duration");
-	      case 3:
+	      case c_autoselect:
+		return QString("Auto");
+	      case c_project:
 		return QString("Project");
 	    }
 	} else {
@@ -108,24 +140,16 @@ void TimeModel::timeSlice(QString user,
 {
     TimeItem *item;
 
-    beginInsertRows(QModelIndex(), 0, ids.size());
+    beginInsertRows(QModelIndex(), ids.size(), ids.size() + 1);
     ids.append(timeslice_id);
     item = new TimeItem(user, timeslice_id, project_id, auto_id, from, startTime, duration, displayDate);
+
     timelist[timeslice_id] = item;
     endInsertRows();
 
     refreshTimer.start();
 }
 
-
-bool TimeModel::setDate( const QModelIndex & index, const QVariant & value, int role )
-{
-    Q_UNUSED(index);
-    Q_UNUSED(value);
-    Q_UNUSED(role);
-
-    return false;
-}
 
 void TimeModel::setDisplayDate(QDate const& date)
 {
@@ -137,13 +161,32 @@ Qt::ItemFlags TimeModel::flags( const QModelIndex& index ) const
 {
     Qt::ItemFlags flag = Qt::NoItemFlags;
     switch (index.column()) {
-    case 3:
+      case c_datatime:
+      case c_project:
         flag |= Qt::ItemIsEditable | Qt::ItemIsEnabled;
 	break;
-    default:
+      case c_id:
+        break;
+      default:
         flag |= Qt::ItemIsEnabled;
         break;
     }
     return flag;
 }
+
+void TimeModel::setProjectList(QString name, int id, int pid, const QTime time, const QTime atime)
+{
+    char buffer[20];
+    Q_UNUSED(pid);
+    Q_UNUSED(time);
+    Q_UNUSED(atime);
+    snprintf(buffer, 20, " (%d)", id);
+
+    QString *project = new QString(name + buffer);
+    if (project->contains(id)) {
+        qWarning("memory leak in TimeModel::setProjectList");
+    }
+    projects[id] = project;
+}
+
 /* eof */

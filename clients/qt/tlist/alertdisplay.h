@@ -16,6 +16,10 @@ public:
 
     void setText(const QString);
 
+public slots:
+    void reject() { };
+    void accept() { };
+
 protected:
     virtual void changeEvent(QEvent *e);
 

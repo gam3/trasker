@@ -10,14 +10,36 @@ use strict;
 # one place at one time.
 #
 package Trasker::TTDB::Alert;
+use base 'Trasker::TTDB';
 
 use Trasker::TTDB::DBI qw (get_dbh);
 
-our $VERSION = '0.001';
+our $VERSION = $Trasker::TTDB::VERSION;
 
 use Params::Validate qw( validate validate_pos SCALAR BOOLEAN HASHREF OBJECT );
 
 use Carp qw (croak);
+
+=head1 NAME
+
+Trasker::TTDB::Alert - Perl interface to the tasker alert
+
+=head1 SYNOPSIS
+
+  use Trasker::TTDB::Alert;
+
+  $alert = Trasker::TTDB::User->new(id => I<id>):
+
+=head2 Constructor
+
+=over
+
+=item new
+
+This creates a user object.  Use I<create> to make this object
+preminate.
+
+=cut
 
 sub new
 {
@@ -35,6 +57,12 @@ sub new
 
     return bless { %p }, $class;
 }
+
+=item create
+
+This will create an alarm.
+
+=cut
 
 sub create
 {
@@ -74,7 +102,7 @@ sub get
     my $class = shift;
 
     my %p = validate(@_, {
-        id => 0,
+       id => 0,
     });
 
     my $data;
@@ -95,24 +123,6 @@ sub id
 1;
 __END__
 
-=head1 NAME
-
-Trasker::TTDB::Alert - Perl interface to the tasker alert
-
-=head1 SYNOPSIS
-
-  use Trasker::TTDB::Alert;
-
-  $alert = Trasker::TTDB::User->new(id => I<id>):
-
-=head2 Constructor
-
-=over
-
-=item new
-
-This creates a user object.  Use I<create> to make this object
-preminate.
 
 =item get
 

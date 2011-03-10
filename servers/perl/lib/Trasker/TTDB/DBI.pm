@@ -32,7 +32,7 @@ use Params::Validate qw( validate );
 
 sub dbtype
 {
-    'sqlite';
+    return $db;
 }
 
 sub dbi_setup
@@ -58,6 +58,9 @@ sub dbi_setup
         $password = $value;
     }
     if (my $value = $p{type}) {
+        if ($value eq 'pgsql') {
+	    $value = 'Pg';
+	}
         $db = $value;
     }
 }

@@ -1,6 +1,26 @@
+#!/usr/bin/ruby1.8
+
+# == Synopsis
+#
+# trasker: trasker command
+#
+# == Usage
+#
+# trasker_xmpp [OPTIONS]
+#
+# -h, --help:
+#    show help
+#
+require 'getoptlong'
+require 'rdoc/usage'
+
 require 'xmpp4r'
 require 'xmpp4r/roster'
 require 'xmpp4r/jid'
+
+require 'socket'
+
+host, port = 'localhost', 8000
 
 jid = Jabber::JID::new("trasker@jabber.org/")
 client = Jabber::Client::new(jid)
@@ -11,25 +31,44 @@ client.auth('asdfasdf')
 
 client.send(Jabber::Presence.new.set_type(:available))
 
+s = TCPSocket.open(host, port)
+
+STDOUT.puts "done"
+STDOUT.flush
+STDOUT.puts s.addr
+STDOUT.puts s.peeraddr
+begin
+    sleep(0.3)
+    msg = s.read_nonblock(4096)
+  rescue SystemCallError
+    puts "SystemCallError"
+end
+
+s.puts "authorize\tgam3/ab12cd34";
+bob = 'xx'
+
 # Send an Instant Message.
-body = 'Hi XMPP'
+body = "Hi XMPP #{msg}"
 to_jid = Jabber::JID.new('gam3@jabber.org')
 message = Jabber::Message::new(to_jid, body).set_type(:normal).set_id('1')
 client.send(message)
 client.add_message_callback do |m|
     if m.type != :error
-	puts m.body
-	puts m.inspect;
-	puts m.from;
-	puts m.type;
-# get the user name and make a database of jids -> users
-	body = 'Hi XMPP ' + m.body
-	to_jid = Jabber::JID.new(m.from)
-	message = Jabber::Message::new(to_jid, body).set_type(:normal).set_id('2')
-	client.send(message)
+        bob = m.from
+	s.puts m.body
     end
 end
 
 while true do
+    ready = select([s]) 
+    readable = ready[0]
+
+    readable.each do |socket|
+        input = socket.readpartial(4096)
+	body = input
+	to_jid = Jabber::JID.new(bob)
+	message = Jabber::Message::new(to_jid, body).set_type(:message).set_id('2')
+	client.send(message)
+    end
 end
 

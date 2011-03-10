@@ -12,3 +12,7 @@ QT += network
 # Input
 HEADERS += connection.h ttcp.h
 SOURCES += connection.cpp ttcp.cpp
+
+#warning $(DESTDIR)
+target.path = /usr/lib
+INSTALLS    = target

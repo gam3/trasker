@@ -1,9 +1,9 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT([trasker-X11],[0.0.2],[trasker-bugs@gam3.net])
+AC_INIT([trasker-X11],[@VERSION@],[trasker-bugs@gam3.net])
 AC_PREREQ(2.59)
-AC_COPYRIGHT([Copyright (c) 2010 G. Allen Morris III])
+AC_COPYRIGHT([Copyright (c) 2011 G. Allen Morris III])
 AC_CANONICAL_TARGET
 
 AM_INIT_AUTOMAKE

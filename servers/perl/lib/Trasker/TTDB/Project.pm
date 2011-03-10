@@ -147,6 +147,10 @@ EOP
     $self;
 }
 
+=item update
+
+=cut
+
 sub update
 {
     my $self = shift;
@@ -605,6 +609,16 @@ sub address
     }
 }
 
+=item active
+
+Get the billing address for the project.
+
+=cut
+
+sub active
+{
+    1;
+}
 
 =item create
 

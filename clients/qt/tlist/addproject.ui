@@ -231,7 +231,7 @@
    <sender>buttonCancel</sender>
    <signal>clicked()</signal>
    <receiver>AddProject</receiver>
-   <slot>accept()</slot>
+   <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel" >
      <x>430</x>

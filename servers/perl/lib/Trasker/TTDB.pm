@@ -7,6 +7,8 @@
 # The Trasker Time DataBase package
 package Trasker::TTDB;
 
+our $VERSION = 0.001000;
+
 use Trasker::TTDB::DBI qw (get_dbh);
 
 sub now

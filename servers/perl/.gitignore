@@ -1,4 +1,16 @@
 /*.old
-/Makefile
+/Makefile$
 /pmakefile
 /inc/
+script/traskerd
+script/traskers
+/Makefile
+/Makefile.PL
+/.trasker.conf
+/api/
+/html/
+/latex/
+/bob
+/config.status.lineno
+lib/Trasker.pm
+/lib/Trasker.pm.in.save

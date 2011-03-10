@@ -23,7 +23,8 @@
 #include <QVariant>
 #include <QHash>
 
-class AutoItem;
+#include "autoitem.h"
+
 
 class QMenu;
 class QAction;
@@ -33,6 +34,7 @@ class AutoModel:public QAbstractTableModel
     Q_OBJECT
 
     QVariant data(const QModelIndex & index, int role) const;
+    QVariant headerData(int section, Qt::Orientation orientation, int role) const;
     int rowCount(const QModelIndex & parent = QModelIndex())const;
     int columnCount(const QModelIndex & parent = QModelIndex())const;
 
@@ -41,12 +43,12 @@ public:
     ~AutoModel();
 
 public slots:
-    void add_autoentry(QString user, int autoselect_id, int project_id, QString host, QString name, QString className, QString role, QString desktop, QString title, QString flags);
+    void add_autoentry(QString user, int autoselect_id, int project_id, QString host, QString name, QString className, QString role, QString desktop, QString title, QString flags, QString enabled);
 
 private slots:
 
 private:
     QList < int >ids;
-    QHash < int, AutoItem * >timelist;
+    QHash < int, AutoItem * >autolist;
 };
 #endif

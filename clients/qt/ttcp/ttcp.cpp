@@ -33,6 +33,12 @@ QString TTCP::nickName() const
     return QString("gam3@gam3.net");
 }
 
+QString TTCP::getProject( int ) const
+{
+    return QString("Project Name Here");
+}
+
+
 bool TTCP::hasConnection(const QHostAddress &senderIp, int senderPort) const
 {
     Q_UNUSED(senderIp);
@@ -182,8 +188,15 @@ void TTCP::getRecentProjects()
 void TTCP::newCommand(const QStringList &list)
 {
     if (list[0] == "auto") {
-        emit add_autoentry(list[1], list[2].toInt(), list[3].toInt(), list[4], list[5], list[6], list[7], list[8], list[9], list[10]);
-                         /* user    project          auto_id          host     name     class    role     desk     title     flags*/
+
+	if (list.size() == 12) {
+	    emit add_autoentry(list[1], list[2].toInt(), list[3].toInt(), list[4], list[5], list[6], list[7], list[8], list[9], list[10], list[11]);
+			     /* user    project          auto_id          host     name     class    role     desk     title     flags    enabled */
+	} else
+	if (list.size() == 11) {
+	    emit add_autoentry(list[1], list[2].toInt(), list[3].toInt(), list[4], list[5], list[6], list[7], list[8], list[9], list[10], "t");
+			     /* user    project          auto_id          host     name     class    role     desk     title     flags    enabled */
+	}
     } else if (list[0] == "entry") {
 	emit add_entry(list[2], list[3].toInt(), list[4].toInt(), totime(list[5]),  totime(list[6]));
     } else if (list[0] == "timeslice") {
@@ -241,3 +254,4 @@ void TTCP::newCommand(const QStringList &list)
     }
 }
 
+// eof

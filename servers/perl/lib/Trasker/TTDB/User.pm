@@ -164,6 +164,10 @@ sub id
     $self->{id} || die "No id";
 }
 
+=item times
+
+=cut
+
 sub times
 {
     my $self = shift;
@@ -211,6 +215,7 @@ SQL
     while (my $data = $sth->fetchrow_hashref()) {
 	push(@data, bless { data => $data, id => $data->{id} }, 'Trasker::TTDB::TimeSlice');
     }
+    $sth->finish();
 
     @data;
 }
@@ -255,11 +260,12 @@ select project_id from timeslice where elapsed is NULL and user_id = ?;
 SQL
 
     $sth->execute($user_id);
-    $sth->finish();
 
     my $current = $sth->fetchrow_array;
 
-    croak("No current project") unless $current;
+    $sth->finish();
+
+    croak("No current project for $user_id") unless $current;
 
     require Trasker::TTDB::Project;
     require Trasker::TTDB::UserProject;
@@ -267,7 +273,7 @@ SQL
     Trasker::TTDB::UserProject->new(project => Trasker::TTDB::Project->get(id => $current), user => $self);
 }
 
-=item current_project
+=item projects
 
 =cut
 
@@ -349,8 +355,9 @@ sub set_current_project
 
     my $dbh = get_dbh('commit');
 
-    my $sths = $dbh->prepare(<<SQL) or die chomp $dbh->err_str();
-select id, project_id, temporary, revert_to
+# $id, $current_project_id, $type, $old_rid
+    my $sths = $dbh->prepare(<<SQL);
+select id, project_id, temporary, revert_to, auto_id
   from timeslice
  where end_time is NULL
    and user_id = ?
@@ -358,7 +365,7 @@ SQL
 #  for update
 
     my $sthu;
-    if (0) {
+    if (dbtype eq 'mysql') {
         $sthu = $dbh->prepare(<<'SQL') or die $dbh->err_str();
 update timeslice
    set elapsed = timediff(NOW(), start_time),
@@ -394,14 +401,16 @@ SQL
     eval {
         $sths->execute($user_id);       # get current project
 
-        my ($id, $current_project_id, $type, $old_rid) = (undef, 0, undef, 0);
+        my ($id, $current_project_id, $type, $old_rid, $old_auto_id) = (undef, 0, undef, 0, undef);
 
         my $rows = $sths->rows;
 
         if ($rows == 1) {
-            ($id, $current_project_id, $type, $old_rid) = ($sths->fetchrow_array);
+            ($id, $current_project_id, $type, $old_rid, $old_auto_id) = ($sths->fetchrow_array);
+	    $sths->finish;
 
-            if ($project_id == $current_project_id) {
+            if ($project_id == $current_project_id &&
+	        $p{auto_id} == $old_auto_id) {
 warn("Not updating $current_project_id == $project_id");
                 $dbh->rollback;
                 return 0;
@@ -409,7 +418,7 @@ warn("Not updating $current_project_id == $project_id");
             $sthu->execute($id);   # end current timeslice
             die 'No update: ' . $sthu->rows unless $sthu->rows == 1;
         } elsif ($rows == 0) {
-#           warn "new";
+           warn "Timeslice was empty";
         } else {
             die "The database is corrupt";
         }
@@ -419,23 +428,27 @@ warn("Not updating $current_project_id == $project_id");
            $new_rid = $old_rid || $id;
         }
 
+        #user_id, project_id, temporary, start_time, auto_id, revert_to, host
+
+        #warn(sprintf("[%s, %s, %s, %s, %s, %s]", $user_id, $project_id, $p{temporary}, $p{auto_id} || 'NULL', $new_rid || 'NULL', $p{host}));
+
         $sthi->execute(
-          $user_id,
+          $user_id,	           # user_id
           $project_id,
           $p{temporary},
           $p{auto_id} || undef,
           $new_rid,
           $p{host},
-        ) || die $sthi->{Statement} . ' ' . $dbh->errstr ;
+        );
     };
     $sths->finish();
     $sthu->finish();
     $sthi->finish();
 
     if ($@) {
-        my $bob = $@;
+        my $error = $@;
         $dbh->rollback;
-	die $bob;
+	die $error;
     } else {
         $dbh->commit;
     }
@@ -479,7 +492,7 @@ update timeslice
    set elapsed = $now - start_time, end_time = $now
  where id = ?
 SQL
-    my $sthi = $dbh->prepare(<<SQL) or die $dbh->err_str();
+    my $sthi = $dbh->prepare(<<SQL);
 insert into timeslice (user_id, project_id, temporary, auto_id, start_time, host)
                SELECT user_id, project_id, 'revert', auto_id, $now, host FROM timeslice where id = ?
 SQL
@@ -488,6 +501,7 @@ SQL
 
     my $rows = $sth->rows;
 
+    my $ret;
     if ($rows == 1) {
         my ($id, $flag, $rid, $pid, $host) = $sth->fetchrow_array;
 
@@ -500,6 +514,7 @@ SQL
                 $dbh->rollback;
             } else {
                 $dbh->commit;
+		$ret = $rid;
             }
         } else {
             warn "Rollback";
@@ -509,6 +524,8 @@ SQL
     } else {
         die "Fatal Error: ", $rows;
     }
+    $sth->finish();
+    return $ret;
 }
 
 sub auto_revert_project
@@ -516,11 +533,21 @@ sub auto_revert_project
     my $self = shift;
     my $dbh = get_dbh;
     my %p = validate(@_, {
-        id => 1,
+        id => 0,
+	host => 1,
+	desktop => 0,
+	name => 0,
+	class => 0,
+	title => 0,
+	role => 0,
     });
 
-    $self->revert(type => 'window', id => $p{host});  # We only want to revert it if we set it.
+    $self->revert(type => 'window', host => $p{host});  # We only want to revert it if we set it.
 }
+
+=item B<auto_get_project>
+
+=cut
 
 sub auto_get_project
 {
@@ -555,7 +582,7 @@ SQL
     $pid;
 }
 
-=item auto_set_project
+=item B<auto_set_project>
 
 =cut
 
@@ -580,16 +607,22 @@ sub auto_set_project
         %p,
     );
 
+    my $ret;
     if (defined $auto) {
 #        my $newproject = $self->project($auto->project_id);
 #        my $curproject = $self->current_project();
 
-        return $self->set_current_project(project_id => $auto->project_id, temporary => 'window', auto_id => $auto->id, host => $p{host});
+        $ret = $self->set_current_project(project_id => $auto->project_id, temporary => 'window', auto_id => $auto->id, host => $p{host});
     } else {
-        $self->revert(type => 'window', host => $p{host});
-        return -1;
+        $ret = $self->revert(type => 'window', host => $p{host});
     }
+    return $ret;
 }
+
+=item B<has_project>
+
+=cut
+
 sub has_project
 {
     my $self = shift;
@@ -599,7 +632,7 @@ sub has_project
         id => 0,
         project => {
            optional => 1,
-           isa => [ qw(  Trasker::TTDB::Project ) ],
+           isa => [ qw( Trasker::TTDB::Project ) ],
         },
     });
     die 'need a project' unless $p{id} || $p{project};
@@ -618,6 +651,10 @@ SQL
 
     $ret;
 }
+
+=item B<add_task>
+
+=cut
 
 sub add_task
 {
@@ -726,7 +763,6 @@ sub day
     my $start = Trasker::Date->new($day->date, 0,0,0);
 
     my $dbh = get_dbh();
-
 
     my $project_id_clause = '';
     my @args;
@@ -870,6 +906,8 @@ SQL
     $sth->finish;
 
     my $ret = bless({ user_id => $self->id }, "Trasker::TTDB::ProjectResponse");
+    $ret->{projects} = [];
+    $ret->{project} = {};
 
     for my $entry (@$data) {
 	$data = { %$entry };
@@ -985,7 +1023,7 @@ update timeslice
 SQL
     my @timeslices = ($curid);
     eval {
-	$sth_s->execute($curid, 1);		# Lock the timeslice being split
+	$sth_s->execute($curid, $self->id);		# Lock the timeslice being split
 
 	die "Timeslice not found" unless $sth_s->rows;
 
@@ -1004,6 +1042,7 @@ SQL
 		die "Time out of range " . $splittime->mysql();
 	    }
 
+	    #user_id, project_id, temporary, start_time, auto_id, revert_to, host
 	    $sthi->execute($orig->id);
 
 	    $sth_id->execute();
@@ -1048,13 +1087,6 @@ This is an alias to the userid function
 =item revert
 
 =item auto_revert_project
-
-=item auto_get_project
-
-
-=item has_project
-
-=item add_task
 
 =item add_note
 

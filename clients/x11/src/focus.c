@@ -119,7 +119,7 @@ struct window_info {
     time_t end_time;
     char *name;
     char *host;
-    char *tasker;
+    char *trasker;
     char *res_name;
     char *res_class;
     char *res_role;
@@ -281,9 +281,9 @@ test_focus(struct window_info *win_info, XScreenSaverInfo * mit_info,
 	if (win_info->host) {
 	    XFree(win_info->host);
 	}
-	if (win_info->tasker) {
-	    XFree(win_info->tasker);
-	    win_info->tasker = NULL;
+	if (win_info->trasker) {
+	    XFree(win_info->trasker);
+	    win_info->trasker = NULL;
 	}
     }
     win_info->name = NULL;
@@ -406,7 +406,7 @@ test_focus(struct window_info *win_info, XScreenSaverInfo * mit_info,
 
 	    status = XGetTextProperty(my_display, new, &host, property);
 	    if (status) {
-		win_info->tasker = (char *) host.value;
+		win_info->trasker = (char *) host.value;
 	    } else {
 		//      printf(".");
 	    }
@@ -544,10 +544,12 @@ char *password = "guest";
 char *config_tail = ".config/Trasker/user.conf";
 char *config_file;
 
+long idletime = 3 * 60 * 1000L;
+
 void get_password()
 {
     FILE *config;
-    char buffer[1024];
+    char buffer[1025];
     char *ptr;
 
     if (!(config = fopen(config_file, "r"))) {
@@ -555,8 +557,44 @@ void get_password()
 	perror(buffer);
 	exit(-3);
     }
+    buffer[1024] = '\0';
     while (ptr = fgets(buffer, 1024, config)) {
-	printf("%s", ptr);
+	ptr[strlen(ptr)-1]  = '\0';
+	while (*ptr == ' ' || *ptr == '\t') ptr++;
+        if (0 == strncmp(ptr, "password", 8)) {
+	    if ('\r' == ptr[strlen(ptr)-1]) {
+		ptr[strlen(ptr)-1]  = '\0';
+	    }
+	    ptr += 9;
+	    while (*ptr == ' ' || *ptr == '\t') *ptr++;
+	    if (*ptr == '=') *ptr++;
+	    while (*ptr == ' ' || *ptr == '\t') *ptr++;
+	    password = calloc(1, strlen(ptr));
+	    strcpy(password, ptr);
+	} else
+        if (0 == strncmp(ptr, "login", 5)) {
+	    ptr += 5;
+	    while (*ptr == ' ' || *ptr == '\t') *ptr++;
+	    if (*ptr == '=') *ptr++;
+	    while (*ptr == ' ' || *ptr == '\t') *ptr++;
+	    login_name = calloc(1, strlen(ptr));
+	    strcpy(login_name, ptr);
+	} else
+        if (0 == strncmp(ptr, "user", 4)) {
+	    ptr += 4;
+	    while (*ptr == ' ' || *ptr == '\t') *ptr++;
+	    if (*ptr == '=') *ptr++;
+	    while (*ptr == ' ' || *ptr == '\t') *ptr++;
+	    login_name = calloc(1, strlen(ptr));
+	    strcpy(login_name, ptr);
+	} else
+        if (0 == strncmp(ptr, "idletime", 8)) {
+	    ptr += 8;
+	    while (*ptr == ' ' || *ptr == '\t') *ptr++;
+	    if (*ptr == '=') *ptr++;
+	    while (*ptr == ' ' || *ptr == '\t') *ptr++;
+	    idletime = atoi(ptr);
+	}
     }
 }
 
@@ -677,7 +715,6 @@ void sighandle(int x)
 
 void sigpipe(int x)
 {
-    fprintf(stderr, "sigpipe\n", x);
     return;
 }
 
@@ -784,10 +821,12 @@ void loop(int rfd, long idletime, char **desktops, int desktopcnt)
     struct window_info temp_window_info;
     FILE *log = NULL;
     int idle_flag = 0;
+    int authorized = 0;
+    int i;
 
     XScreenSaverInfo *mit_info;
 
-    int x;
+    int rrx;
 
     mit_info = XScreenSaverAllocInfo();
 
@@ -809,9 +848,9 @@ void loop(int rfd, long idletime, char **desktops, int desktopcnt)
 	frfd = NULL;
     }
 
-    for (x = 0; x < SLOTS; x++) {
-	memset(&win_info[x], 0, sizeof(struct window_info));
-	desktop[x] = 0L;
+    for (i = 0; i < SLOTS; i++) {
+	memset(&win_info[i], 0, sizeof(struct window_info));
+	desktop[i] = 0L;
     }
 
     if (frfd) {
@@ -827,13 +866,12 @@ void loop(int rfd, long idletime, char **desktops, int desktopcnt)
 
     memset(&temp_window_info, 0, sizeof(struct window_info));
 
-    x = 0;
+    rrx = 0;
 
-    test_focus(&win_info[x], mit_info, idletime);
-    memmove(&current_window_info, &win_info[x],
+    test_focus(&win_info[rrx], mit_info, idletime);
+    memmove(&current_window_info, &win_info[rrx],
 	    sizeof(struct window_info));
     get_desktops(desktops, 20);
-    rdf_window(frfd, &current_window_info, desktops);
 
     while (stay) {
 	struct vt_stat terminal_status;
@@ -858,15 +896,22 @@ void loop(int rfd, long idletime, char **desktops, int desktopcnt)
 		    fprintf(stderr, "Disconected\n");
 		} else if (errno != EAGAIN) {
 		    perror("Error reading socket");
-		} /* else {
-		     We got an EAGAIN
-		} */
+		} else {
+		    // perror("EAGAIN");
+		} 
 	    } else {
 		buffer[strlen(buffer) - 1] = '\0';
 		if (0 == strncmp(buffer, "TTCP\t", 5)) {
-		    printf("buffer: TTCP %s\n", buffer);
+		    printf("version %s\n", buffer);
 		    fprintf(frfd, "authorize\t%s/%s\n", login_name, password);
+		} else
+		if (0 == strncmp(buffer, "authorized", 10)) {
+		    printf("authorized\n", buffer);
+		    authorized = 1;
 		    fprintf(frfd, "host\t%s:%d\n", host_name, display_name);
+		} else
+		if (0 == strncmp(buffer, "tracker\tOK\t", 11)) {
+		    printf("buffer: %s\n", &buffer[11]);
 		} else {
 		    printf("buffer: %s\n", buffer);
 		}
@@ -876,91 +921,62 @@ void loop(int rfd, long idletime, char **desktops, int desktopcnt)
 	current_desktop = get_desktop();
 
 	for (i = 0; i < SLOTS; i++) {
-	    if (i == x)
+	    if (i == rrx)
 		continue;
-	    if (wdiff(&win_info[i], &win_info[x])) {
+	    if (wdiff(&win_info[i], &win_info[rrx])) {
 		miss = 1;
 	    }
-#if 0
-	    if (desktop[i] != desktop[x]) {
+	    if (desktop[i] != desktop[rrx]) {
 		desk_miss = 1;
 	    }
-#else
-	    desk_miss = 1;
-#endif
 	}
-	if ((!miss && wdiff(&win_info[x], &current_window_info)) ||
-	    (!desk_miss && desktop[x] != current_desktop)) {
-	    if (!(log = fopen(log_file, "a"))) {
-		perror("Could not open logfile");
-	    }
-	    if (rfd < 0) {
-		rfd = get_remotefd(server, port);
-		if (rfd >= 0) {
-		    frfd = fdopen(rfd, "w+");
-		    fprintf(stderr, "Running in Connected mode\n");
+	if (rfd < 0) {
+	    if (log == NULL) {
+		if (!(log = fopen(log_file, "a"))) {
+		    perror("Could not open logfile");
 		}
+	    }
+	    rfd = get_remotefd(server, port);
+	    if (rfd >= 0) {
+		frfd = fdopen(rfd, "w+");
+		fprintf(stderr, "Running in Connected mode\n");
 	    }
 	}
 	XScreenSaverQueryInfo(my_display, DefaultRootWindow(my_display),
 			      mit_info);
 
 	if (mit_info->idle > idletime) {
+	    // active -> idle
 	    if (idle_flag != 1) {
 		idle_flag = 1;
 		miss = 0;
 		force = 1;
 	    }
 	} else {
+	    // idle -> active
 	    if (idle_flag == 1) {
 		idle_flag = 0;
 		miss = 0;
 		force = 1;
 	    }
 	}
-
-	if ((!miss && wdiff(&win_info[x], &current_window_info)) || force) {
-	    get_desktops(desktops, 20);
-	    log_window(log, &current_window_info);
-	    rdf_xwindow(frfd, &current_window_info);
-	    memmove(&current_window_info, &win_info[x],
-		    sizeof(struct window_info));
-	    memset(&win_info[x], 0, sizeof(struct window_info));
-	    rdf_window(frfd, &current_window_info, desktops);
-	    force = 0;
-	}
-// if all desktops same and not same as old desktop
-	if (!desk_miss && desktop[x] != current_desktop) {
-	    if (log && start_time) {
-		fprintf(log, "%lu %lu Desktop %d \"%s\"\n",
-			start_time,
-			time(NULL),
-			current_desktop, desktops[current_desktop]
-		    );
-	    }
-	    assert(0);
-	    if (frfd) {
-		fprintf(frfd, "xtracker\t%lu\t%lu\tDesktop\t%d\t%s\n",
-			start_time,
-			time(NULL),
-			current_desktop, desktops[current_desktop]
-		    );
-	    }
-	    current_desktop = get_desktop();
-	    start_time = time(NULL);
-	    if (frfd) {
-		fprintf(frfd, "desktop\t%s\t%s\t%lu\t%d\t%s\n",
-			user,
-			host_name,
-			start_time,
-			current_desktop, desktops[current_desktop]
-		    );
+        if (authorized) {
+	    if ((!miss && wdiff(&win_info[rrx], &current_window_info)) || force) {
+		get_desktops(desktops, 20);
+		log_window(log, &current_window_info);
+		rdf_xwindow(frfd, &current_window_info);
+		memmove(&current_window_info, &win_info[rrx],
+			sizeof(struct window_info));
+		memset(&win_info[rrx], 0, sizeof(struct window_info));
+		rdf_window(frfd, &current_window_info, desktops);
+		force = 0;
 	    }
 	}
 	if (frfd) {
 	    int ref = fflush(frfd);
 	    if (ref < 0) {
 		fprintf(stderr, "Disconected 2\n");
+		authorized = 0;
 		if (log) {
 		    fprintf(log, "%ld %ld Disconected\n", time(NULL),
 			    time(NULL));
@@ -972,7 +988,7 @@ void loop(int rfd, long idletime, char **desktops, int desktopcnt)
 		rfd = get_remotefd(server, port);
 		if (rfd >= 0) {
 		    frfd = fdopen(rfd, "w+");
-		    fprintf(stderr, "Running in Connected mode\n");
+		    fprintf(stderr, "xRunning in Connected mode\n");
 		}
 	    }
 	}
@@ -982,13 +998,12 @@ void loop(int rfd, long idletime, char **desktops, int desktopcnt)
 	    log = NULL;
 	}
 
-	x = (x + 1) % SLOTS;
+	rrx = (rrx + 1) % SLOTS;
 
 	usleep(DELAY);
-//	fprintf(stderr, "sleep\n");
 
-	desktop[x] = get_desktop();
-	test_focus(&win_info[x], mit_info, idletime);
+	desktop[rrx] = get_desktop();
+	test_focus(&win_info[rrx], mit_info, idletime);
     }
 
     if (!(log = fopen(log_file, "a"))) {
@@ -1160,11 +1175,8 @@ int main(int argc, char *argv[])
     }
     get_password();
 
-    long idletime = 3 * 60 * 1000L;
-
     typedef void (*sighandler_t) (int);
     sighandler_t old_sighander;
-
 
     user = getenv("USER");
 
@@ -1199,12 +1211,12 @@ int main(int argc, char *argv[])
 	}
 	buffer = calloc(1024, 1);
 	if (!log_file) {
-	    sprintf(buffer, "%s/.tasker.%s.%d.%s", home, host, atoi(port),
+	    sprintf(buffer, "%s/.trasker.%s.%d.%s", home, host, atoi(port),
 		    "log");
 	    log_file = strdup(buffer);
 	}
 	if (!pid_file) {
-	    sprintf(buffer, "%s/.tasker.%s.%d.%s", home, host, atoi(port),
+	    sprintf(buffer, "%s/.trasker.%s.%d.%s", home, host, atoi(port),
 		    "pid");
 	    pid_file = strdup(buffer);
 	}

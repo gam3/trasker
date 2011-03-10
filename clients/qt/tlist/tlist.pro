@@ -20,6 +20,7 @@ HEADERS += addproject.h \
     alerts.h \
     auto_select.h \
     automodel.h \
+    autoitem.h \
     conf.h \
     config.h \
     connection.h \
@@ -35,6 +36,7 @@ HEADERS += addproject.h \
     treemodel.h \
     ttcp.h \
     timeedit.h \
+    timeeditdelegate.h \
     timemodel.h \
     timeitem.h \
     multipagewidget.h \
@@ -56,6 +58,7 @@ FORMS += addproject.ui \
 SOURCES += addproject.cpp \
     auto_select.cpp \
     automodel.cpp \
+    autoitem.cpp \
     alerts.cpp \
     connection.cpp \
     error.cpp \
@@ -70,6 +73,7 @@ SOURCES += addproject.cpp \
     treemodel.cpp \
     ttcp.cpp \
     timeedit.cpp \
+    timeeditdelegate.cpp \
     timemodel.cpp \
     timeitem.cpp \
     multipagewidget.cpp \

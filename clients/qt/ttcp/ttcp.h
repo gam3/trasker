@@ -18,7 +18,6 @@
 #define TTCP_H
 
 #include <QAbstractSocket>
-#include <QHash>
 #include <QHostAddress>
 #include <QTime>
 
@@ -41,7 +40,8 @@ public slots:
     void getauto(int projId);
     void addnote(int projId, const QString &note) const;
     void addtask(int parentId, const QString &name, const QString &desc) const;
-    void addauto(const int id, const QString &host, const QString &classN, const QString &name, const QString &role, const QString &title, const QString &desktop) const;
+    void addauto(const int id, const QString &host, const QString &classN, const QString &name,
+                 const QString &role, const QString &title, const QString &desktop) const;
     //! Change the current project
     void setProject(int);
 
@@ -55,28 +55,28 @@ signals:
     void accept_note(QString name);
     void accept_project(QString name);
     void accept_select(QString name);
-    void add_autoentry(QString user, int project_id, int auto_id, QString, QString, QString, QString, QString, QString, QString);
+    void add_autoentry(QString user, int project_id, int auto_id, QString, QString, QString, QString, QString, QString, QString, QString);
     void add_entry(QString user, int project_id, int parent_project_id, QTime time, QTime atime);
     void add_timeslice(QString user, int timeclice_id, int project_id, int auto_id, QString from, QDateTime startTime, QString duration);
     void alert_end_message(int alert_id);
     void alert_message(int alert_id, QString title, QString description);
+    void connected();
     void current(int project_id);
     void disable(int project_id);
+    void disconnected();
     void error(QString error_string);
-    void hourly();
     void project(QString name, QString action);
-    void recentproject(int project_id, int index, int max, QString uniqueName);
-    void recentprojects(QList<int>&);
     void settime(int project_id, QTime time, QTime atime);
     void update_all();
-
-    void connected();
-    void disconnected();
+    void hourly();
+    void recentproject(int project_id, int index, int max, QString uniqueName);
+    void recentprojects(QList<int>&);
 
 public:
     void sendMessage(const QString &message);
     QString nickName() const;
     bool hasConnection(const QHostAddress &senderIp, int senderPort = -1) const;
+    QString getProject(int) const;
 
 protected slots:
     void setConnected();

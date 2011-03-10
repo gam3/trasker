@@ -46,6 +46,7 @@ public:
      * This is the main way to control projects.
     */
     void contextMenuEvent(QContextMenuEvent *e);
+    void keyPressEvent(QKeyEvent *);
     TreeModel *model();
 };
 

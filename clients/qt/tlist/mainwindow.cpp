@@ -8,6 +8,7 @@
 **
 ****************************************************************************/
 
+#include "conf.h"
 #include <iostream>
 
 #include <QtCore>
@@ -23,25 +24,24 @@ MainWindow::MainWindow(TTCP *ttcp, QWidget *parent)
 
     this->ttcp = ttcp;
 
+#if !defined TRAYPROJECT
     trayIcon = new QSystemTrayIcon(this);
     trayIconMenu = new QMenu(this);
     QIcon icon = QIcon(":/pics/active-icon-0.xpm");
-/*
+
     trayIconMenu->addAction(selectCurrentAction);
     trayIconMenu->addAction(timeEditAction);
     trayIconMenu->addAction(minimizeAction);
     trayIconMenu->addAction(maximizeAction);
     trayIconMenu->addAction(restoreAction);
     trayIconMenu->addAction(quitAction);
-*/
+
     trayIcon->setIcon(icon);
     trayIcon->setContextMenu(trayIconMenu);
 
-    trayIcon->show();
-
     connect(trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
 	    this, SLOT(iconActivated(QSystemTrayIcon::ActivationReason)));
-
+#endif
 }
 
 MainWindow::~MainWindow()
@@ -66,7 +66,7 @@ void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason)
     case QSystemTrayIcon::MiddleClick:
         {
 	    QMenu *recentMenu = new QMenu;
-
+qWarning("MAIN");
             if (!recentMenuClean) {
 		int numRecentFiles = qMin(recent_projects.size(), 10);
 
@@ -82,9 +82,10 @@ void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason)
 	}
         break;
     case QSystemTrayIcon::Context:
-        break;
+        qWarning("Mouse main reason Right");
+	break;
     default:
-        qWarning("Mouse unknown reason %d", reason);
+        qWarning("Mouse main reason %d", reason);
         break;
     }
 #endif

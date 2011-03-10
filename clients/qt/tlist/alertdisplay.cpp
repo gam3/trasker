@@ -6,6 +6,9 @@ AlertDisplay::AlertDisplay(QWidget *parent) :
     m_ui(new Ui::AlertDisplay)
 {
     m_ui->setupUi(this);
+
+    connect(m_ui->buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
+    connect(m_ui->buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
 }
 
 AlertDisplay::~AlertDisplay()

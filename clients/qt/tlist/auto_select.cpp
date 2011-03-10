@@ -26,19 +26,26 @@ AddAuto::AddAuto(TTCP *ttcp, QWidget *parent) : QMainWindow(parent)
 {
     setupUi(this);
 
-    AutoModel *model = new AutoModel(this);
     this->ttcp = ttcp;		// TTCP is need to update the autoselect data
+    AutoModel *model = new AutoModel(this);
+
+    view->setModel(model);
 
     connect(ttcp,
-            SIGNAL( add_autoentry(QString, int, int, QString, QString, QString, QString, QString, QString, QString)),
+            SIGNAL( add_autoentry(QString, int, int, QString, QString, QString, QString, QString, QString, QString, QString)),
 	    model,
-            SLOT( add_autoentry(QString, int, int, QString, QString, QString, QString, QString, QString, QString) )
-	    );
+            SLOT( add_autoentry(QString, int, int, QString, QString, QString, QString, QString, QString, QString, QString) )
+	   );
+    connect(view, SIGNAL(entered(QModelIndex)),
+            this, SLOT(update_display(QModelIndex)));
+    connect(Grab, SIGNAL(clicked()), this, SLOT(grabClicked()));
+    connect(buttonOk, SIGNAL(clicked()), this, SLOT(setAuto()));
 }
 
 void AddAuto::setProject(const Project &proj)
 {
     projectName->setText(proj.getName());
+    ttcp->getauto(proj.getId());
     project = &proj;
 }
 
@@ -84,6 +91,7 @@ void AddAuto::setAuto()
 void AddAuto::buttonHelp_clicked()
 {
 ///FIXME
+qWarning("HELP");
 }
 
 void AddAuto::read()
@@ -133,5 +141,9 @@ void AddAuto::autoDone(QString check)
     hide();
 };
 
+void AddAuto::update_display(const QModelIndex &index)
+{
+    qWarning("update_display %d", index.row());
+}
 
 /* eof */

@@ -1,0 +1,7 @@
+[database]
+type=Mock
+database=trasker
+host=localhost
+user=trasker
+password=trasker
+

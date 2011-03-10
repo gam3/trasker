@@ -28,6 +28,7 @@
 =cut
 
 use strict;
+use warnings;
 use POSIX ;
 use Socket;
 use IO::Socket;
@@ -54,6 +55,8 @@ use Trasker::TTDB::Authorize;
 use Trasker::TTDB::User;
 use Trasker::TTDB::Project;
 use Trasker::TTDB::Authorize;
+use Trasker::TTDB::TimeSlice;
+use Sys::Hostname;
 
 my $done=0;
 my $select;
@@ -68,22 +71,26 @@ sub OpenMax {
     (!defined($openmax) || $openmax < 0) ? 64 : $openmax;
 }
 
-our $HOSTNAME = `hostname`;
-chomp $HOSTNAME;
+our $HOSTNAME = hostname;
 our $ME = $0; $ME =~ s|.*/||;
 
+our $indie = 0;
+our $inwarn = 0;
 our $log = new Log::Dispatch(
     callbacks => sub {
-        my %h=@_;
-        return Date::Format::time2str('%B %e %T', time)." ".$HOSTNAME." $ME\[$$]: ".$h{message}."\n";
+        if ($indie) {
+	    return "indie $indie";
+	}
+        my %h = @_;
+        return Date::Format::time2str('%B %e %T', time)." ".$HOSTNAME." $ME\[$$]: " . $h{message} . "\n";
     }
 );
 $log->add( Log::Dispatch::Syslog->new( name => 'trasker', min_level => 'info' ));
 $log->add( Log::Dispatch::Screen->new( name => 'trasker', min_level => 'info' ));
 
-$SIG{'__DIE__'} = sub { $log->critical("DIE: @_"); die @_; };
-$SIG{'__WARN__'} = sub { $log->warning("WARN: @_"); warn @_; };
-$log->warning("Starting Process:  " . $$);
+$SIG{'__DIE__'} = sub { $log->critical("DIE: @_") unless ($indie++); $indie--; die @_; };
+$SIG{'__WARN__'} = sub { $log->warning("WARN: @_") unless ($inwarn++); $inwarn--; warn @_; };
+#$log->warning("Starting Process:  " . $$);
 
 sub print_log {
     $log->alert( @_ );
@@ -119,18 +126,19 @@ sub get_user
     my $userid = shift or die 'Need a user';
     my $client = shift or die 'Need a client';
     my $user;
+    my $client_key = overload::StrVal $client;
 
-    my $a = $hash->{'_clients'}{$client}{authorized};
+    my $a = $hash->{'_clients'}{$client_key}{authorized};
     unless ($a && $a->ok) {
         die "You must be authorized.";
     }
 
-    if ($hash->{_user}{$userid}) {
-	$user = $hash->{_user}{$userid};
+    if ($hash->{_user}{$userid}{user}) {
+	$user = $hash->{_user}{$userid}{user};
     }
     unless ($user) {
 	$user = Trasker::TTDB::User->get(user => $userid);
-	$hash->{_user}{$userid} = $user;
+	$hash->{_user}{$userid}{user} = $user;
     }
     $user;
 }
@@ -180,12 +188,12 @@ our $cmd_hash = {
     "addtask" => \&addtask,		# add a task for a user
 
 # Notes
-    "note" => \&note,
+    "note" => \&notex,
     "notes" => \&notes,
 
 # Alerts
-    "alertadd" => \&add_alert,
-    "alertupdate" => \&update_alert,
+    "addalert" => \&add_alert,
+    "updatealert" => \&update_alert,
     "alerts" => \&alerts,
     "alert" => \&alert,
 
@@ -193,10 +201,13 @@ our $cmd_hash = {
 
     "gettime" => \&gettime,
     'times' => \&times,
-    'timesplit' => \&timesplit,
     'timeedit' => \&timeedit,
-
+    'timemove' => \&timemove,
+    'timesplit' => \&timesplit,
 };
+
+sub OK { 'OK' };
+sub QUIT { 'QUIT' };
 
 sub dumper
 {
@@ -206,6 +217,8 @@ sub dumper
 
     use Data::Dumper;
     warn Dumper $hash;
+
+    return OK;
 }
 
 sub now
@@ -236,12 +249,13 @@ sub authorize
 
     my @part = split('/', $user);
     my $ok = 0;
+    my $client_key = overload::StrVal $client;
 
-    if ($hash->{'_clients'}{$client}{authorized}) {
+    if ($hash->{'_clients'}{$client_key}{authorized}) {
 	printf $client "error Can't reauthorized %s\n", $part[0];
     } else {
 	if (@part == 2) {
-	    my $a = $hash->{'_clients'}{$client}{authorized} = Trasker::TTDB::Authorize->authorize(login => $part[0], password => $part[1]);
+	    my $a = $hash->{'_clients'}{$client_key}{authorized} = Trasker::TTDB::Authorize->authorize(login => $part[0], password => $part[1]);
 	    $ok = $a->ok();
 	}
 	if ($ok) {
@@ -251,7 +265,7 @@ sub authorize
 	    printf $client "notauthorized\t%s\n", $part[0];
 	}
     }
-    return 'OK';
+    return OK;
 }
 
 =head2 Miscellaneous
@@ -276,7 +290,7 @@ sub nop
 
  ping
 
-This command send c<pong> back to the client.
+This command sends the string C<pong> back to the client.
 
 =cut
 
@@ -289,14 +303,14 @@ sub ping
     printf($client "pong\n");
 }
 
-=head3 note
+=head3 notex
 
 This addes a note to the database with the current time. It is attached
 to a project.  Project 0 being a global project.
 
 =over
 
-=item note {I<user>} {I<project_id | 0>} {I<string>}
+=item note {I<user>} {I<project_id> | 0} {I<string>}
 
 replies with
 
@@ -306,7 +320,7 @@ replies with
 
 =cut
 
-sub note
+sub notex
 {
     my $client = shift;
     my $data = shift;
@@ -334,7 +348,7 @@ sub note
 
  help
 
-This command prints a sort help message.
+This command prints a short help message.
 
 =cut
 
@@ -343,15 +357,19 @@ sub help()
     my $client = shift;
     my $extra = shift;
     my $cmd = shift;
-warn "xx '$cmd' @_";
-if ($cmd) {
-} else {
-# make sure that each line starts with whitespace.
-    print($client <<EOP);
- You may need to authorize before you can use the folloing commands:
+
+    if ($cmd) {
+	printf($client <<EOP, $cmd);
+ No help for %s
+EOP
+    } else {
+    # make sure that each line starts with whitespace.
+	print($client <<EOP);
 
  authorize\t"user/passprase"
  help\t[command]
+
+ You may need to authorize before you can use the folloing commands:
 
  user\t{username}
  track\t{username} [on|off]
@@ -380,7 +398,7 @@ if ($cmd) {
  user
  xtracker
 EOP
-}
+    }
     '';
 }
 
@@ -409,7 +427,7 @@ sub quit
 {
     my $client = shift;
     print($client "Bye, bye.\n");
-    'QUIT';
+    QUIT;
 }
 
 =head2 Information
@@ -434,8 +452,10 @@ sub user
 
     my $user = get_user($userid, $client);
 
-    if (!exists $hash->{_clients}{$client}{_list}{$user->name}) {
-	$hash->{_clients}{$client}{_list}{$user->name} = $user;
+    my $client_key = overload::StrVal $client;
+
+    if (!exists $hash->{_clients}{$client_key}{_list}{$user->name}) {
+	$hash->{_clients}{$client_key}{_list}{$user->name} = $user;
 
 	for my $entry ($user->projects) {
 	    my $time = $entry->time;
@@ -451,13 +471,12 @@ sub user
 	    );
 	}
     }
-print_log " - count $count\n";
     if ($count) {
 	if (my $current_proj = $user->current_project()) {
 	    printf($client "current\t%s\t%d\n", $userid, $current_proj->project->id);
 	}
     } else {
-	printf($client "bob\t%s\n", $userid);
+	printf($client "current\t%s\t%d\n", $userid, 0);
     }
     undef;
 }
@@ -477,10 +496,13 @@ sub track
     my $user = shift;
     my $state = shift;
 
-    if ($hash->{_clients}{$client}{_track_}{$user} eq 'on') {
+    my $client_key = overload::StrVal $client;
+
+    if ($hash->{_clients}{$client_key}{_track_}{$user} eq 'on') {
 	print $client "Already tracking\n";
     } else {
-	$hash->{_clients}{$client}{_track_}{$user} = 'on';
+	$hash->{_clients}{$client_key}{_track_}{$user} = 'on';
+	$hash->{_user}{$user}{_track_}{$client_key} = $client;
 	print $client "tracking $user\n";
     }
     '';
@@ -752,44 +774,6 @@ die;
     return undef;
 }
 
-=head3 gettime
-
- gettime user projectId
-
-Get times for a given project
-
- returns:
-  update_time user projectId time all_time
-
-=cut
-
-sub gettime
-{
-    my $client = shift;
-    my $data = shift;
-    my $user_id = shift;
-    my $id = shift;
-
-    die "$user_id Bad id: $id" unless ($id =~ m/^\d+$/);
-
-    my $user = get_user($user_id, $client);
-
-    my $time;
-    my $atime;
-
-    my $project = $user->project(id => $id);
-
-    eval {
-	$time = $project->time();
-	$atime = $project->alltime();
-    }; if ($@) {
-        warn "ID: $user_id $id ", $@;
-	return '';
-    }
-
-    printf($client "update_time\t%s\t%d\t%s\t%s\n", $user_id, $id, $time, $atime);
-    undef;
-}
 
 =head3 getauto
 
@@ -814,7 +798,7 @@ sub getauto()
 
     for my $auto ($project->get_all_auto()) {
         printf("auto %d\n", $auto->id);
-        printf($client "auto\t%s\t%d\t%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n",
+        printf($client "auto\t%s\t%d\t%d\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n",
 	    $user->name,
 	    $auto->id,
 	    $auto->project_id,
@@ -824,7 +808,8 @@ sub getauto()
 	    $auto->role,
 	    $auto->desktop,
 	    $auto->title,
-	    $auto->state
+	    $auto->state,
+	    $auto->enabled,
 	);
     }
 
@@ -851,7 +836,7 @@ sub addauto()
     my $userid = shift;
     my $project_id = shift;
 
-    print $client "Need 6 arguments (" . join(' ', @_) . ")\n" unless @_ == 6;
+    print $client "addauto: Need 6 arguments (" . join(' ', @_) . ")\n" unless @_ == 6;
 
     my $user = get_user($userid, $client);
 
@@ -892,7 +877,7 @@ sub setauto()
     my $data = shift;
     my $userid = shift;
 
-    print $client "Need 6 arguments (" . join(' ', @_) . ")\n" unless @_ == 6;
+    print $client "setauto: Need 6 arguments (" . join(' ', @_) . ")\n" unless @_ == 6;
 
     my $user = get_user($userid, $client);
 
@@ -910,11 +895,12 @@ sub setauto()
 		    name => $name,
 		    role => $role,
 		    title => $title,
-		   )
-		   ) {
-print_log "OK\n";
-    } else {
-print_log "FAIL\n";
+		   ))
+    {
+	print_log "OK\n";
+    }
+    else {
+	print_log "FAIL\n";
     }
 }
 
@@ -949,11 +935,11 @@ sub change
     my ($port, $iaddr) = sockaddr_in($peername);
     my $host = gethostbyaddr($iaddr, AF_INET);
 
-    my $user = get_user($user, $client);
+    my $userobj = get_user($user, $client);
     my $project = Trasker::TTDB::Project->get(id => $project_id);
 
-    $user->set_current_project(project => $project, host => $host);
-    update_user($user);
+    $userobj->set_current_project(project => $project, host => $host);
+    update_user($userobj);
 }
 
 =head3 timeedit
@@ -990,13 +976,13 @@ sub timeedit
 
     my $user = get_user($user_id, $client);
 
-    require Trasker::TTDB::TimeSlice;
-
     my $ots = Trasker::TTDB::TimeSlice->get(id => $timeslice_id, user_id => $user->id);
 
     Trasker::TTDB::TimeSlice->update(id => $timeslice_id, project_id => $new_project_id, old_project_id => $project_id);
 
     my $ts = Trasker::TTDB::TimeSlice->get(id => $timeslice_id, user_id => $user->id);
+
+    my $client_key = overload::StrVal $client;
 
     for my $client_key (keys %{$hash->{_clients}}) {
 	my $uclient = $hash->{_clients}{$client_key}{client};
@@ -1024,6 +1010,84 @@ sub timeedit
     }
 }
 
+=head3 timemove
+
+=over
+
+=item timemove {user} {timesliceid} {time}
+
+Change the start time for a timeslice.
+
+This is allows old timeslices to be edited. This is will fail if the
+timeslice is 'closed' or you don't supply the correct current project
+id. These may happen if an invoice has been issued or if you or someone
+else is editing the timeslice from somewhere else.
+
+On success 3 commands are issued:
+
+   timeslice {previous_timesliceid}
+   timeslice {current_timesliceid}
+   entry projectid
+
+
+If you would like to move the end time of a project use split or change
+the start time of the next timeslice.
+
+=back
+
+=cut
+
+sub timemove
+{
+    my ($client, $data, $user_id, $timeslice_id, $new_time, $extra) = @_;
+
+    die "too many arguments" if defined $extra;
+    die "too few arguments" unless defined $new_time;
+
+    my $user = get_user($user_id, $client);
+
+    my $ts = Trasker::TTDB::TimeSlice->get(id => $timeslice_id, user_id => $user->id);
+
+    my $time = Trasker::Date->new($new_time);
+    my @ts = $ts->change_time(new_time => $time);
+
+    if ($ts) {
+        my $project;
+        for my $ts (@ts) {
+
+	    for my $client_key (keys %{$hash->{_clients}}) {
+		my $uclient = $hash->{_clients}{$client_key}{client};
+
+		printf($uclient qq(timeslice\t%s\t%d\t%d\t%d\t%s\t%s\t%s\n),
+		    $user->name,
+		    $ts->id,
+		    $ts->project_id,
+		    $ts->auto_id,
+		    '"' . $ts->from . '"',
+		    $ts->start_time->mysql,
+		    $ts->duration);
+
+		my $project_id = $ts->project_id;
+		if (my $project = Trasker::TTDB::Project->get(id => $project_id)) {
+		    my $time = $project->time;
+		    my $atime = $project->alltime;
+
+		    printf($uclient "entry\t%s\t%s\t%d\t%d\t%s\t%s\t%s\n",
+			   $user->name,
+			   $project->name,
+			   $project->id,
+			   $project->parent_id,
+			   $time, $atime,
+			   $project->active
+		    );
+		}
+	    }
+	}
+    } else {
+	printf($client qq(Timeslice %d not found.), $timeslice_id);
+    }
+}
+
 =head3 tracker
 
 =over
@@ -1044,11 +1108,12 @@ sub tracker
     my $user = get_user($userid, $client);
 
     if ($opt_debug) {
-        print_log("%s %s dsk %s win %s host (%s) name (%s) class (%s) role (%s) title (%s)\n",
-               $host1, $idle, $desktop, $window, $host, $name, $class, $role, $title);
+        print_log(sprintf("%s %s dsk %s win %s host (%s) name (%s) class (%s) role (%s) title (%s)\n",
+               $host1, $idle, $desktop, $window, $host, $name, $class, $role, $title));
     }
 
     if ($idle) {
+print_log "idle\n";
         if (my $pid = $user->auto_revert_project(
                                                  host => $host,
                                                  desktop => $desktop,
@@ -1072,14 +1137,14 @@ print_log "idle NOK\n";
                                               role => $role,
                                              )
            ) {
-            printf $client "OK set %d\n", $pid;
+            printf $client "tracker\tOK\tset\t%d\n", $pid;
             update_user($user);
         } else {
 print_log "set NOK\n";
         }
     }
 
-    return undef;
+    return OK;
 }
 
 sub xtracker
@@ -1088,11 +1153,16 @@ sub xtracker
     shift; # data
     my $user = shift;
 
-    for my $clientk (keys %{$hash->{_clients}{$client}{_track_}}) {
-        my $client = $hash->{_clients}{$client}{_track_}{$client};
-        print($client "Tracker ", join(' ', @_), "\n");
+    for my $clientk (keys %{$hash->{_user}{$user}{_track_}}) {
+        if (exists $hash->{_clients}{$clientk}) {
+	    my $oclient = $hash->{_clients}{$clientk}{client};
+	    print($oclient "Tracker ", join(' ', @_), "\n");
+	} else {
+	    warn "cleanup error";
+	    delete $hash->{_user}{$user}{_track_}{$clientk};
+	}
     }
-    '';
+    return OK;
 }
 
 sub add_alert
@@ -1214,7 +1284,6 @@ sub clients
     }
 }
 
-
 # '/home/gam3/demoCA/private/cakey.pem', '/home/gam3/demoCA/cacert.pem',
 
 our $key_file = '/etc/trasker/trasker_key.pem';
@@ -1237,6 +1306,7 @@ sub main
     }
     for my $sig (keys %SIG) {
         next if $sig eq 'TSTP';
+        next if $sig eq 'WINCH';
         $SIG{$sig} = sub { print_log('Signal '.$_[0].' caught!'); };
     }
 
@@ -1268,7 +1338,7 @@ sub main
     nonblock($server);
     $select = IO::Select->new();
     $select->add($server);
-    $select->add($sslserver) if ($sslserver);
+    $select->add($sslserver) if (defined $sslserver);
 
     print_log "Started";
 
@@ -1284,7 +1354,7 @@ sub main
         foreach $client ($select->can_read(1)) {
             if ($client == $server || ($sslserver && $client == $sslserver)) {
                 if ( $connections < 10 ) {
-                    if ($client == $sslserver) {
+                    if ($sslserver && $client == $sslserver) {
                         $client = $sslserver->accept();
                         $ssl = 1;
 print_log "accept $client\n";
@@ -1378,12 +1448,15 @@ print_log("Got $cmd") if $cmd ne "ping";
 				$function->($client, $data, @args);
 			    };
                         if ($@) {
-                            print_log "Error: ", $@;
-			    print $client "error\t" . $@;
-                        }
-                        if ($action eq 'QUIT') {
-                            goto QUIT;
-                        }
+			    my $error = $@;
+			    print $client "error\t" . $error;
+                            print_log "Error: ", $error;
+                        } else {
+print "action $cmd" unless defined $action;
+			    if ($action eq 'QUIT') {
+				goto QUIT;
+			    }
+			}
                     } else {
                         print_log("Warning no command $cmd ", join(' ', @args), "\n");
                         printf($client "Unknown command %s\n", $cmd);
@@ -1400,26 +1473,20 @@ print_log("Got $cmd") if $cmd ne "ping";
         # Once a minute
         if ($time[1] != $min) {
             # once a minute
-            for my $client_key (keys %{$hash->{_clients}}) {
-                my $client = $hash->{_clients}{$client_key};
-		if ($client->{_list}) {
-		    for my $user_key (keys %{$client->{_list}}) {
-		        my $user = $client->{_list}->{$user_key};
-			my $sclient = $client->{'client'};
-			printf $sclient "alert\t%d\t%s\tThis is an alert for %s\n", $user->id + 10, $user->name, $user->fullname;
-		    }
-		}
-            }
+	    # alarms should go here
         }
         if ($time[2] != $hour) {
-            # once a minute
+            # once a hour
             for my $client_key (keys %{$hash->{_clients}}) {
                 my $client = $hash->{_clients}{$client_key}{client};
                 print $client "hourly\t$time[2]\n";
             }
         }
         if ($time[3] != $mday) {
-warn "day";
+            for my $client_key (keys %{$hash->{_clients}}) {
+                my $client = $hash->{_clients}{$client_key}{client};
+                print $client "daily\t$time[2]\n";
+	    }
         }
         ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = @time;
     }
@@ -1459,7 +1526,7 @@ if ($opt_versions) {
 }
 
 $0 = "traskerd";
-main;
+main unless $ENV{TEST_TRASKERD};
 
 __END__
 

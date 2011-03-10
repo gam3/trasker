@@ -8,6 +8,7 @@
 **
 ****************************************************************************/
 
+#include "conf.h"
 #include <iostream>
 
 #include <QtCore>
@@ -35,14 +36,25 @@ ProjectsTree::ProjectsTree(TTCP *ttcp, QWidget *parent)
     setupUi(this);
     setWindowFlags( windowFlags() & ~Qt::WindowMinimizeButtonHint );
 
-    recentMenuClean = false;
+    recentMenuClean = true;
 
     readSettings();
 
+    recentMenu = new QMenu(this);
+    alignmentGroup = new QActionGroup(this);
+
+    recentMenu->setTitle(tr("projects"));
+    recentMenu->setObjectName("project menu");
+    recentMenu->setTearOffEnabled(true);
+
+    TreeModel *model = new TreeModel(this);
+
     createActions();
+    createViewActions();
 
     this->ttcp = ttcp;
 
+#if defined TRAYPROJECT
     trayIcon = new QSystemTrayIcon();
     trayIconMenu = new QMenu();
     QIcon icon = QIcon(":/pics/active-icon-0.xpm");
@@ -58,11 +70,11 @@ ProjectsTree::ProjectsTree(TTCP *ttcp, QWidget *parent)
     trayIcon->setContextMenu(trayIconMenu);
 
     trayIcon->show();
+#endif
 
     QStringList headers;
     headers << tr("Title") << tr("Description");
 
-    TreeModel *model = new TreeModel(this);
     view->setModel(model);
     view->resizeColumnToContents(0);
     QHeaderView *header = view->header();
@@ -71,13 +83,13 @@ ProjectsTree::ProjectsTree(TTCP *ttcp, QWidget *parent)
     view->hideColumn(2);
     header->setMovable(false);
 
-
     /*! \sa
      * MyTreeView::popMenu()
      * ProjectsTree::itemMenu()
      */
     connect(ttcp, SIGNAL(error(const QString &)), this, SLOT(p_error(const QString &)));
     connect(ttcp, SIGNAL(recentprojects(QList<int>&)), this, SLOT(updateRecentMenu(QList<int>&)));
+
     connect(view, SIGNAL(popMenu()), this, SLOT(itemMenu()));
     connect(view, SIGNAL(projPopMenu(int)), this, SLOT(projItemMenu(int)));
 
@@ -118,8 +130,10 @@ ProjectsTree::ProjectsTree(TTCP *ttcp, QWidget *parent)
                                     const QItemSelection &)),
             this, SLOT(updateActions()));
 
+#if defined TRAYPROJECT
     connect(trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
 	    this, SLOT(iconActivated(QSystemTrayIcon::ActivationReason)));
+#endif
 
 #if defined (Q_WS_X11)
     x11();
@@ -130,6 +144,7 @@ ProjectsTree::ProjectsTree(TTCP *ttcp, QWidget *parent)
     addNoteW = new Notes(ttcp, this);
     connect(ttcp, SIGNAL(accept_note(const QString &)), addNoteW, SLOT(notesDone(const QString &)));
     addTaskW = new AddProject(ttcp, this);
+    connect(ttcp, SIGNAL(accept_project(const QString &)), addTaskW, SLOT(done(const QString &)));
     addAutoSelW = new AddAuto(ttcp, this);
     connect(ttcp, SIGNAL(accept_select(const QString &)), addAutoSelW, SLOT(autoDone(const QString &)));
     errorWin = new ErrorWindow(this);
@@ -145,17 +160,22 @@ ProjectsTree::ProjectsTree(TTCP *ttcp, QWidget *parent)
 void ProjectsTree::x11()
 {
     // follow the events listed here
-    XSelectInput(QX11Info::display(), internalWinId(),
-                 KeyPressMask | KeyReleaseMask |
-                 ButtonPressMask | ButtonReleaseMask |
-                 KeymapStateMask |
-                 ButtonMotionMask | PointerMotionMask |
-                 EnterWindowMask | LeaveWindowMask |
-                 FocusChangeMask |
-                 ExposureMask |
-                 PropertyChangeMask |
-                 StructureNotifyMask |
-		 VisibilityChangeMask);
+    WId wid;
+    if (wid = winId()) {
+	XSelectInput(QX11Info::display(), wid,
+		     KeyPressMask | KeyReleaseMask |
+		     ButtonPressMask | ButtonReleaseMask |
+		     KeymapStateMask |
+		     ButtonMotionMask | PointerMotionMask |
+		     EnterWindowMask | LeaveWindowMask |
+		     FocusChangeMask |
+		     ExposureMask |
+		     PropertyChangeMask |
+		     StructureNotifyMask |
+		     VisibilityChangeMask);
+    } else {
+qWarning("no window");
+    }
 }
 
 #endif
@@ -244,6 +264,10 @@ void ProjectsTree::removeRow()
         updateActions();
 }
 
+/* 
+
+ */
+
 void ProjectsTree::updateActions()
 {
     bool hasSelection = !view->selectionModel()->selection().isEmpty();
@@ -273,13 +297,16 @@ void ProjectsTree::updateActions()
 void ProjectsTree::setCurrent(int id)
 {
     if (id) {
+	current_project_id = id;
         updateActions();  //
 	TreeModel *model = (TreeModel *)view->model();
 	TreeItem *item = model->getItem(id);
 
         if (item) {
 	    statusBar()->showMessage(tr("Long.name.%1").arg(item->getName()));
-             trayIcon->showMessage("Change", item->getName());
+#if defined TRAYPROJECT
+	    trayIcon->showMessage("Change", item->getName());
+#endif
 	} else {
 	    statusBar()->showMessage(tr("Bad Project: (%1)").arg(id));
 	}
@@ -292,6 +319,7 @@ void ProjectsTree::setCurrent(int id)
 	while (recent_projects.size() > 10) {
             recent_projects.removeFirst();
 	}
+	redrawRecentMenu();
     } else {
 	statusBar()->showMessage(tr("No Project: (%1)").arg(id));
     }
@@ -356,13 +384,14 @@ void ProjectsTree::exposeCurrentProject()
 void ProjectsTree::createActions()
 {
     selectCurrentAction = new QAction(tr("Select Current"), this);
+    selectCurrentAction->setShortcut(Qt::CTRL | Qt::SHIFT | Qt::Key_L);
 
     connect(selectCurrentAction, SIGNAL(triggered()), this, SLOT(exposeCurrentProject()));
+    addAction(selectCurrentAction);
 
     minimizeAction = new QAction(tr("Mi&nimize"), this);
 
-    connect(minimizeAction, SIGNAL(triggered()),
-            this, SLOT(myHide()));
+    connect(minimizeAction, SIGNAL(triggered()), this, SLOT(myHide()));
 
     maximizeAction = new QAction(tr("Ma&ximize"), this);
     connect(maximizeAction, SIGNAL(triggered()), this, SLOT(lower()));
@@ -373,10 +402,18 @@ void ProjectsTree::createActions()
     quitAction = new QAction(tr("&Quit"), this);
     connect(quitAction, SIGNAL(triggered()), qApp, SLOT(quit()));
 
+    timeEditAction = new QAction(tr("Edit Times"), this);
+
+    connect(timeEditAction, SIGNAL(triggered()), this, SLOT(timeEdit()));
+}
+
+void ProjectsTree::createViewActions()
+{
     startAction = new QAction(this);
     startAction->setText("&Start");
     startAction->setStatusTip(tr("Change to this project"));
     startAction->setShortcut(tr("Ctrl+S"));
+    startAction->setShortcutContext( Qt::ApplicationShortcut );
 
     connect(startAction, SIGNAL(triggered()), this, SLOT(startProject()));
 
@@ -401,9 +438,12 @@ void ProjectsTree::createActions()
 
     connect(autoAction, SIGNAL(triggered()), this, SLOT(p_auto()));
 
-    timeEditAction = new QAction(tr("Edit Times"), this);
+    propAction = new QAction(this);
+    propAction->setText("Prop&erities");
+    propAction->setStatusTip(tr("Edit Properties of project"));
+    propAction->setShortcut(tr("Ctrl+E"));
 
-    connect(timeEditAction, SIGNAL(triggered()), this, SLOT(timeEdit()));
+    connect(propAction, SIGNAL(triggered()), this, SLOT(p_prop()));
 }
 
 void ProjectsTree::iconActivated(QSystemTrayIcon::ActivationReason reason)
@@ -422,23 +462,10 @@ void ProjectsTree::iconActivated(QSystemTrayIcon::ActivationReason reason)
         break;
     case QSystemTrayIcon::MiddleClick:
         {
-	    QMenu *recentMenu = new QMenu;
-
 	    ttcp->getRecentProjects();
-
-            if (!recentMenuClean) {
-		int numRecentFiles = qMin(recent_projects.size(), 10);
-
-		for (int i = 0; i < numRecentFiles; ++i) {
-		    TreeItem *item = view->model()->getItem(recent_projects[i]);
-		    recentMenu->addAction(item->getName());
-		}
-
-		recentMenu->addSeparator();
-		recentMenu->addAction("Hello");
-            }
-//FIX	    recentMenu->exec( QCursor::pos() );
 	}
+        break;
+    case QSystemTrayIcon::Context:
         break;
     default:
         qWarning("Mouse unknown reason %d", reason);
@@ -448,21 +475,62 @@ void ProjectsTree::iconActivated(QSystemTrayIcon::ActivationReason reason)
 
 void ProjectsTree::updateRecentMenu(QList<int> &list)
 {
-    QMenu *recentMenu = new QMenu(this);
-
     QList<int>::iterator i;
-    recentMenu->setTitle(tr("projects"));
-    recentMenu->setObjectName("project menu");
-    recentMenu->setTearOffEnabled(true);
+    QList<int> temp;
+
+    QList<QAction *> actions = recentMenu->actions();
+    QList<QAction *>::iterator a;
+
     for (i = list.begin(); i != list.end(); ++i) {
         TreeItem *item = view->model()->getItem(*i);
-        QAction *action = new QAction(item->getName(), recentMenu);
-        action->setToolTip("bob");
-	action->setData( QVariant(*i) );
-	connect(action, SIGNAL(triggered()), this, SLOT(startProject()));
-        recentMenu->addAction(action);
+        QAction *action = NULL;
+	for (a = actions.begin(); a != actions.end(); ++a) {
+	    if (((QAction *)*a)->data().toInt() == *i) {
+                action = (QAction *)*a;
+	    }
+	}
+	if (action == NULL) {
+	    action = new QAction(item->getName(), recentMenu);
+	    action->setToolTip("bob");
+	    action->setData( QVariant(*i) );
+	    action->setCheckable(true);
+	    connect(action, SIGNAL(triggered()), this, SLOT(startProject()));
+	    alignmentGroup->addAction(action);
+	    recentMenu->addAction(action);
+	}
+	if (current_project_id == action->data().toInt()) {
+	    action->setChecked(true);
+	} else {
+	    action->setChecked(false);
+	}
     }
     recentMenu->exec( QCursor::pos() );
+}
+
+/* This updates the project quick menu */
+
+void ProjectsTree::redrawRecentMenu()
+{
+    QList<QAction *>::iterator a;
+    QList<QAction *> actions = recentMenu->actions();
+
+    for (a = actions.begin(); a != actions.end(); ++a) {
+	if (current_project_id == ((QAction *)*a)->data().toInt()) {
+	    ((QAction *)*a)->setChecked(true);
+	} else {
+	    ((QAction *)*a)->setChecked(false);
+	}
+    }
+}
+
+void ProjectsTree::keyPressEvent(QKeyEvent *event)
+{
+QList<QAction *> bob;
+qWarning("Key");
+qWarning("C %d", event->key());
+    bob = actions();
+    qWarning("%d", bob.size());
+    QWidget::keyPressEvent(event);
 }
 
 void ProjectsTree::mousePressEvent(QMouseEvent *event)
@@ -509,6 +577,7 @@ void ProjectsTree::writeSettings()
 bool ProjectsTree::x11Event(XEvent *event)
 {
     switch (event->type) {
+qWarning("%d", event->type);
       case VisibilityNotify:
 	switch(event->xvisibility.state) {
 	   case 0:
@@ -560,26 +629,29 @@ void ProjectsTree::setProject(const QModelIndex &index)
 
 void ProjectsTree::projItemMenu(int projId)
 {
-	QMenu bg_menu;
+    QMenu bg_menu;
 
-	bg_menu.addAction( startAction );
-	bg_menu.addSeparator();
-	bg_menu.addAction( noteAction );
-	bg_menu.addAction( taskAction );
-	bg_menu.addAction( autoAction );
+    bg_menu.addSeparator();
+    bg_menu.addAction( startAction );
+    bg_menu.addSeparator();
+    bg_menu.addAction( noteAction );
+    bg_menu.addAction( taskAction );
+    bg_menu.addAction( autoAction );
+    bg_menu.addAction( propAction );
 
-	startAction->setData( QVariant(projId) );
-	noteAction->setData( qVariantFromValue(projId) );
-	taskAction->setData( qVariantFromValue(projId) );
-	autoAction->setData( qVariantFromValue(projId) );
+    startAction->setData( qVariantFromValue(projId) );
+    noteAction->setData( qVariantFromValue(projId) );
+    taskAction->setData( qVariantFromValue(projId) );
+    autoAction->setData( qVariantFromValue(projId) );
+    propAction->setData( qVariantFromValue(projId) );
 
-	bg_menu.exec( QCursor::pos() );
+    bg_menu.exec( QCursor::pos() );
 }
 
 void ProjectsTree::itemMenu()
 {
     QMenu popup;
-    popup.addAction("bob");
+    popup.addAction("Add Project", this, SLOT(p_prop()));
 
     popup.exec( QCursor::pos() );
 }
@@ -587,7 +659,7 @@ void ProjectsTree::itemMenu()
 void ProjectsTree::startProject()
 {
     QAction *action = qobject_cast<QAction *>(sender());
-
+qWarning("start");
     if (action) {
 	int projId =  qVariantValue<int>(action->data());
         //std::cerr << projId << std::endl;
@@ -643,6 +715,16 @@ void ProjectsTree::p_auto()
 	addAutoSelW->show();
     }
 }
+
+void ProjectsTree::p_prop()
+{
+    QAction *action = qobject_cast<QAction *>(sender());
+
+    if (action) {
+//	int projId =  qVariantValue<int>(action->data());
+    }
+}
+
 
 void ProjectsTree::timeEdit()
 {

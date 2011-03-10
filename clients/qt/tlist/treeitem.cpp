@@ -53,9 +53,8 @@ int TreeItem::childCount() const
 
 int TreeItem::childNumber() const
 {
-printf("%p", parentItem);
     if (parentItem)
-        return parentItem->childItems.indexOf(const_cast<TreeItem*>(this));
+	return parentItem->childItems.indexOf(const_cast<TreeItem*>(this));
 
     return 0;
 }

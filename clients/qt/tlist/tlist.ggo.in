@@ -1,8 +1,8 @@
 
 # Name of your program
-package "@PACKAGE@" # don't use package if you're using automake
+package "tlist(@PACKAGE@)"
 # Version of your program
-version "@VERSION@"   # don't use version if you're using automake
+version "@VERSION@"
 
 # Options
 option  "show"         - "Show windo 'name' on startup"        string multiple optional

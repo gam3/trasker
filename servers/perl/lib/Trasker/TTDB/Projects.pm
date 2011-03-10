@@ -19,8 +19,6 @@ use Params::Validate qw( validate validate_pos SCALAR BOOLEAN HASHREF OBJECT );
 
 use Carp qw (croak);
 
-our $dir = "/home/gam3/.tasker/";
-
 our $data;
 
 sub flush
