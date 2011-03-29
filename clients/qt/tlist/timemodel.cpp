@@ -51,6 +51,9 @@ int TimeModel::columnCount(QModelIndex const&) const
 
 bool TimeModel::setData(const QModelIndex & index, const QVariant & value, int role = Qt::EditRole)
 {
+    Q_UNUSED(index);
+    Q_UNUSED(value);
+
     qWarning("update %d", role);
     return false;
 }
@@ -63,12 +66,13 @@ QVariant TimeModel::data(const QModelIndex &index, int role) const
     int id = ids[index.row()];
     TimeItem *item = timelist[id];
     if (role == Qt::EditRole) {
-        qWarning("edit");
 	switch (index.column()) {
 	  case c_id:
 	    return id;
-	  case c_datatime:
+	  case c_datetime:
 	    return item->datetime();
+	  case c_endtime:
+	    return item->endtime();
 	  case c_duration:
             return item->duration();
           case c_autoselect:
@@ -87,8 +91,10 @@ QVariant TimeModel::data(const QModelIndex &index, int role) const
 	switch (index.column()) {
 	  case c_id:
 	    return id;
-	  case c_datatime:
-	    return item->datetime();
+	  case c_datetime:
+	    return item->datetimeString();
+	  case c_endtime:
+	    return item->endtimeString();
 	  case c_duration:
             return item->duration();
           case c_autoselect:
@@ -116,7 +122,7 @@ QVariant TimeModel::headerData(int section, Qt::Orientation orientation, int rol
 	    switch (section) {
 	      case c_id:
                 return QString("Hidden");
-	      case c_datatime:
+	      case c_datetime:
                 return QString("Started");
 	      case c_duration:
                 return QString("Duration");
@@ -161,7 +167,7 @@ Qt::ItemFlags TimeModel::flags( const QModelIndex& index ) const
 {
     Qt::ItemFlags flag = Qt::NoItemFlags;
     switch (index.column()) {
-      case c_datatime:
+      case c_datetime:
       case c_project:
         flag |= Qt::ItemIsEditable | Qt::ItemIsEnabled;
 	break;
@@ -174,6 +180,18 @@ Qt::ItemFlags TimeModel::flags( const QModelIndex& index ) const
     return flag;
 }
 
+QStringList TimeModel::getProjectList()
+{
+    QHashIterator<int, const QString *> i(projects);
+    QStringList ret;
+    while (i.hasNext()) {
+	i.next();
+	QString x(i.value()->toAscii());
+	ret.append(x);
+    }
+    return ret;
+}
+
 void TimeModel::setProjectList(QString name, int id, int pid, const QTime time, const QTime atime)
 {
     char buffer[20];
@@ -183,7 +201,7 @@ void TimeModel::setProjectList(QString name, int id, int pid, const QTime time, 
     snprintf(buffer, 20, " (%d)", id);
 
     QString *project = new QString(name + buffer);
-    if (project->contains(id)) {
+    if (projects.contains(id)) {
         qWarning("memory leak in TimeModel::setProjectList");
     }
     projects[id] = project;

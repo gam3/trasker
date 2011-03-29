@@ -40,7 +40,6 @@ QString TTCP::getProject( int ) const
     return QString("Project Name Here");
 }
 
-
 bool TTCP::hasConnection(const QHostAddress &senderIp, int senderPort) const
 {
     Q_UNUSED(senderIp);
@@ -50,7 +49,6 @@ bool TTCP::hasConnection(const QHostAddress &senderIp, int senderPort) const
 
 void TTCP::newConnection(Connection *connection)
 {
-
     QObject::connect(connection, SIGNAL(disconnected()), this, SIGNAL(disconnected()));
     QObject::connect(connection, SIGNAL(readyForUse()), this, SIGNAL(connected()));
     QObject::connect(connection, SIGNAL(readyForUse()), this, SLOT(readyForUse()));
@@ -252,6 +250,8 @@ qWarning("FIXME %s", qPrintable(list[11]));
         emit recentprojects(
                     pilist
                 );
+    } else if (list[0] == "daily") {
+        emit daily();
     } else {
         qWarning("TTCP Unknown: '%s'/%d\n", qPrintable(list[0]), list.size() - 1);
     }

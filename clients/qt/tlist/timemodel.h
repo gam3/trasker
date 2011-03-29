@@ -16,7 +16,11 @@
 #ifndef TIMEMODEL_H
 #define TIMEMODEL_H
 
+#include <QtCore>
 #include <iostream>
+
+#include <QKeyEvent>
+#include <QMouseEvent>
 
 #include <QAbstractItemModel>
 #include <QModelIndex>
@@ -25,6 +29,8 @@
 
 #include <QTime>
 #include <QTimer>
+
+#include <QStringList>
 
 class TimeItem;
 
@@ -53,7 +59,7 @@ public:
     Qt::ItemFlags flags( const QModelIndex& index ) const;
 
     void setDisplayDate(QDate const&);
-
+    QStringList getProjectList();
 
 public slots:
     void timeSlice(QString user,
@@ -77,11 +83,19 @@ private:
     QHash < int, const QString * >projects;
 
     QDate displayDate;
+
+    void mousePressEvent(QMouseEvent *) {
+       qWarning("m_event");
+    };
+    void keyPressEvent(QKeyEvent *) {
+       qWarning("k_event");
+    };
 };
 
 enum column {
   c_id,
-  c_datatime,
+  c_datetime,
+  c_endtime,
   c_duration,
   c_autoselect,
   c_project,

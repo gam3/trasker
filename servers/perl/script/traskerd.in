@@ -616,6 +616,7 @@ warn $date;
 	timeslice_id => $timeslice_id,
 	time => $date,
     );
+# FIXME 
     if ($tsl->count > 1) {
 	foreach my $ts ($tsl->entry) {
 	    printf($client qq(timeslice\t%s\t%d\t%d\t%d\t%s\t%s\t%s\n),

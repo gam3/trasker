@@ -69,6 +69,7 @@ signals:
     void settime(int project_id, QTime time, QTime atime);
     void update_all();
     void hourly();
+    void daily();
     void recentproject(int project_id, int index, int max, QString uniqueName);
     void recentprojects(QList<int>&);
 

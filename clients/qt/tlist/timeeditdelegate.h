@@ -13,12 +13,14 @@
 #include <QObject>
 #include <QSize>
 
+#include "timemodel.h"
+
 class TimeEditDelegate : public QItemDelegate
 {
     Q_OBJECT
 
 public:
-    TimeEditDelegate(QObject *parent = 0);
+    TimeEditDelegate(QObject *parent = 0, TimeModel *model = 0);
 
     void paint(QPainter *painter, const QStyleOptionViewItem &option,
                const QModelIndex &index) const;
@@ -38,6 +40,7 @@ public:
 #endif
 private:
     mutable QRegExp timeExp;
+    TimeModel *model;
 };
 
 #endif

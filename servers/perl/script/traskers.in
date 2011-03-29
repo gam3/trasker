@@ -1,5 +1,5 @@
 #!@PERL@
-use strict;                  # avoid d'oh! bugs
+use strict;
 use warnings;
 
 use Data::Dumper;
@@ -41,12 +41,7 @@ GetOptions(
 #pod2usage(-verbose => 1) && exit if defined $opt_help;
 #pod2usage(-verbose => 2) && exit if defined $opt_man;
 
-# Check this last to avoid parsing options as Places,
-#   and so don't override $opt_man verbose level
-
 our $command = shift @ARGV;
-
-#pod2usage(-verbose => 1) && exit unless $command;
 
 END {
   if(defined $opt_versions) {
@@ -105,7 +100,6 @@ our $cmd_hash = {
     "addauto"=> \&addauto,
 
 };
-
 
 our %Config;
 

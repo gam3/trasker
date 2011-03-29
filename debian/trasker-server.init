@@ -11,7 +11,7 @@
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin
 
-DAEMON=/usr/bin/traskerd
+DAEMON=/usr/sbin/traskerd
 
 NAME=traskerd
 DESC="trasker server"

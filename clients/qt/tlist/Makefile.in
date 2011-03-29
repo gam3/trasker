@@ -43,6 +43,9 @@ tmakefile : tlist.pro Makefile
 Makefile: $(srcdir)/Makefile.in
 	cd $(top_builddir) && sh ./config.status
 
+tlist.ggo: $(srcdir)/tlist.ggo.in
+	cd $(top_builddir) && sh ./config.status
+
 install: install-code install-man
 
 install-code:

@@ -151,6 +151,7 @@ ProjectsTree::ProjectsTree(TTCP *ttcp, QWidget *parent)
     timeEditWin = new TimeEdit(ttcp, this);
     
     connect(timeEditAction, SIGNAL(triggered()), timeEditWin, SLOT(myShow()));
+    timeEditWin->myShow();
 }
 
 #if defined (Q_WS_X11)
@@ -161,7 +162,7 @@ void ProjectsTree::x11()
 {
     // follow the events listed here
     WId wid;
-    if (wid = winId()) {
+    if ((wid = winId())) {
 	XSelectInput(QX11Info::display(), wid,
 		     KeyPressMask | KeyReleaseMask |
 		     ButtonPressMask | ButtonReleaseMask |

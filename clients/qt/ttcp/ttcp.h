@@ -32,6 +32,7 @@ class TTCP : public QObject
     Q_OBJECT
 public:
     TTCP(const QString &host, quint16 port, bool ssl, const QString &user, const QString &password);
+    TTCP(Connection &connection);
     ~TTCP();
 
 public slots:

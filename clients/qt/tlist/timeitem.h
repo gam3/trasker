@@ -26,7 +26,11 @@ public:
 
     ~TimeItem();
 
-    QString datetime(void);
+    QDateTime datetime(void);
+    QDateTime endtime(void);
+
+    QString datetimeString(void);
+    QString endtimeString(void);
     QString duration(void);
     QString project(void);
     QString autoSelect(void);

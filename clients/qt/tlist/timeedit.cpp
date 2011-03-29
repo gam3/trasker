@@ -27,7 +27,7 @@ TimeEdit::TimeEdit(TTCP * ttcp_in, QWidget * parent) : QMainWindow(parent), ttcp
 
     view->setSortingEnabled(false);
 
-    TimeEditDelegate *delegate = new TimeEditDelegate(this);
+    TimeEditDelegate *delegate = new TimeEditDelegate(this, model);
     view->setItemDelegate(delegate);
 
     view->setEditTriggers(QAbstractItemView::DoubleClicked
@@ -36,8 +36,6 @@ TimeEdit::TimeEdit(TTCP * ttcp_in, QWidget * parent) : QMainWindow(parent), ttcp
 
     view->horizontalHeader()->setStretchLastSection(true);
     view->verticalHeader()->hide();
-
-    view->show();
 
     connect(ttcp,
 	    SIGNAL(add_timeslice
@@ -71,6 +69,8 @@ TimeEdit::TimeEdit(TTCP * ttcp_in, QWidget * parent) : QMainWindow(parent), ttcp
 	    SIGNAL(clicked()),
 	    this,
 	    SLOT(refresh()));
+
+    view->show();
 }
 
 TimeEdit::~TimeEdit()
@@ -83,23 +83,24 @@ void TimeEdit::dateChanged(const QDate &date)
 {
     ((TimeModel *)view->model())->setDisplayDate(date);
     ttcp->getTimes(date);
-    setWindowTitle(QString("Time Editor for %1").arg(date.toString("ddd MMMM d yyyy")));
+    if (date == QDate::currentDate()) {
+	setWindowTitle(QString("Time Editor for Today"));
+    } else {
+	setWindowTitle(QString("Time Editor for %1").arg(date.toString("ddd MMMM d yyyy")));
+    }
 }
 
 // slot
 void TimeEdit::setDateToday()
 {
-    QDate date = QDate::currentDate();
-    ((TimeModel *)view->model())->setDisplayDate(date);
-    ttcp->getTimes(date);
-    setWindowTitle(QString("Time Editor for Today"));
+    dateEdit->setDate(QDate::currentDate());
+    dateChanged(QDate::currentDate());
 }
 
 // slot
 void TimeEdit::refresh()
 {
-    ((TimeModel *)view->model())->setDisplayDate(dateEdit->date());
-    ttcp->getTimes(dateEdit->date());
+    dateChanged(dateEdit->date());
 }
 
 #if defined (Q_WS_X11)
@@ -112,6 +113,12 @@ void wmMessage(Window win, long type, long l0, long l1, long l2, long l3, long l
 }
 #endif
 // slot
+void TimeEdit::hide()
+{
+    qWarning("TimeEdit::hide");
+    QMainWindow::hide();
+}
+
 void TimeEdit::myShow()
 {
 #if 0
@@ -142,15 +149,6 @@ void TimeEdit::myShow()
     static Atom ATOM_WIN_STATE = XInternAtom(QX11Info::display(), "_WIN_STATE", False);
     x11::wmMessage(winId(), ATOM_WIN_STATE, 1, 1, CurrentTime, 0, 0);
 #endif
-}
-
-void TimeEdit::setProjectList(QString name, int id, int pid, const QTime time, const QTime atime)
-{
-    Q_UNUSED(id);
-    Q_UNUSED(pid);
-    Q_UNUSED(time);
-    Q_UNUSED(atime);
-    qWarning("%s", qPrintable(name));
 }
 
 void TimeEdit::hourly()

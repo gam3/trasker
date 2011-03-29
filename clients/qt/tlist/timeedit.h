@@ -20,26 +20,41 @@
 #include <QMainWindow>
 #include <QModelIndex>
 
+#include <QtGui>
+#include <QKeyEvent>
+#include <QMouseEvent>
+
 #include "ui_timeedit.h"
 #include "ttcp.h"
 
 class TimeEdit:public QMainWindow, private Ui::TimeEdit {
     Q_OBJECT
 
-  public:
+public:
     TimeEdit(TTCP * ttcp, QWidget * parent = 0);
     ~TimeEdit();
 
-  protected:
+protected:
     TTCP * ttcp;
 
 public slots:
+    void hide();
     void myShow(void);
     void dateChanged(const QDate & date);
     void setDateToday();
     void refresh(void);
     void hourly(void);  // update maxDate etc.
-    void setProjectList(QString name, int id, int pid, const QTime time, const QTime atime); // add project information
+
+private:
+    QSize saveSize;
+    QPoint savePos;
+
+    void mousePressEvent(QMouseEvent *) {
+       qWarning("m_event");
+    };
+    void keyPressEvent(QKeyEvent *) {
+       qWarning("k_event");
+    };
 };
 
 #endif
