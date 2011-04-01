@@ -230,3 +230,15 @@ web/logs
 /database/trasker.xml
 /database/trasker.zigzag.dia
 /debian/trasker-server-c.substvars
+/clients/perl/script/tnote
+/clients/perl/script/trasker
+/clients/qt/tlist/tlist.ggo
+/clients/qt/ttcp/.test.cpp.swp
+/clients/qt/ttcp/test
+/clients/qt/ttcp/test.moc
+/clients/qt/ttcp/tmakefile
+/debian/trasker-doc.substvars
+/debian/trasker-server-perl.substvars
+/debian/trasker-server.substvars
+/debian/trasker-tlist.substvars
+/debian/trasker-x11.substvars
