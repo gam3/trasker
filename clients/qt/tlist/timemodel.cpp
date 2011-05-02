@@ -11,9 +11,11 @@
 
 #include <QtGlobal>
 #include <QtGui>
+#include <QMap>
 
 #include "timeitem.h"
 #include "timemodel.h"
+#include "project.h"
 
 TimeModel::TimeModel(QObject* parent)
     : QAbstractTableModel(parent)
@@ -30,7 +32,12 @@ TimeModel::~TimeModel()
 
 void TimeModel::revert()
 {
+    QList<int>::iterator i;
+    for (i = ids.begin(); i != ids.end(); ++i) {
+	delete timelist[*i];
+    }
     ids.clear();
+    timelist.clear();
 }
 
 QModelIndex TimeModel::parent(QModelIndex const&) const
@@ -65,6 +72,9 @@ QVariant TimeModel::data(const QModelIndex &index, int role) const
 
     int id = ids[index.row()];
     TimeItem *item = timelist[id];
+    if (role == Qt::UserRole) {
+	return id;
+    }
     if (role == Qt::EditRole) {
 	switch (index.column()) {
 	  case c_id:
@@ -80,8 +90,9 @@ QVariant TimeModel::data(const QModelIndex &index, int role) const
           case c_project:
 	    {
 		int id = item->project().toInt();
-		const QString *xproject = projects[id];
-		return *(xproject);
+		return id;
+		const QString xproject = projects[id];
+		return xproject;
 	    }
 	  default:
 	    return QString("1234");
@@ -102,8 +113,8 @@ QVariant TimeModel::data(const QModelIndex &index, int role) const
           case c_project:
 	    {
 		int id = item->project().toInt();
-		const QString *xproject = projects[id];
-		return *(xproject);
+		const QString xproject = projects[id];
+		return xproject;
 	    }
 	  default:
 	    return QString("1234");
@@ -146,14 +157,21 @@ void TimeModel::timeSlice(QString user,
 {
     TimeItem *item;
 
-    beginInsertRows(QModelIndex(), ids.size(), ids.size() + 1);
-    ids.append(timeslice_id);
-    item = new TimeItem(user, timeslice_id, project_id, auto_id, from, startTime, duration, displayDate);
-
-    timelist[timeslice_id] = item;
-    endInsertRows();
-
-    refreshTimer.start();
+    if (ids.contains(timeslice_id)) {
+qWarning("asdf");
+//	item = new TimeItem(user, timeslice_id, project_id, auto_id, from, startTime, duration, displayDate);
+	item = timelist[timeslice_id];
+	item->projectId() = project_id;
+        int offset = ids.indexOf(timeslice_id);
+        emit dataChanged( createIndex(offset, 0),createIndex(offset, c_project) );
+    } else {
+	beginInsertRows(QModelIndex(), ids.size(), ids.size() + 1);
+	ids.append(timeslice_id);
+	item = new TimeItem(user, timeslice_id, project_id, auto_id, from, startTime, duration, displayDate);
+	timelist[timeslice_id] = item;
+        endInsertRows();
+	refreshTimer.start();
+    }
 }
 
 
@@ -180,16 +198,16 @@ Qt::ItemFlags TimeModel::flags( const QModelIndex& index ) const
     return flag;
 }
 
-QStringList TimeModel::getProjectList()
+void TimeModel::setProject(const QString *name)
 {
-    QHashIterator<int, const QString *> i(projects);
-    QStringList ret;
-    while (i.hasNext()) {
-	i.next();
-	QString x(i.value()->toAscii());
-	ret.append(x);
-    }
-    return ret;
+    qWarning(qPrintable(*name));
+    qWarning() << name;
+//    qWarning() << rproject[name];
+}
+
+QMap<QString, int> TimeModel::getProjectList()
+{
+    return mprojects;
 }
 
 void TimeModel::setProjectList(QString name, int id, int pid, const QTime time, const QTime atime)
@@ -200,11 +218,12 @@ void TimeModel::setProjectList(QString name, int id, int pid, const QTime time, 
     Q_UNUSED(atime);
     snprintf(buffer, 20, " (%d)", id);
 
-    QString *project = new QString(name + buffer);
+    QString project = QString("%1 (%2)").arg(name).arg(QString().setNum(id));
     if (projects.contains(id)) {
         qWarning("memory leak in TimeModel::setProjectList");
     }
-    projects[id] = project;
+    mprojects[project] = id; 
+    projects[id] = name;
 }
 
 /* eof */

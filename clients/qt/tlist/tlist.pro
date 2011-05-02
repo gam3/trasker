@@ -15,6 +15,10 @@ DESTDIR = .
 # target.path = /usr/local/bin
 INSTALLS += target
 
+LIBS += -L/usr/lib -lttcp
+
+INCLUDEPATH = ../ttcp
+
 # Input
 HEADERS += addproject.h \
     alerts.h \
@@ -23,18 +27,17 @@ HEADERS += addproject.h \
     autoitem.h \
     conf.h \
     config.h \
-    connection.h \
     error.h \
     help.h \
     mainwindow.h \
     mytreeview.h \
+    mytableview.h \
     notes.h \
     project.h \
     projects.h \
     setup.h \
     treeitem.h \
     treemodel.h \
-    ttcp.h \
     timeedit.h \
     timeeditdelegate.h \
     timemodel.h \
@@ -43,6 +46,7 @@ HEADERS += addproject.h \
     cmdline.h \
     alertdisplay.h \
     projectlist.h
+
 FORMS += addproject.ui \
     auto_select.ui \
     error.ui \
@@ -60,18 +64,17 @@ SOURCES += addproject.cpp \
     automodel.cpp \
     autoitem.cpp \
     alerts.cpp \
-    connection.cpp \
     error.cpp \
     help.cpp \
     main.cpp \
     mainwindow.cpp \
     mytreeview.cpp \
+    mytableview.cpp \
     notes.cpp \
     projects.cpp \
     setup.cpp \
     treeitem.cpp \
     treemodel.cpp \
-    ttcp.cpp \
     timeedit.cpp \
     timeeditdelegate.cpp \
     timemodel.cpp \

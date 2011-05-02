@@ -26,7 +26,7 @@ void TimeEditDelegate::paint(QPainter *painter,
                             const QStyleOptionViewItem &option,
                             const QModelIndex &index) const
 {
-    if (index.column() == 0) {
+    if (index.column() == 99) {
         QString x = index.data().toString();
 
         int progress = 30;
@@ -54,7 +54,7 @@ QWidget *TimeEditDelegate::createEditor(QWidget *parent,
     QVariant originalValue = index.model()->data(index, Qt::EditRole);
 
     switch(index.column()) {
-      case 1:
+      case c_datetime:
         {
 	    QTimeEdit *timeEdit = new QTimeEdit(parent);
 	    timeEdit->setFrame(false);
@@ -75,7 +75,16 @@ QWidget *TimeEditDelegate::createEditor(QWidget *parent,
 	    return timeEdit;
 	}
       case c_project:
-        {
+        if (1) {
+	    QComboBox *editor = new QComboBox(parent);
+	    QMap<QString, int> list = model->getProjectList();
+	    QMapIterator<QString, int> i(list);
+	    while (i.hasNext()) {
+		i.next();
+		editor->addItem(i.key(), QVariant(i.value()));
+	    }
+	    return editor;
+	} else {
 	    QLineEdit *lineEdit = new QLineEdit(parent);
 	    lineEdit->setFrame(false);
 /*
@@ -93,10 +102,14 @@ QWidget *TimeEditDelegate::createEditor(QWidget *parent,
     return NULL;
 }
 
+/*
+ This is called when the editor is done.
+ */
+
 void TimeEditDelegate::setEditorData(QWidget *editor,
                                     const QModelIndex &index) const
 {
-    QVariant value = index.model()->data(index, Qt::EditRole);
+    QVariant value = index.data(Qt::EditRole);
 
 //    qWarning("setEditor %s", qPrintable(value.toString()));
 
@@ -104,11 +117,15 @@ void TimeEditDelegate::setEditorData(QWidget *editor,
       case c_datetime:
         break;
       case c_project:
-        {
-	  QCompleter *completer = new QCompleter(model->getProjectList(), (QLineEdit *)editor);
-	  completer->setCaseSensitivity(Qt::CaseInsensitive);
-	  ((QLineEdit *)editor)->setCompleter(completer);
-	  ((QLineEdit *)editor)->setText(value.toString());
+        if (1) {
+	    QString str = value.toString();
+	    QComboBox *comboBox = static_cast<QComboBox*>(editor);
+	    comboBox->setCurrentIndex( comboBox->findData(value) );
+	} else {
+	    QCompleter *completer = new QCompleter(model->getProjectList().uniqueKeys(), (QLineEdit *)editor);
+	    completer->setCaseSensitivity(Qt::CaseInsensitive);
+	    ((QLineEdit *)editor)->setCompleter(completer);
+	    ((QLineEdit *)editor)->setText(value.toString());
 	}
       default:
         break;
@@ -118,25 +135,53 @@ void TimeEditDelegate::setEditorData(QWidget *editor,
 void TimeEditDelegate::setModelData(QWidget *editor, QAbstractItemModel *model,
                                    const QModelIndex &index) const
 {
-    qWarning("setModelData");
+    int timesliceid = 0;
+    timesliceid = index.data(Qt::UserRole).toInt();
     switch(index.column()) {
-      case 4:
+      case c_datetime:
         {
-	    QString x = ((QLineEdit *)editor)->text();
-	    QVariant value(x);;
-	    model->setData(index, value);
+          QVariant originalValue = index.data(Qt::EditRole);
+	  const QDateTime current = originalValue.toDateTime();
+	  QTimeEdit *edit = static_cast<QTimeEdit*>(editor);
+	  const QDateTime new_time = edit->dateTime();
+// qWarning() << new_time.toString(Qt::TextDate) << current.toString(Qt::TextDate);
+	  emit timesliceChangeTime( timesliceid, new_time, current);
+	  break;
 	}
-    }
-    qWarning("x setModelData");
-}
+      case 2:
+qWarning() << "setModelData " << index.column();
+        break;
+      case c_project:
+        {
+	    int new_prjid = 0;
+	    int old_prjid = 0;
 
+	    timesliceid = index.data(Qt::UserRole).toInt();
+	    old_prjid = index.data(Qt::EditRole).toInt();
+
+	    if (1) {
+		QComboBox *comboBox = static_cast<QComboBox*>(editor);
+		new_prjid = comboBox->itemData(comboBox->currentIndex()).toInt();
+	    } else {
+		QString x = ((QLineEdit *)editor)->text();
+		QVariant value(x);
+		model->setData(index, value);
+	    }
+	    emit timesliceChangeProject( timesliceid, new_prjid, old_prjid);
+	}
+	break;
+      default:
+qWarning() << "setModelData " << index.column();
+	break;
+    }
+}
 
 #if 0
 void TimeEditDelegate::updateEditorGeometry(QWidget *editor,
     const QStyleOptionViewItem &option, const QModelIndex &/* index */) const
 {
 qWarning("abob");
-//    editor->setGeometry(option.rect);
+    editor->setGeometry(option.rect);
 }
 #endif
 

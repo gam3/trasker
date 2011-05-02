@@ -5,7 +5,7 @@
 #include "timemodel.h"
 #include "timeitem.h"
 
-#include <QTreeView>
+#include "mytableview.h"
 #include <QHeaderView>
 
 #include "ttcp.h"
@@ -29,6 +29,16 @@ TimeEdit::TimeEdit(TTCP * ttcp_in, QWidget * parent) : QMainWindow(parent), ttcp
 
     TimeEditDelegate *delegate = new TimeEditDelegate(this, model);
     view->setItemDelegate(delegate);
+
+    connect(delegate,
+	    SIGNAL(timesliceChangeProject(int, int, int)),
+	    this,
+	    SLOT(timesliceChangeProject(int, int, int)));
+
+    connect(delegate,
+	    SIGNAL(timesliceChangeTime(int, QDateTime, QDateTime)),
+	    this,
+	    SLOT(timesliceChangeTime(int, QDateTime, QDateTime)));
 
     view->setEditTriggers(QAbstractItemView::DoubleClicked
 		          | QAbstractItemView::SelectedClicked);
@@ -70,6 +80,11 @@ TimeEdit::TimeEdit(TTCP * ttcp_in, QWidget * parent) : QMainWindow(parent), ttcp
 	    this,
 	    SLOT(refresh()));
 
+    connect(ttcp, SIGNAL(connected()),
+	    view, SLOT(enable()));
+    connect(ttcp, SIGNAL(disconnected()),
+	    view, SLOT(disable()));
+
     view->show();
 }
 
@@ -81,7 +96,7 @@ TimeEdit::~TimeEdit()
 // slot
 void TimeEdit::dateChanged(const QDate &date)
 {
-    ((TimeModel *)view->model())->setDisplayDate(date);
+    view->model()->setDisplayDate(date);
     ttcp->getTimes(date);
     if (date == QDate::currentDate()) {
 	setWindowTitle(QString("Time Editor for Today"));
@@ -101,6 +116,20 @@ void TimeEdit::setDateToday()
 void TimeEdit::refresh()
 {
     dateChanged(dateEdit->date());
+}
+
+// slot
+void TimeEdit::timesliceChangeProject(int timeslice_id, int new_id, int old_id)
+{
+    qWarning("asdf");
+    ttcp->timesliceChangeProject(timeslice_id, new_id, old_id);
+}
+
+// slot
+void TimeEdit::timesliceChangeTime(int timeslice_id, const QDateTime &new_time, const QDateTime &old_time)
+{
+    qWarning("asdf");
+    ttcp->timesliceChangeTime(timeslice_id, new_time, old_time);
 }
 
 #if defined (Q_WS_X11)

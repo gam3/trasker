@@ -8,32 +8,34 @@
 **
 ****************************************************************************/
 
-#include <QContextMenuEvent>
-#include "mytreeview.h"
-#include "treeitem.h"
+#include "mytableview.h"
+#include "timeitem.h"
 
-MyTreeView::MyTreeView(QWidget *parent) : QTreeView(parent)
+#include <QContextMenuEvent>
+#include <QDebug>
+
+MyTableView::MyTableView(QWidget *parent) : QTableView(parent)
 {
-    setUniformRowHeights(true);
+//    setUniformRowHeights(true);
 }
 
-void MyTreeView::contextMenuEvent(QContextMenuEvent *e)
+TimeModel *MyTableView::model() {
+    return (TimeModel *)QTableView::model();
+}
+
+void MyTableView::contextMenuEvent(QContextMenuEvent *e)
 {
     QModelIndex index = indexAt(e->pos());
-
     if (index.isValid()) {
-	TreeItem *item = static_cast<TreeItem*>(index.internalPointer());
-        emit projPopMenu(item->getId());
+	TimeItem *item = static_cast<TimeItem*>(index.internalPointer());
+// qWarning() << "contextMenuEvent " << item << index.row() << index.column() << index.data(Qt::UserRole);
+        emit timeslicePopMenu(index.data(Qt::UserRole).toInt());
     } else {
         emit popMenu();
     }
 }
 
-TreeModel *MyTreeView::model() {
-    return (TreeModel *)QTreeView::model();
-}
-
-void MyTreeView::keyPressEvent( QKeyEvent * event)
+void MyTableView::keyPressEvent( QKeyEvent * event)
 {
     QList<QAction *> bob;
     qWarning("C %d", event->key());
@@ -43,13 +45,15 @@ void MyTreeView::keyPressEvent( QKeyEvent * event)
     QAbstractItemView::keyPressEvent(event);
 }
 
-void MyTreeView::enable()
+void MyTableView::enable()
 {
+    qWarning() << "enable";
     setEnabled(true);
 }
 
-void MyTreeView::disable()
+void MyTableView::disable()
 {
+    qWarning() << "disable";
     setEnabled(false);
 }
 

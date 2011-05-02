@@ -32,6 +32,8 @@
 
 #include <QStringList>
 
+#include <QMap>
+
 class TimeItem;
 
 class QMenu;
@@ -59,7 +61,9 @@ public:
     Qt::ItemFlags flags( const QModelIndex& index ) const;
 
     void setDisplayDate(QDate const&);
-    QStringList getProjectList();
+    
+    void setProject(const QString *name);
+    QMap<QString, int> getProjectList();
 
 public slots:
     void timeSlice(QString user,
@@ -80,7 +84,9 @@ private:
     QList < int >ids;
     QHash < int, TimeItem * >timelist;
     QTimer refreshTimer;
-    QHash < int, const QString * >projects;
+    QHash < int,  QString>projects;
+//    QHash < const QString *, int>rproject;
+    QMap<QString, int>mprojects;
 
     QDate displayDate;
 

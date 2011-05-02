@@ -20,7 +20,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="QTableView" name="view"/>
+     <widget class="MyTableView" name="view"/>
     </item>
     <item>
      <widget class="QFrame" name="frame">
@@ -196,6 +196,13 @@
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>MyTableView</class>
+   <extends>QTableView</extends>
+   <header>mytableview.h</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="pics/systray.qrc"/>
  </resources>

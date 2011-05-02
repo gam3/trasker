@@ -38,6 +38,10 @@ public:
     void updateEditorGeometry(QWidget *editor,
                               const QStyleOptionViewItem &option, const QModelIndex &index) const;
 #endif
+signals:
+    void timesliceChangeProject(int,int,int) const;
+    void timesliceChangeTime(int,const QDateTime &,const QDateTime &) const;
+
 private:
     mutable QRegExp timeExp;
     TimeModel *model;

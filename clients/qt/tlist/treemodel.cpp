@@ -233,8 +233,21 @@ bool TreeModel::setHeaderData(int section, Qt::Orientation orientation,
 
 void TreeModel::update_timer()
 {
-    static int x;
+    static int x = 1;
+    static int id = 1;
+    const QTime n(0,0,0);
     if (currentItem) {
+        if ((x % 59) == 0) {
+	    while (id <= parents.size()) {
+		TreeItem *item = parents[id++];
+		// We only update times that are not zero;
+		if (n < item->getTime()) {
+		    emit get_time(item->getId());
+		    break;
+		}
+	    }
+	    if (id > parents.size()) id = 1;
+	}
         if ((++x % 30) == 0) {
             for (TreeItem *item = currentItem; item; item = item->parent()) {
                 if (item->getId()) {

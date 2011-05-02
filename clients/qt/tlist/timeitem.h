@@ -35,6 +35,9 @@ public:
     QString project(void);
     QString autoSelect(void);
 
+    int &projectId();
+//    int projectId() const;
+
 private:
     QString user;
     int id;

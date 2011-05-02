@@ -174,6 +174,16 @@ QString TreeItem::getLongName() const
     return QString("LongName->") + name;
 }
 
+QTime TreeItem::getTime() const
+{
+    return time;
+}
+
+QTime TreeItem::getATime() const
+{
+    return atime;
+}
+
 void TreeItem::set_times(QTime time, QTime atime)
 {
     this->time = time;

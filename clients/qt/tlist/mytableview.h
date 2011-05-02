@@ -16,18 +16,17 @@
  * This is only need to overload the contextMenuEvent() method.
  */
 
-#ifndef MYTREEVIEW_H
-#define MYTREEVIEW_H
+#ifndef MYTABLEVIEW_H
+#define MYTABLEVIEW_H
 
-#include <QTreeView>
-#include "timemodel.h"
+#include <QTableView>
 
 //class QContextMenuEvent;
 
-class TreeModel;
+class TimeModel;
 
 
-class MyTreeView : public QTreeView {
+class MyTableView : public QTableView {
     Q_OBJECT
 
 public slots:
@@ -37,18 +36,15 @@ public slots:
 signals:
     //! Request the global menu
     void popMenu();
-    //! Request the project menu
-    void projPopMenu(int);
+    //! Request the timeslice menu
+    void timeslicePopMenu(int);
 
 public:
-    MyTreeView(QWidget *parent = 0);
+    MyTableView(QWidget *parent = 0);
     //! The context menus
-    /* 
-     * This is the main way to control projects.
-    */
-    void contextMenuEvent(QContextMenuEvent *e);
+    void contextMenuEvent(QContextMenuEvent *);
     void keyPressEvent(QKeyEvent *);
-    TreeModel *model();
+    TimeModel *model();
 };
 
 #endif

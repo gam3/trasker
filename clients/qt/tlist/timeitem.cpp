@@ -96,4 +96,14 @@ QString TimeItem::autoSelect()
     return QString("%1").arg(auto_id);
 }
 
+int &TimeItem::projectId()
+{
+    return project_id;
+}
+
+//int projectId() const
+//{
+//    return project_id;
+//}
+
 /* eof */
