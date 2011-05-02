@@ -9,11 +9,15 @@
 TTCP::TTCP(const QString &host_in, quint16 port_in, bool ssl_in, const QString &user_in, const QString &password_in)
     : user(user_in), password(password_in), host(host_in), port(port_in), ssl(ssl_in)
 {
+    readyForUseFlag = false;
     connection = new Connection(this);
 
     newConnection(connection);   // set up signals
 
-    connection->connect();
+    connection->setAuthorize(user, password);
+    connection->setHost(host, port, ssl);
+
+    connection->connectHost();
 }
 
 TTCP::~TTCP()
@@ -50,11 +54,11 @@ void TTCP::newConnection(Connection *connection)
 {
 
     QObject::connect(connection, SIGNAL(disconnected()), this, SIGNAL(disconnected()));
-    QObject::connect(connection, SIGNAL(readyForUse()), this, SIGNAL(connected()));
+    QObject::connect(connection, SIGNAL(disconnected()), this, SLOT(notReadyForUse()));
+//    QObject::connect(connection, SIGNAL(readyForUse()), this, SIGNAL(connected()));
     QObject::connect(connection, SIGNAL(readyForUse()), this, SLOT(readyForUse()));
     QObject::connect(connection, SIGNAL(newCommand(QStringList)), this, SLOT(newCommand(QStringList)));
     QObject::connect(connection, SIGNAL(connected()), this, SLOT(setConnected()));
-
 }
 
 void TTCP::setunConnected()
@@ -65,16 +69,27 @@ void TTCP::setConnected()
 {
 }
 
+void TTCP::notReadyForUse()
+{
+    readyForUseFlag = false;
+    qWarning() << "Not ready";
+}
+
 void TTCP::readyForUse()
 {
     Connection *connection = qobject_cast<Connection *>(sender());   // This is only needed if there is more than one connection
-    QSettings settings("Trasker", "tlist");
-    settings.beginGroup("User");
-    const QString login = settings.value("login", "guest").toString();
-    const QString password = settings.value("password", "guest").toString();
-    settings.endGroup();
 
     connection->write(QString("user\t%1\n").arg(user).toAscii());
+
+    readyForUseFlag = true;
+
+    emit connected();
+    qWarning() << "Ready";
+}
+
+bool TTCP::isReadyForUse() const
+{
+    return readyForUseFlag;
 }
 
 QTime totime(QString timestring)
@@ -108,7 +123,7 @@ void TTCP::getauto(const int id)
 
 void TTCP::gettime(const int id)
 {
-    if (connection->state() == QAbstractSocket::ConnectedState)
+    if (isReadyForUse())
 	connection->write(QString("gettime %1 %2\n").arg(user).arg(id).toAscii());
 }
 
@@ -116,19 +131,19 @@ void TTCP::setProject(const int id)
 {
     QByteArray cmd;
 
-    if (connection->state() == QAbstractSocket::ConnectedState)
+    if (isReadyForUse())
 	connection->write(QString("change %1 %2\n").arg(user).arg(id).toAscii());
 }
 
 void TTCP::getTimes()
 {
-    if (connection->state() == QAbstractSocket::ConnectedState)
+    if (isReadyForUse())
 	connection->write(QString("times\t%1\n").arg(user).toAscii());
 }
 
 void TTCP::getTimes(const QDate date)
 {
-    if (connection->state() == QAbstractSocket::ConnectedState)
+    if (isReadyForUse())
 	connection->write(QString("times\t%1\t%2\n").arg(user).arg(date.toString(Qt::ISODate)).toAscii());
 }
 
@@ -179,6 +194,30 @@ void TTCP::setAuto(QString &host, QString &classN, QString &name, QString &role,
 void TTCP::getRecentProjects()
 {
     connection->write(QString("recentProjects\t%1\n").arg(user).toAscii());
+}
+
+//
+// This slot will change the project associatied with a given timeslice.
+//
+
+void TTCP::timesliceChangeProject(const int id, const int new_pid, const int old_pid)
+{
+    QByteArray cmd;
+
+    if (isReadyForUse())
+	connection->write(QString("timeedit %1 %2 %3 %4\n").arg(user).arg(id).arg(new_pid).arg(old_pid).toAscii());
+}
+
+void TTCP::timesliceChangeTime(const int id, const QDateTime &new_time, const QDateTime &old_time)
+{
+    QByteArray cmd;
+
+    if (isReadyForUse()) {
+        QString old_ts(old_time.toString(Qt::ISODate));
+        QString new_ts(new_time.toString(Qt::ISODate));
+
+	connection->write(QString("timemove %1 %2 %3 %4\n").arg(user).arg(id).arg(new_ts).arg(old_ts).toAscii());
+    }
 }
 
 /*

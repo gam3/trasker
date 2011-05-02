@@ -13,7 +13,6 @@ class TestConnection : public Connection
 public:
     TestConnection(QObject *parent) : Connection(parent) {
 	Q_UNUSED(parent);
-	qWarning("connect");
     };
 };
 
@@ -27,6 +26,12 @@ private slots:
 void TestTTCP::connect()
 {
     TestConnection *connection = new TestConnection(this);
+    qWarning() << connection;
+    connection->setAuthorize("asdfsdf", "bob");
+    qWarning() << connection->name();
+    connection->setAuthorize("bob", "bob");
+    qWarning() << connection->name();
+    connection->setHost("127.0.0.1", (qint16)8000, false);
 }
 
 class TestQString: public QObject

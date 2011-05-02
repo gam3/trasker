@@ -216,7 +216,7 @@ sub change_time
     });
     my $id;
     my $old_value;
-    my $old_time = $self->{start_time};
+    my $old_time = Trasker::Date->new($self->{start_time});
     my $new_time = $p{new_time};
     my $user_id = $self->user_id;
 
@@ -237,14 +237,14 @@ select * from timeslice
  where (end_time = ? or start_time = ?) and user_id = ?
 SQL
     eval {
-	$stc->execute($new_time, $old_time, $new_time, $user_id);
-	$stp->execute($new_time, $old_time, $new_time, $user_id);
+	$stc->execute($new_time->mysql, $old_time->mysql, $new_time->mysql, $user_id);
+	$stp->execute($new_time->mysql, $old_time->mysql, $new_time->mysql, $user_id);
     }; if ($@) {
 	$dbh->rollback;
 	die "could not update";
     } else {
 	$dbh->commit;
-	$sti->execute($new_time, $new_time, $user_id);
+	$sti->execute($new_time->mysql, $new_time->mysql, $user_id);
         while (my $row = $sti->fetchrow_hashref()) {
 	    push @ot, $class->new(%$row);
 	}
@@ -273,6 +273,19 @@ sub id
     my $self = shift;
 
     $self->{id};
+}
+
+=item current
+
+The timeslice is the current timeslice.  It is the active timeslice.
+
+=cut
+
+sub current
+{
+    my $self = shift;
+
+    !defined($self->{end_time});
 }
 
 =item start_time
@@ -377,7 +390,7 @@ The device that created the timeslice.
 sub from
 {
     my $self = shift;
-    $self->{from};
+    $self->{from} // '';
 }
 
 =item notes

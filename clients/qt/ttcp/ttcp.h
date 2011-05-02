@@ -52,6 +52,9 @@ public slots:
 
     void getRecentProjects();
 
+    void timesliceChangeProject(int id, int, int);
+    void timesliceChangeTime(int id, const QDateTime &, const QDateTime &);
+
 signals:
     void accept_note(QString name);
     void accept_project(QString name);
@@ -78,6 +81,7 @@ public:
     QString nickName() const;
     bool hasConnection(const QHostAddress &senderIp, int senderPort = -1) const;
     QString getProject(int) const;
+    bool isReadyForUse(void) const;
 
 protected slots:
     void setConnected();
@@ -86,11 +90,14 @@ protected slots:
 private slots:
     void newConnection(Connection *connection);
     void readyForUse();
+    void notReadyForUse();
     void newCommand(const QStringList &list);
     void setAuto(QString &host, QString &classN, QString &name, QString &role, QString &title, QString &desktop);
 
 private:
     void removeConnection(Connection *connection);
+
+    bool readyForUseFlag;
 
     const QString &user;
     const QString &password;

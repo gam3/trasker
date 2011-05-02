@@ -33,9 +33,9 @@ distclean: clean
 	rm -f tmakefile
 
 check: test
-	./test
+	LD_LIBRARY_PATH=. ./test
 
-test: tmakefile
+test: tmakefile test.cpp
 	make -f tmakefile
 
 tmakefile : $(PROFILE) Makefile
@@ -70,5 +70,5 @@ install-man: install-man1
 
 install-man1: $(man1_MANS) $(man_MANS)
 	test -z "$(DESTDIR)$(man1dir)" || $(MKDIR_P) "$(DESTDIR)$(man1dir)"
-	cp ttcp.man $(DESTDIR)$(man1dir)/ttcp.1
+	cp libttcp.man $(DESTDIR)$(man1dir)/libttcp.1
 

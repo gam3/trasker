@@ -21,7 +21,7 @@ Connection::Connection(QObject *parent)
     : QSslSocket(parent)
 {
     greetingMessage = tr("undefined");
-    username = tr("unknown");
+//    username = tr("unknown");
     cstate = WaitingForConnection;
     currentDataType = Undefined;
     numBytesForCurrentDataType = -1;
@@ -40,7 +40,7 @@ Connection::Connection(QObject *parent)
     QObject::connect(&pongTimer, SIGNAL(timeout()), this, SLOT(setFailed()));
 
     QObject::connect(&connectionTimer, SIGNAL(timeout()),
-                     this, SLOT(reConnect()));
+                     this, SLOT(reConnectHost()));
 
     QObject::connect(this, SIGNAL(disconnected()), &pingTimer, SLOT(stop()));
     QObject::connect(this, SIGNAL(disconnected()),
@@ -51,6 +51,22 @@ Connection::Connection(QObject *parent)
 
     QObject::connect(this, SIGNAL(sslErrors(const QList<QSslError> &)),
                      this, SLOT(mySslErrors(const QList<QSslError> &)));
+}
+
+void Connection::setAuthorize(const QString &name, const QString &password_in)
+{
+    this->username = name;
+    this->password = password_in;
+//FIXME reauthorize?
+}
+
+void Connection::setHost(const QString &host_in, const qint16 port_in, const bool ssl_in)
+{
+    host = host_in;
+    port = port_in;
+    ssl  = ssl_in;
+qWarning() << host << ':' << port << ' ' << ssl_in;
+//FIXME reconnect?
 }
 
 QString Connection::name() const
@@ -84,25 +100,18 @@ void Connection::timerEvent(QTimerEvent *timerEvent)
 
 void Connection::sendAuthorize()
 {
-    QSettings settings("Trasker", "tlist");
-    settings.beginGroup("User");
-    const QString login = settings.value("login", "guest").toString();
-    const QString password = settings.value("password", "guest").toString();
-    settings.endGroup();
-    write(QString("authorize\t%1/%2\n").arg(login).arg(password).toAscii());
+    write(QString("authorize\t%1/%2\n").arg(username).arg(password).toAscii());
 }
 
 void Connection::processReadyRead()
 {
     if (cstate == WaitingForGreeting) {
         if (!readProtocolHeader())
-            return;
+	    qWarning() << "error WaitingForGreeting";
     } else 
     if (cstate == WaitingForAuthorized) {
         if (!readProtocolHeader())
-	    return;
-	cstate = ReadyForUse;
-        emit readyForUse();
+	    qWarning() << "error WaitingForAuthorized";
     } else
     if (cstate == ReadyForUse ) {
 	while (canReadLine()) {
@@ -171,6 +180,7 @@ bool Connection::readProtocolHeader()
 	    } else
 	    if (list[0] == "authorized") {
 		cstate = ReadyForUse;
+		emit readyForUse();
 	    } else {
                 qWarning("Unknown response: %s", qPrintable(line));
 	    }
@@ -215,9 +225,9 @@ void Connection::connectionError(QAbstractSocket::SocketError ername)
     }
 }
 
-void Connection::connect()
+void Connection::connectHost()
 {
-    reConnect();
+    reConnectHost();
     if (!waitForConnected(300000)) {
         qWarning() << errorString();
         qFatal("Could Not Connect");
@@ -225,17 +235,9 @@ void Connection::connect()
     }
 }
 
-void Connection::reConnect()
+void Connection::reConnectHost()
 {
-    QSettings settings("Trasker", "tlist");
-    settings.beginGroup("Host");
-    const QString host = settings.value("host", "127.0.0.1").toString();
-    const qint16 port = settings.value("port", 8001).toInt();
-qWarning("%s %d", qPrintable(host), port);
-    const bool ssl = settings.value("ssl", true).toBool();
-    const QString certpath = settings.value("certpath", "/etc/trasker/cacert.pem").toString();
-    settings.endGroup();
-
+    qWarning("%s:%d (%s)", qPrintable(host), port, ssl?"SSL":"clear");
     connectionTimer.start();
     if (ssl) {
         connectToHostEncrypted(host, port);

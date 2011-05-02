@@ -577,7 +577,7 @@ sub times
 	    $userid,
 	    $ts->id,
 	    $ts->project_id,
-	    $ts->auto_id,
+	    $ts->auto_id // '000',
 	    '"' . $ts->from . '"',
 	    $ts->start_time->mysql,
 	    $ts->duration);
@@ -947,7 +947,7 @@ sub change
 
 =over
 
-=item timeedit {user} {timesliceid} {projectid} {new projectid}
+=item timeedit {user} {timesliceid} {new projectid} {old projectid}
 
 Change the project for a timeslice to projectid.
 
@@ -962,6 +962,10 @@ On success 3 commands are issued:
    entry projectid
    entry new_projectid
 
+and if it the current project that was changed
+
+   current new_projectid
+
 =back
 
 =cut
@@ -972,8 +976,8 @@ sub timeedit
     my $data = shift;
     my $user_id = shift;
     my $timeslice_id = shift;
-    my $project_id = shift;
     my $new_project_id = shift;
+    my $project_id = shift;
 
     my $user = get_user($user_id, $client);
 
@@ -1008,6 +1012,10 @@ sub timeedit
 		   $entry->active
 	    );
 	}
+	if ($ts->current) {
+printf($uclient "current\t%s\t%d\n", $user->name, $new_project_id);
+	    printf($uclient "current\t%s\t%d\n", $user->name, $new_project_id);
+	}
     }
 }
 
@@ -1040,7 +1048,7 @@ the start time of the next timeslice.
 
 sub timemove
 {
-    my ($client, $data, $user_id, $timeslice_id, $new_time, $extra) = @_;
+    my ($client, $data, $user_id, $timeslice_id, $new_time, $old_time, $extra) = @_;
 
     die "too many arguments" if defined $extra;
     die "too few arguments" unless defined $new_time;
@@ -1454,7 +1462,7 @@ print_log("Got $cmd") if $cmd ne "ping";
                             print_log "Error: ", $error;
                         } else {
 print "action $cmd" unless defined $action;
-			    if ($action eq 'QUIT') {
+			    if (defined $action && $action eq 'QUIT') {
 				goto QUIT;
 			    }
 			}

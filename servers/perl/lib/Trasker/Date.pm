@@ -46,7 +46,10 @@ sub new
 
     if (@_ == 1) {
         my $string = $data[0];
-	if ($string =~ /-/) {
+	if ($string =~ /T/) {
+#    my ($d, $t) = split(/T/, $string);
+	    @data = split(/[-T:]/, $string);
+	} elsif ($string =~ /-/) {
 	    @data = split(/[- :]/, $string);
 	} else {
             my @x;

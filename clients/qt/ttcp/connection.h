@@ -56,6 +56,9 @@ public:
     void setGreetingMessage(const QString &message);
     bool sendMessage(const QString &message);
 
+    void setAuthorize(const QString &name, const QString &password);
+    void setHost(const QString &host, const qint16 port, const bool ssl);
+
 signals:
     void readyForUse();
     void newMessage(const QString &from, const QString &message);
@@ -67,10 +70,10 @@ protected:
     void timerEvent(QTimerEvent *timerEvent);
 
 public:
-    void connect();
+    void connectHost();
 
 public slots:
-    void reConnect();
+    void reConnectHost();
 
 private slots:
     void processReadyRead();
@@ -90,7 +93,6 @@ private:
     void sendAuthorize();
 
     QString greetingMessage;
-    QString username;
     QTimer connectionTimer;
     QTimer pingTimer;
     QTimer pongTimer;
@@ -100,6 +102,13 @@ private:
     int numBytesForCurrentDataType;
     int transferTimerId;
     bool isGreetingMessageSent;
+
+    bool ssl;
+    QString host;
+    qint16 port;
+
+    QString username;
+    QString password;
 };
 
 #endif
