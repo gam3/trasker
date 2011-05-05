@@ -34,20 +34,6 @@ void TestTTCP::connect()
     connection->setHost("127.0.0.1", (qint16)8000, false);
 }
 
-class TestQString: public QObject
-{
-    Q_OBJECT
-private slots:
-    void toUpper();
-};
-
-void TestQString::toUpper()
-{
-    QString str = "Hello";
-    QCOMPARE(str.toUpper(), QString("HELLO"));
-}
-
-// QTEST_MAIN(TestQString)
 QTEST_MAIN(TestTTCP)
 
 #include "test.moc"
