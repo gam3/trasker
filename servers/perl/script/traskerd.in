@@ -1452,7 +1452,6 @@ warn "FIX autoselect here";
                     }
                     next unless length $cmd;
                     if (my $function = $cmd_hash->{$cmd}) {
-print_log("Got $cmd") if $cmd ne "ping";
                         my $action = eval {
 				$function->($client, $data, @args);
 			    };
@@ -1461,7 +1460,6 @@ print_log("Got $cmd") if $cmd ne "ping";
 			    print $client "error\t" . $error;
                             print_log "Error: ", $error;
                         } else {
-print "action $cmd" unless defined $action;
 			    if (defined $action && $action eq 'QUIT') {
 				goto QUIT;
 			    }

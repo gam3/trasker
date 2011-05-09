@@ -29,9 +29,7 @@
 
 static const int MaxBufferSize = 1024000;
 
-//! Class that makes the connection to the Trasker Server
-
-/*! 
+/*! \brief Class that makes the connection to the Trasker Server
 
   Connection creates a connection to the Trasker server, monitors that server
   and will automatically reconnect if the connect is lost and regained.
@@ -40,11 +38,11 @@ static const int MaxBufferSize = 1024000;
   Once this class signals connected the a know set of commands are available.
 
   The connstructor must be supplied with:
-* Hostname/IP
-* Host Port #
-* SSL flag
-* authorization username
-* authorization passphrase
+   - Hostname/IP
+   - Host Port #
+   - SSL flag
+   - authorization username
+   - authorization passphrase
 
 <a href="http://doc.qt.nokia.com/latest/qsslsocket.html">QSslSocket</a> 
 
@@ -55,9 +53,9 @@ class Connection : public QSslSocket
     Q_OBJECT
 
 public:
-    //! The state of the connection
-    /*! The connection can be in any of the following states.
-        ReadyForUse is the normal state. 
+    /*! \brief The state of the connection
+     The connection can be in any of the following states.
+     ReadyForUse is the normal state. 
      */
     enum ConnectionState {
         WaitingForConnection,	/*!< Not connect to the server. */ 
@@ -91,6 +89,13 @@ public:
     void setHost(const QString &host, const qint16 port, const bool ssl);
 
 signals:
+    //! The connection is ready for use.
+
+    /*!
+     The readyForUse() signal is emitted when the connection can be used.
+     The version has been establish and the user has been authorized.
+
+     */
     void readyForUse();
     void newMessage(const QString &from, const QString &message);
     void newCommand(const QStringList &list);
@@ -102,9 +107,11 @@ protected:
     void timerEvent(QTimerEvent *timerEvent);
 
 public:
+    //! connect to the server, exit on failure
     void connectHost();
 
 public slots:
+    //! connect to the server, return on failure
     void reConnectHost();
 
 private slots:

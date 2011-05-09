@@ -39,7 +39,7 @@ blib/sbin/traskerd :: script/traskerd
 
 blib/man1/traskerd.1p : script/traskerd
 	$(NOECHO) $(POD2MAN) --section=$(MAN1EXT) --perm_rw=$(PERM_RW) \
-	script/traskerd $(INST_MAN1DIR)/traskerd.$(MAN1EXT)
+	script/traskerd $(DESTDIR)$(INST_MAN1DIR)/traskerd.$(MAN1EXT)
 
 all :: blib/sbin/traskerd blib/man1/traskerd.1p
 

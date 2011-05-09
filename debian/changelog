@@ -1,3 +1,9 @@
+trasker (0.0.6-1) unstable; urgency=low
+
+  * Time editor time and project now work
+
+ -- G. Allen Morris III <gam3@gam3.net>  Mon, 09 May 2011 06:12:03 -0700
+
 trasker (0.0.6) unstable; urgency=low
 
   * Time editor

@@ -241,8 +241,9 @@ void TreeModel::update_timer()
 	    while (id <= parents.size()) {
 		TreeItem *item = parents[id++];
 		// We only update times that are not zero;
-		if (n < item->getTime() or n < item->getATime()) {
+		if (n < item->getTime() || n < item->getATime()) {
 		    emit get_time(item->getId());
+		    // only do one entry at a time
 		    break;
 		}
 	    }
