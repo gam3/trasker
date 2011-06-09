@@ -15,7 +15,7 @@ DESTDIR = .
 # target.path = /usr/local/bin
 INSTALLS += target
 
-LIBS += -L/usr/lib -lttcp
+LIBS += -L/usr/lib -L ../ttcp -lttcp
 
 INCLUDEPATH = ../ttcp
 

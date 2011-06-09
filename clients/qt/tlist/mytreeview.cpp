@@ -12,9 +12,16 @@
 #include "mytreeview.h"
 #include "treeitem.h"
 
+#include <QAction>
+
 MyTreeView::MyTreeView(QWidget *parent) : QTreeView(parent)
 {
     setUniformRowHeights(true);
+    QAction bob("bob", this);
+    QAction *bill = new QAction("bill", this);
+    
+    addAction(&bob);
+    addAction(bill);
 }
 
 void MyTreeView::contextMenuEvent(QContextMenuEvent *e)
@@ -36,9 +43,11 @@ TreeModel *MyTreeView::model() {
 void MyTreeView::keyPressEvent( QKeyEvent * event)
 {
     QList<QAction *> bob;
-    qWarning("C %d", event->key());
     bob = actions();
-    qWarning("t: %d", bob.size());
+qWarning("keyPressEvent");
+    if (bob.size()) {
+	qWarning("actions: %d", bob.size());
+    }
 
     QAbstractItemView::keyPressEvent(event);
 }

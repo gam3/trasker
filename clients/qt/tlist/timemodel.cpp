@@ -91,8 +91,6 @@ QVariant TimeModel::data(const QModelIndex &index, int role) const
 	    {
 		int id = item->project().toInt();
 		return id;
-		const QString xproject = projects[id];
-		return xproject;
 	    }
 	  default:
 	    return QString("1234");
@@ -113,8 +111,7 @@ QVariant TimeModel::data(const QModelIndex &index, int role) const
           case c_project:
 	    {
 		int id = item->project().toInt();
-		const QString xproject = projects[id];
-		return xproject;
+	        return projects[id];
 	    }
 	  default:
 	    return QString("1234");
@@ -158,10 +155,10 @@ void TimeModel::timeSlice(QString user,
     TimeItem *item;
 
     if (ids.contains(timeslice_id)) {
-qWarning("asdf");
-//	item = new TimeItem(user, timeslice_id, project_id, auto_id, from, startTime, duration, displayDate);
 	item = timelist[timeslice_id];
 	item->projectId() = project_id;
+	item->datetime() = startTime;
+	item->elapsedData() = duration;
         int offset = ids.indexOf(timeslice_id);
         emit dataChanged( createIndex(offset, 0),createIndex(offset, c_project) );
     } else {
@@ -212,18 +209,21 @@ QMap<QString, int> TimeModel::getProjectList()
 
 void TimeModel::setProjectList(QString name, int id, int pid, const QTime time, const QTime atime)
 {
-    char buffer[20];
     Q_UNUSED(pid);
     Q_UNUSED(time);
     Q_UNUSED(atime);
-    snprintf(buffer, 20, " (%d)", id);
 
     QString project = QString("%1 (%2)").arg(name).arg(QString().setNum(id));
-    if (projects.contains(id)) {
-        qWarning("memory leak in TimeModel::setProjectList");
+    if (!projects.contains(id)) {
+	mprojects[project] = id; 
+	projects[id] = name;
+    } else {
+        if (name != projects[id]) {
+	    qWarning("%s %s", qPrintable(name), qPrintable(projects[id]));
+	    mprojects[project] = id; 
+	    projects[id] = name;
+	}
     }
-    mprojects[project] = id; 
-    projects[id] = name;
 }
 
 /* eof */

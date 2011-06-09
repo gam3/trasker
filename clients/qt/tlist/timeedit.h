@@ -46,6 +46,7 @@ public slots:
     void hourly(void);  // update maxDate etc.
     void timesliceChangeProject(int, int, int);
     void timesliceChangeTime(int, const QDateTime&, const QDateTime&);
+    void timesliceSplitTime(int);
 
 private:
     QSize saveSize;

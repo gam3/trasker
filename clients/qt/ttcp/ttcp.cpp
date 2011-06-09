@@ -205,7 +205,7 @@ void TTCP::timesliceChangeProject(const int id, const int new_pid, const int old
     QByteArray cmd;
 
     if (isReadyForUse())
-	connection->write(QString("timeedit %1 %2 %3 %4\n").arg(user).arg(id).arg(new_pid).arg(old_pid).toAscii());
+	connection->write(QString("timeedit\t%1\t%2\t%3\t%4\n").arg(user).arg(id).arg(new_pid).arg(old_pid).toAscii());
 }
 
 void TTCP::timesliceChangeTime(const int id, const QDateTime &new_time, const QDateTime &old_time)
@@ -216,7 +216,27 @@ void TTCP::timesliceChangeTime(const int id, const QDateTime &new_time, const QD
         QString old_ts(old_time.toString(Qt::ISODate));
         QString new_ts(new_time.toString(Qt::ISODate));
 
-	connection->write(QString("timemove %1 %2 %3 %4\n").arg(user).arg(id).arg(new_ts).arg(old_ts).toAscii());
+	connection->write(QString("timemove\t%1\t%2\t%3\t%4\n").arg(user).arg(id).arg(new_ts).arg(old_ts).toAscii());
+    }
+}
+
+void TTCP::timesliceSplitTime(const int id, const QDateTime &time)
+{
+    QByteArray cmd;
+
+    if (isReadyForUse()) {
+        QString ts(time.toString(Qt::ISODate));
+
+	connection->write(QString("timesplit\t%1\t%2\t%3\n").arg(user).arg(id).arg(ts).toAscii());
+    }
+}
+
+void TTCP::timesliceSplitTime(const int id)
+{
+    QByteArray cmd;
+
+    if (isReadyForUse()) {
+	connection->write(QString("timesplit\t%1\t%2\n").arg(user).arg(id).toAscii());
     }
 }
 

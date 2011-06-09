@@ -8,7 +8,7 @@
 #include "mytableview.h"
 #include <QHeaderView>
 
-#include "ttcp.h"
+#include <ttcp.h>
 
 #include <QtDebug>
 #include "timeeditdelegate.h"
@@ -80,6 +80,9 @@ TimeEdit::TimeEdit(TTCP * ttcp_in, QWidget * parent) : QMainWindow(parent), ttcp
 	    this,
 	    SLOT(refresh()));
 
+    connect(view, SIGNAL(splitTimeslice(int)),
+	    this, SLOT(timesliceSplitTime(int)));
+
     connect(ttcp, SIGNAL(connected()),
 	    view, SLOT(enable()));
     connect(ttcp, SIGNAL(disconnected()),
@@ -121,15 +124,19 @@ void TimeEdit::refresh()
 // slot
 void TimeEdit::timesliceChangeProject(int timeslice_id, int new_id, int old_id)
 {
-    qWarning("asdf");
     ttcp->timesliceChangeProject(timeslice_id, new_id, old_id);
 }
 
 // slot
 void TimeEdit::timesliceChangeTime(int timeslice_id, const QDateTime &new_time, const QDateTime &old_time)
 {
-    qWarning("asdf");
     ttcp->timesliceChangeTime(timeslice_id, new_time, old_time);
+}
+
+// slot
+void TimeEdit::timesliceSplitTime(int timeslice_id)
+{
+    ttcp->timesliceSplitTime(timeslice_id);
 }
 
 #if defined (Q_WS_X11)

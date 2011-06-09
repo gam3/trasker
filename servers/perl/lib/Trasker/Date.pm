@@ -142,6 +142,40 @@ sub replace_time
     ref($self)->new($self->date, @time)->normalize;
 }
 
+sub divide
+{
+    my $self = shift;
+    my $c = $self->clone;
+
+    die 'Not a delta' unless ($self->is_delta);
+
+    if (@$c == 7) {
+	if ($c->[3] & 1) {
+	    $c->[3] -= 1;
+	    $c->[4] += 24;
+	}
+	if ($c->[4] & 1) {
+	    $c->[4] -= 1;
+	    $c->[5] += 60;
+	}
+	if ($c->[5] & 1) {
+	    $c->[5] -= 1;
+	    $c->[6] += 60;
+	}
+	if ($c->[6] & 1) {
+	    $c->[6] -= 1;
+	}
+	$c->[3] /= 2;
+	$c->[4] /= 2;
+	$c->[5] /= 2;
+	$c->[6] /= 2;
+    } else {
+	die "bob";
+    }
+
+    return $c;
+}
+
 1;
 
 __END__

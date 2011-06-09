@@ -66,10 +66,12 @@ QWidget *TimeEditDelegate::createEditor(QWidget *parent,
 	    if (!start.isValid()) {
 		return NULL;
 	    }
+#if 0
     qWarning("to %d", originalValue.type());
     qWarning("o %s", qPrintable(current.toString()));
     qWarning("p %s", qPrintable(start.toString()));
     qWarning("d %s", qPrintable(end.toString()));
+#endif
             timeEdit->setDateTime(current);
             timeEdit->setDateTimeRange(start, end);
 	    return timeEdit;

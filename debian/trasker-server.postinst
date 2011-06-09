@@ -20,9 +20,9 @@ fCode=0
 db_get trasker-server/database-type || fCode=$?
 
 if [ $fCode -eq 0 -a "$RET" = "sqlite3" ]; then
-    dbc_generate_include_args="-o template_infile=/usr/share/trasker/templates/trasker.conf.template-sqlite"
+    dbc_generate_include_args="-o template_infile=/usr/share/trasker/templates/trasker-server.conf.template-sqlite"
 else
-    dbc_generate_include_args="-o template_infile=/usr/share/trasker/templates/trasker.conf.template"
+    dbc_generate_include_args="-o template_infile=/usr/share/trasker/templates/trasker-server.conf.template"
 fi
 
 fCode=0

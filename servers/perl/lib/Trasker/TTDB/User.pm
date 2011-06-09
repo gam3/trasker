@@ -13,9 +13,9 @@ use v5.10.0;
 #
 package Trasker::TTDB::User;
 
-use Trasker::TTDB::DBI qw (get_dbh dbtype);
+use Trasker::TTDB::DBI qw (get_dbh dbtype get_sti);
 
-our $VERSION = '0.002_000';
+our $VERSION = '0.002_001';
 
 use Params::Validate qw( validate validate_pos SCALAR BOOLEAN HASHREF OBJECT ARRAYREF );
 
@@ -136,15 +136,16 @@ sub create
     }
 
     my $dbh = get_dbh;
-
-    my $sth = $dbh->prepare(<<SQL);
-insert into users (name, fullname) values (?, ?)
-SQL
+    my $sth = get_sti('user_create');
 
     $sth->execute($self->{name}, $self->{fullname});
 
     my $id = $dbh->last_insert_id("","","","");
     $self->{id} = $id;
+
+    $sth = get_sti('timeslice_init');
+
+    $sth->execute($id);
 
     $dbh->commit();
 
@@ -205,7 +206,6 @@ select timeslice.id,
  order by start_time
  limit 100
 SQL
-#   warn $sth->{Statement};
     $sth->execute($self->id, @args);
 
     my @data;
@@ -339,7 +339,7 @@ sub set_current_project
         host => 1,
         project => {
            optional => 1,
-           isa => [ qw(  Trasker::TTDB::Project ) ],
+           isa => [ qw( Trasker::TTDB::Project ) ],
         },
     });
 
@@ -355,48 +355,11 @@ sub set_current_project
 
     my $dbh = get_dbh('commit');
 
-# $id, $current_project_id, $type, $old_rid
-    my $sths = $dbh->prepare(<<SQL);
-select id, project_id, temporary, revert_to, auto_id
-  from timeslice
- where end_time is NULL
-   and user_id = ?
-SQL
-#  for update
+    my $sths = get_sti('timeslice_get_current');
 
-    my $sthu;
-    if (dbtype eq 'mysql') {
-        $sthu = $dbh->prepare(<<'SQL') or die $dbh->err_str();
-update timeslice
-   set elapsed = timediff(NOW(), start_time),
-   end_time = NOW(),
- where id = ?
-SQL
-    } elsif (dbtype eq 'sqlite') {
-        $sthu = $dbh->prepare(<<'SQL') or die $dbh->err_str();
-update timeslice
-   set elapsed = julianday('now') - julianday(start_time),
-   end_time = datetime('now')
- where id = ?
-SQL
-    } else {
-        $sthu = $dbh->prepare(<<'SQL') or die $dbh->err_str();
-update timeslice
-   set elapsed = now() - start_time,
-   end_time = now()
- where id = ?
-SQL
-    }
-    my $now = 'now()';
-    if (dbtype eq 'sqlite') {
-        $now = q[datetime('now')];
-    }
+    my $sthu = get_sti('timeslice_finish');
 
-    my $sthi = $dbh->prepare(<<SQL) or die $dbh->err_str();
-insert into timeslice
-       (user_id, project_id, temporary, start_time, auto_id, revert_to, host)
-values (      ?,          ?,         ?,      $now,       ?,         ?,    ?)
-SQL
+    my $sthi = get_sti('timeslice_new');
 
     eval {
         $sths->execute($user_id);       # get current project
@@ -415,8 +378,6 @@ warn("Not updating $current_project_id == $project_id");
                 $dbh->rollback;
                 return 0;
             }
-            $sthu->execute($id);   # end current timeslice
-            die 'No update: ' . $sthu->rows unless $sthu->rows == 1;
         } elsif ($rows == 0) {
            warn "Timeslice was empty";
         } else {
@@ -428,10 +389,6 @@ warn("Not updating $current_project_id == $project_id");
            $new_rid = $old_rid || $id;
         }
 
-        #user_id, project_id, temporary, start_time, auto_id, revert_to, host
-
-        #warn(sprintf("[%s, %s, %s, %s, %s, %s]", $user_id, $project_id, $p{temporary}, $p{auto_id} || 'NULL', $new_rid || 'NULL', $p{host}));
-
         $sthi->execute(
           $user_id,	           # user_id
           $project_id,
@@ -440,10 +397,18 @@ warn("Not updating $current_project_id == $project_id");
           $new_rid,
           $p{host},
         );
+	my $nid = $dbh->last_insert_id("","","timeslice","id");
+
+	$sthu->execute($nid, $id);   # end current timeslice
+	die 'No update: ' . $sthu->rows unless $sthu->rows == 1;
     };
+    if ($@) {
+warn "asdfasdf ", $@;
+    }
+
     $sths->finish();
-    $sthu->finish();
     $sthi->finish();
+    $sthu->finish();
 
     if ($@) {
         my $error = $@;
@@ -942,11 +907,14 @@ EOP
         push(@args, ($p{date} + 0)->mysql);
     }
     my $sth = $dbh->prepare(<<SQL);
-select *
-  from timeslice
- where user_id = ?
-       $date_clause
- order by start_time
+select a.id, a.user_id, a.project_id, a.start_time, b.start_time as end_time, a.temporary, a.auto_id, a.revert_to, a.host, coalesce(b.start_time - a.start_time, now() - a.start_time) as elapsed, a.end_id
+  from timeslice a 
+  left join timeslice b
+    on a.user_id = b.user_id
+   and b.id = a.end_id
+ where a.user_id = ?
+   and (a.start_time < ? and (b.start_time >= ? or a.end_id is NULL))
+ order by a.start_time
  limit 10000
 SQL
     $sth->execute($self->id, @args);
@@ -1002,8 +970,8 @@ SQL
 
     my $sthi = $dbh->prepare(<<SQL);
 insert into timeslice
-       (user_id, project_id, temporary, start_time, end_time, auto_id, revert_to, host, elapsed)
-   select user_id, project_id, temporary, end_time, end_time, auto_id, revert_to, host, end_time - end_time
+       (user_id, project_id, temporary, start_time, end_time, auto_id, revert_to, host, elapsed, end_id)
+ select user_id, project_id, temporary, end_time,   end_time, auto_id, revert_to, host, end_time - end_time, end_id
      from timeslice where id = ?
 SQL
 
@@ -1018,7 +986,8 @@ SQL
 update timeslice
    set end_time = ?,
        temporary = 'split',
-       elapsed = ? - start_time
+       elapsed = ? - start_time,
+       end_id = ?
  where id = ?
 SQL
     my @timeslices = ($curid);
@@ -1032,8 +1001,10 @@ SQL
 	require Trasker::TTDB::TimeSlice;
 
 	my $orig = Trasker::TTDB::TimeSlice->new(%$data);
-
-	my @splittimes = sort({ die "duplicate time $a $b" if $a eq $b; $b cmp $a } map({ref($_) ? $_ : $orig->end_time->replace_time($_); } @times));
+        if (! scalar @times) {
+            push @times, $orig->start_time + $orig->duration->divide();
+	}
+	my @splittimes = sort({ $b cmp $a } @times);
 
 	foreach my $splittime (@splittimes) {
 	    warn $splittime;
@@ -1052,7 +1023,7 @@ SQL
 	    push @timeslices, $id;
 
 	    my $t = $splittime->mysql;
-	    $sth_et->execute($t, $t, $curid);
+	    $sth_et->execute($t, $t, $id, $curid);  # update the old timeslice
 	    $sth_st->execute($t, $t, $id);
 	}
 	$dbh->commit;
@@ -1119,3 +1090,4 @@ Get the timeslices for a given period
 "G. Allen Morris III" <gam3@gam3.net>
 
 =cut
+

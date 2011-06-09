@@ -20,7 +20,7 @@ use DBI;
 require Exporter;
 
 our @ISA = qw (Exporter);
-our @EXPORT_OK = qw(get_dbh dbi_setup dbtype);  # symbols to export on request
+our @EXPORT_OK = qw(get_dbh dbi_setup dbtype get_sti);  # symbols to export on request
 
 our $database = '/tmp/test_trasker';
 our $host = '';
@@ -42,7 +42,8 @@ sub dbi_setup
 	user => 0,
 	password => 0,
 	host => 0,
-	type => 0,
+	port => 0,
+	dbtype => 0,
     });
 
     if (my $value = $p{host}) {
@@ -57,7 +58,7 @@ sub dbi_setup
     if (my $value = $p{password}) {
         $password = $value;
     }
-    if (my $value = $p{type}) {
+    if (my $value = $p{dbtype}) {
         if ($value eq 'pgsql') {
 	    $value = 'Pg';
 	}
@@ -89,6 +90,54 @@ sub get_dbh
 	}
     }
     return $dbi;
+}
+
+our $sti;
+
+sub get_sti
+{
+    my $name = shift;
+    my $bob = $sti;
+    if (!defined($bob)) {
+	$bob = _set_stis();
+    }
+
+    return $bob->{$name};
+}
+
+sub _set_stis
+{
+    my $dbh = get_dbh();
+    my $dbtype = dbtype();
+
+    $sti = {
+	user_create => $dbh->prepare(<<SQL),
+insert into users (name, fullname) values (?, ?)
+SQL
+	timeslice_init => $dbh->prepare(<<SQL),
+insert into timeslice
+       (user_id, project_id, start_time)
+values (      ?,          1, date_trunc('year', CURRENT_DATE))
+SQL
+	timeslice_get_current => $dbh->prepare(<<SQL),
+select id, project_id, temporary, revert_to, auto_id
+  from timeslice
+ where end_id is NULL
+   and user_id = ?
+SQL
+	timeslice_new => $dbh->prepare(<<SQL),
+insert into timeslice
+       (user_id, project_id, temporary, start_time, auto_id, revert_to, host)
+values (      ?,          ?,         ?,      now(),       ?,         ?,    ?)
+SQL
+	timeslice_finish => $dbh->prepare(<<SQL),
+update timeslice
+   set elapsed = now() - start_time,
+       end_time = now(),
+       end_id = ?
+ where id = ?
+SQL
+    };
 }
 
 1;

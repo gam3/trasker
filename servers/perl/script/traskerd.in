@@ -10,9 +10,9 @@
 
 =head1 DESCRIPTION
 
- eg:
-   tskserver.pl
-   tskserver --server=tskserver
+   traskerd
+
+   traskerd --config=~/.config
 
 =head1 OPTIONS
 
@@ -607,16 +607,19 @@ sub timesplit
     my $time;
 
     my $user = get_user($userid, $client);
-    my $tdate = Trasker::Date->new($date);
-    if ($tdate) {
-        $date = $tdate;
+
+    if (defined $date) {
+	my $tdate = Trasker::Date->new($date);
+	if ($tdate) {
+	    $date = $tdate;
+	}
     }
-warn $date;
+
     my $tsl = $user->timesplit(
 	timeslice_id => $timeslice_id,
 	time => $date,
     );
-# FIXME 
+warn Dumper $tsl;
     if ($tsl->count > 1) {
 	foreach my $ts ($tsl->entry) {
 	    printf($client qq(timeslice\t%s\t%d\t%d\t%d\t%s\t%s\t%s\n),
@@ -1057,43 +1060,46 @@ sub timemove
 
     my $ts = Trasker::TTDB::TimeSlice->get(id => $timeslice_id, user_id => $user->id);
 
-    my $time = Trasker::Date->new($new_time);
-    my @ts = $ts->change_time(new_time => $time);
-
     if ($ts) {
-        my $project;
-        for my $ts (@ts) {
+	my $time = Trasker::Date->new($new_time);
+	my @ts = $ts->change_time(new_time => $time);
 
-	    for my $client_key (keys %{$hash->{_clients}}) {
-		my $uclient = $hash->{_clients}{$client_key}{client};
+	if (@ts) {
+	    my $project;
+	    for my $ts (@ts) {
+    print Dumper $ts;
+		for my $client_key (keys %{$hash->{_clients}}) {
+		    my $uclient = $hash->{_clients}{$client_key}{client};
 
-		printf($uclient qq(timeslice\t%s\t%d\t%d\t%d\t%s\t%s\t%s\n),
-		    $user->name,
-		    $ts->id,
-		    $ts->project_id,
-		    $ts->auto_id,
-		    '"' . $ts->from . '"',
-		    $ts->start_time->mysql,
-		    $ts->duration);
+		    printf($uclient qq(timeslice\t%s\t%d\t%d\t%d\t%s\t%s\t%s\n),
+			$user->name,
+			$ts->id,
+			$ts->project_id,
+			$ts->auto_id,
+			'"' . $ts->from . '"',
+			$ts->start_time->mysql,
+			$ts->duration);
 
-		my $project_id = $ts->project_id;
-		if (my $project = Trasker::TTDB::Project->get(id => $project_id)) {
-		    my $time = $project->time;
-		    my $atime = $project->alltime;
+		    my $project_id = $ts->project_id;
 
-		    printf($uclient "entry\t%s\t%s\t%d\t%d\t%s\t%s\t%s\n",
-			   $user->name,
-			   $project->name,
-			   $project->id,
-			   $project->parent_id,
-			   $time, $atime,
-			   $project->active
-		    );
+		    if (my $project = Trasker::TTDB::Project->get(id => $project_id)) {
+			my $time = $project->time;
+			my $atime = $project->alltime;
+
+			printf($uclient "entry\t%s\t%s\t%d\t%d\t%s\t%s\t%s\n",
+			       $user->name,
+			       $project->name,
+			       $project->id,
+			       $project->parent_id,
+			       $time, $atime,
+			       $project->active
+			);
+		    }
 		}
 	    }
+	} else {
+	    printf($client qq(Timeslice %d not found.), $timeslice_id);
 	}
-    } else {
-	printf($client qq(Timeslice %d not found.), $timeslice_id);
     }
 }
 

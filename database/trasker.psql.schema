@@ -113,9 +113,10 @@ CREATE TABLE timeslice (
     user_id integer,
     project_id integer,
     start_time timestamp without time zone,
+    end_id integer,
     end_time timestamp without time zone,
     "temporary" character varying,
-    auto_id integer DEFAULT 0,
+    auto_id integer,
     revert_to integer,
     host character varying(30),
     elapsed interval

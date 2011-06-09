@@ -78,6 +78,10 @@ public slots:
     void timesliceChangeProject(int id, int, int);
     //! \since 0.01
     void timesliceChangeTime(int id, const QDateTime &, const QDateTime &);
+    //! \since 0.01
+    void timesliceSplitTime(const int id, const QDateTime &time);
+    //! \since 0.01
+    void timesliceSplitTime(const int id);
 
 signals:
     /*! TTCP is connected and authorized

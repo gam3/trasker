@@ -98,8 +98,8 @@ install-indep:
 	cp debian/sql/sqlite_schema.sql  debian/trasker-server/usr/share/dbconfig-common/data/trasker-server/install/sqlite
 	cp debian/sql/sqlite3_schema.sql debian/trasker-server/usr/share/dbconfig-common/data/trasker-server/install/sqlite3
 
-	cp debian/templates/trasker.conf.template debian/trasker-server/usr/share/trasker/templates/
-	cp debian/templates/trasker.conf.template-sqlite debian/trasker-server/usr/share/trasker/templates/
+	cp debian/templates/trasker-server.conf.template debian/trasker-server/usr/share/trasker/templates/
+	cp debian/templates/trasker-server.conf.template-sqlite debian/trasker-server/usr/share/trasker/templates/
 
 	dh_install -i
 

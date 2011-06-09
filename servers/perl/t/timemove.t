@@ -28,15 +28,15 @@ $dbh->{mock_add_resultset} = [
     [ 'gam3', 'G. Allen Morris III', 1 ] 
 ];
 $dbh->{mock_add_resultset} = [
-    [ qw(id user_id project_id start_time end_time temporary auto_id revert_to host elapsed) ],
-    [ 2, 1, '2011-01-15 08:38:26.044608', '2011-01-15 08:42:43.66477', 'normal', undef, undef, 'harpo', '00:04:17.620162' ],
+    [ qw(id user_id project_id start_time end_time temporary auto_id revert_to host elapsed end_id) ],
+    [     2,      1, '2011-01-15 08:38:26.044608', '2011-01-15 08:42:43.66477', 'normal', undef, undef, 'harpo', '00:04:17.620162', 3 ],
 ];
 
 $dbh->{mock_add_resultset} = [[ 'rows' ], []];
 $dbh->{mock_add_resultset} = [[ 'rows' ], []];
-$dbh->{mock_add_resultset} = [[ 'id', 'user_id', 'project_id', 'start_time',            'end_time',  'temporary', 'auto_id', 'revert_to', 'host',  'elapsed'  ],
-                              [  1,    3,          2,  '2001-01-01 00:00:00', '2001-01-01 01:30:00', 'normal',    undef,      undef,      'host',  '01:30:00' ],
-                              [  2,    3,          1,  '2001-01-01 01:30:00', '2001-01-01 02:00:00', 'normal',    undef,      undef,      'host',  '00:30:00' ]];
+$dbh->{mock_add_resultset} = [[ 'id', 'user_id', 'project_id', 'start_time',            'end_time',  'temporary', 'auto_id', 'revert_to', 'host',  'elapsed', 'end_id' ],
+                              [  1,    3,          2,  '2001-01-01 00:00:00', '2001-01-01 01:30:00', 'normal',    undef,      undef,      'host',  '01:30:00', 2 ],
+                              [  2,    3,          1,  '2001-01-01 01:30:00', '2001-01-01 02:00:00', 'normal',    undef,      undef,      'host',  '00:30:00', 3 ]];
 
 $dbh->{mock_add_resultset} = 
 {

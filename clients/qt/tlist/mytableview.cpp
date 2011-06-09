@@ -14,31 +14,47 @@
 #include <QContextMenuEvent>
 #include <QDebug>
 
+#include <QMenu>
+#include <QAction>
+
 MyTableView::MyTableView(QWidget *parent) : QTableView(parent)
 {
-//    setUniformRowHeights(true);
+}
+
+void MyTableView::open()
+{
+    qWarning("open %d", ((QAction *)sender())->data().toInt());
+    emit splitTimeslice(((QAction *)sender())->data().toInt());
+}
+
+void MyTableView::contextMenuEvent(QContextMenuEvent * e)
+{
+    QMenu *menu = new QMenu(this);
+    QModelIndex index = indexAt(e->pos());
+    if (index.isValid()) {
+	TimeItem *item = static_cast<TimeItem*>(index.internalPointer());
+        emit timeslicePopMenu(index.data(Qt::UserRole).toInt());
+
+	QAction *split = new QAction(
+	    QString("Row %1 - Col %2 was clicked on %3").arg(index.row()).arg(index.column()).arg(index.data(Qt::UserRole).toInt()),
+	    menu);
+	connect(split, SIGNAL(triggered()), this, SLOT(open()));
+	split->setData(index.data(Qt::UserRole));
+        menu->addAction(split);
+    } else {
+        menu->addAction("No item was clicked on");
+    }
+    menu->exec(QCursor::pos());
 }
 
 TimeModel *MyTableView::model() {
     return (TimeModel *)QTableView::model();
 }
 
-void MyTableView::contextMenuEvent(QContextMenuEvent *e)
-{
-    QModelIndex index = indexAt(e->pos());
-    if (index.isValid()) {
-	TimeItem *item = static_cast<TimeItem*>(index.internalPointer());
-// qWarning() << "contextMenuEvent " << item << index.row() << index.column() << index.data(Qt::UserRole);
-        emit timeslicePopMenu(index.data(Qt::UserRole).toInt());
-    } else {
-        emit popMenu();
-    }
-}
-
 void MyTableView::keyPressEvent( QKeyEvent * event)
 {
     QList<QAction *> bob;
-    qWarning("C %d", event->key());
+    qWarning("MyTableView::keyPressEvent %d", event->key());
     bob = actions();
     qWarning("t: %d", bob.size());
 

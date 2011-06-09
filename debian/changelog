@@ -1,4 +1,10 @@
-trasker (0.0.6-1) unstable; urgency=low
+trasker (0.0.8) unstable; urgency=low
+
+  * Time editor splits times.
+
+ -- G. Allen Morris III <gam3@gam3.net>  Sun, 05 Jun 2011 11:42:32 -0700
+
+trasker (0.0.7) unstable; urgency=low
 
   * Time editor time and project now work
 

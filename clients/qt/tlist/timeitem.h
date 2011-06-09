@@ -26,7 +26,8 @@ public:
 
     ~TimeItem();
 
-    QDateTime datetime(void);
+    QDateTime &datetime(void);
+    QString &elapsedData(void);
     QDateTime endtime(void);
 
     QString datetimeString(void);

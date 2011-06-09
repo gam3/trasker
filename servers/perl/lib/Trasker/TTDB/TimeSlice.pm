@@ -20,7 +20,7 @@ use Params::Validate qw( validate validate_pos SCALAR BOOLEAN HASHREF OBJECT );
 use Trasker::TTDB::DBI qw (get_dbh);
 use Trasker::Date;
 
-use Carp qw(croak);
+use Carp qw(croak carp);
 
 =head1 NAME
 
@@ -42,7 +42,7 @@ This package contains a single timeslice.
 
 =item new
 
-This constructor is used by C<get> to instaniciate this object.
+This constructor is used by C<get> to instantiate this object.
 Most users do not need to use this method.
 
 =cut
@@ -53,7 +53,8 @@ sub new
     my %p = validate(@_, {
         id => 0,
         start_time => 1,
-        end_time => 1,
+        end_time => 0,
+        end_id   => 1,
         temporary => 1,
         host => 1,
         elapsed => 1,
@@ -76,7 +77,6 @@ This is the normal way to access a timeslice.
 This method takes 2 arguments the ID of the timeslice and and the user that the timeslice is for.
 
 =cut
-
 
 sub get
 {
@@ -378,7 +378,7 @@ The auto_id that if the timeslice was created by an auto_select deamon.
 sub auto_id
 {
     my $self = shift;
-    $self->{auto_id};
+    $self->{auto_id} // '0';
 }
 
 =item from
@@ -390,6 +390,7 @@ The device that created the timeslice.
 sub from
 {
     my $self = shift;
+
     $self->{from} // '';
 }
 

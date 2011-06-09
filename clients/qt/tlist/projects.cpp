@@ -526,9 +526,8 @@ void ProjectsTree::redrawRecentMenu()
 
 void ProjectsTree::keyPressEvent(QKeyEvent *event)
 {
-QList<QAction *> bob;
-qWarning("Key");
-qWarning("C %d", event->key());
+    QList<QAction *> bob;
+qWarning("ProjectsTree::keyPressEvent %d", event->key());
     bob = actions();
     qWarning("%d", bob.size());
     QWidget::keyPressEvent(event);

@@ -6,3 +6,12 @@ Template: trasker-server/local_user
 Type: string
 Description: Local User
 
+Template: trasker-server/trasker_user
+Type: string
+Description: The First Trasker user
+ This is the user for the trasker system
+
+Template: trasker-server/trasker_password
+Type: password
+Description: Trasker User Password
+ The password for the trasker user

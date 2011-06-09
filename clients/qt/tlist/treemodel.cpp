@@ -321,9 +321,11 @@ void TreeModel::add_entry(QString name, int id, int pid, const QTime time, const
     }
 
     if (parents[id]) {
-       update_time(id, time, atime);
-       qWarning("reload of \"entry\" (%d).", id);
-       return;
+	if (parents[id]->getName() != name) {
+qWarning("%s %s", qPrintable(parents[id]->getName()), qPrintable(name));
+        }
+        update_time(id, time, atime);
+        return;
     }
 
     int rows = rowCount(parentIndex); 

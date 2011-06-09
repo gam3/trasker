@@ -1,0 +1,20 @@
+#!/bin/bash
+data=$(IFS=\; read data x < debian/changelog && echo $data)
+
+read name version repo < <(echo $data | sed -e 's/[)(]//g')
+
+echo "$name ( $version ) - $repo"
+
+#dpkg-buildpackage
+#./tag Release_${version}
+echo "$name ( $version ) - $repo"
+
+reprepro -b /var/cache/gam3/ remove $repo $name
+for pname in $(cat debian/control  | awk '/Package:/ { print $2 }') ; do
+    reprepro -b /var/cache/gam3/ remove $repo $pname
+done
+
+reprepro -b /var/cache/gam3/ include $repo ../${name}_${version}_i386.changes
+
+#rsync -av /var/cache/gam3/. apt.dastrax.com:/var/cache/dastrax
+

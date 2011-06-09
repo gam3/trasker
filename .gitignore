@@ -242,3 +242,8 @@ web/logs
 /debian/trasker-server.substvars
 /debian/trasker-tlist.substvars
 /debian/trasker-x11.substvars
+/debian/libttcp1-dev.substvars
+/debian/libttcp1-dev/
+/debian/libttcp1.substvars
+/debian/libttcp1/
+

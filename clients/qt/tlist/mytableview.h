@@ -32,12 +32,14 @@ class MyTableView : public QTableView {
 public slots:
     void enable();
     void disable();
+    void open();
 
 signals:
     //! Request the global menu
     void popMenu();
     //! Request the timeslice menu
     void timeslicePopMenu(int);
+    void splitTimeslice(int);
 
 public:
     MyTableView(QWidget *parent = 0);

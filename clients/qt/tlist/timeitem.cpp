@@ -21,10 +21,15 @@ TimeItem::~TimeItem ()
 }
 
 //    QDateTime time;
-//    QTime elapsed;
-QDateTime TimeItem::datetime()
+QDateTime &TimeItem::datetime()
 {
     return dateTime;
+}
+
+//    QString elapsed;
+QString &TimeItem::elapsedData()
+{
+    return elapsed;
 }
 
 QString TimeItem::datetimeString()

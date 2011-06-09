@@ -34,7 +34,7 @@ $user = Trasker::TTDB::User->create(
     fullname => 'Bill Smith',
 );
 
-is($user->id, 2, "create id");
+is($user->id, 3, "create id");
 
 $dbh->{mock_clear_history} = 1;
 
@@ -64,6 +64,6 @@ $dbh->{mock_add_resultset} = [[ 'count(*)' ],
 
 my @projects = $user->projects();
 
-print Dumper $dbh->{mock_all_history}, \@projects;
+#print Dumper $dbh->{mock_all_history}, \@projects;
 
 
