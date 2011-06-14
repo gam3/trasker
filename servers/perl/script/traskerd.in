@@ -619,7 +619,7 @@ sub timesplit
 	timeslice_id => $timeslice_id,
 	time => $date,
     );
-warn Dumper $tsl;
+
     if ($tsl->count > 1) {
 	foreach my $ts ($tsl->entry) {
 	    printf($client qq(timeslice\t%s\t%d\t%d\t%d\t%s\t%s\t%s\n),
@@ -1301,8 +1301,8 @@ sub clients
 
 # '/home/gam3/demoCA/private/cakey.pem', '/home/gam3/demoCA/cacert.pem',
 
-our $key_file = '/etc/trasker/trasker_key.pem';
-our $crt_file = '/etc/trasker/trasker_cert.pem';
+our $key_file = '/etc/trasker/key.pem';
+our $crt_file = '/etc/trasker/cert.pem';
 
 sub main
 {
@@ -1338,7 +1338,7 @@ sub main
                     ReuseAddr => 1,
                     )
         or die "Can't create a server socket: $@";
-    if (0) {
+    if (1) {
 	$sslserver = IO::Socket::SSL->new(
 			LocalPort => 8001,
 			Listen => 10,

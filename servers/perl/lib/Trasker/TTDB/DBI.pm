@@ -59,9 +59,6 @@ sub dbi_setup
         $password = $value;
     }
     if (my $value = $p{dbtype}) {
-        if ($value eq 'pgsql') {
-	    $value = 'Pg';
-	}
         $db = $value;
     }
 }
@@ -69,7 +66,8 @@ sub dbi_setup
 sub get_dbh
 {
     if (!$dbi) {
-        if ($db eq 'sqlite3' or $db eq 'sqlite') {
+        my $db_type = $db eq 'pgsql' ? 'Pg' : $db;
+        if ($db_type eq 'sqlite3' or $db_type eq 'sqlite') {
 	    $dbi = DBI->connect("dbi:SQLite:dbname=" . $database, $user, $password,
 		{
 		    RaiseError => 1,
@@ -79,7 +77,7 @@ sub get_dbh
 		}
 	    );
 	} else {
-	    $dbi = DBI->connect("DBI:${db}:database=" . $database . ";host=$host", $user, $password,
+	    $dbi = DBI->connect("DBI:${db_type}:database=" . $database . ";host=$host", $user, $password,
 		{
 		    RaiseError => 1,
 		    PrintError => 0,
@@ -110,6 +108,13 @@ sub _set_stis
     my $dbh = get_dbh();
     my $dbtype = dbtype();
 
+    my $package = "require " . __PACKAGE__.'::'.$dbtype;
+
+    eval $package;
+    if ($@) {
+warn $@;
+    }
+warn "bob $package";
     $sti = {
 	user_create => $dbh->prepare(<<SQL),
 insert into users (name, fullname) values (?, ?)

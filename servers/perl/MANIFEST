@@ -22,6 +22,9 @@ lib/Trasker/TTDB/Authorize.pm
 lib/Trasker/TTDB/Auto.pm
 lib/Trasker/TTDB/Autos.pm
 lib/Trasker/TTDB/DBI.pm
+lib/Trasker/TTDB/DBI/pgsql.pm
+lib/Trasker/TTDB/DBI/mysql.pm
+lib/Trasker/TTDB/DBI/sqlite3.pm
 lib/Trasker/TTDB/Note.pm
 lib/Trasker/TTDB/Notes.pm
 lib/Trasker/TTDB/Project.pm
