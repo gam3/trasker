@@ -64,6 +64,7 @@ void AddAuto::grabClicked()
     process->start("winselect");
 
     if (!process->waitForFinished()) {
+// TODO winselect is likely not installed add message
         qWarning("process error");
     }
 

@@ -148,10 +148,10 @@ ProjectsTree::ProjectsTree(TTCP *ttcp, QWidget *parent)
     addAutoSelW = new AddAuto(ttcp, this);
     connect(ttcp, SIGNAL(accept_select(const QString &)), addAutoSelW, SLOT(autoDone(const QString &)));
     errorWin = new ErrorWindow(this);
-    timeEditWin = new TimeEdit(ttcp, this);
+//    timeEditWin = new TimeEdit(ttcp, this);
     
-    connect(timeEditAction, SIGNAL(triggered()), timeEditWin, SLOT(myShow()));
-    timeEditWin->myShow();
+//    connect(timeEditAction, SIGNAL(triggered()), timeEditWin, SLOT(myShow()));
+//    timeEditWin->myShow();
 }
 
 #if defined (Q_WS_X11)

@@ -2,7 +2,7 @@ Source: trasker
 Section: misc
 Priority: extra
 Maintainer: G. Allen Morris III <gam3@gam3.net>
-Build-Depends: debhelper (>= 7), autotools-dev
+Build-Depends: debhelper (>= 7), autotools-dev, libconfig-simple-perl, libdbd-mock-perl, libparams-validate-perl, liblog-dispatch-perl, libdate-calc-perl, libio-stringy-perl
 Standards-Version: 3.9.1
 Homepage: http://trasker.gam3.net/
 
@@ -28,7 +28,7 @@ Description: The common trasker-server files
 Package: trasker-server-perl
 Architecture: all
 Section: perl
-Depends: ${perl:Depends}, ${misc:Depends}, postgresql | sqlite3 | mysql, trasker-server
+Depends: ${perl:Depends}, ${misc:Depends}, postgresql | sqlite3 | mysql, trasker-server, libparams-validate-perl, libconfig-simple-perl, liblog-dispatch-perl, libdate-calc-perl, libio-stringy-perl
 Recommends: trasker-docs
 Description: An implimentation of the Tasker server written in Perl
  This package also contains the Tasker::TTDB Perl package that can be

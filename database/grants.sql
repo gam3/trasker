@@ -1,0 +1,9 @@
+GRANT ALL ON TABLE public.timeslice TO traskerserver; 
+GRANT ALL ON TABLE public.project TO traskerserver; 
+GRANT ALL ON TABLE public.project_hide_constraint_table TO traskerserver; 
+GRANT ALL ON TABLE public.timeslice_temporary_constraint_table TO traskerserver; 
+GRANT ALL ON TABLE public.user_project TO traskerserver; 
+GRANT ALL ON TABLE public.auto TO traskerserver; 
+GRANT ALL ON TABLE public.billable_info TO traskerserver; 
+GRANT ALL ON TABLE public.notes TO traskerserver; 
+GRANT ALL ON TABLE public.users TO traskerserver; 
