@@ -57,7 +57,13 @@ select project.name as name,
   from project
 SQL
 
-    $sth->execute() or die;
+    eval {
+	$sth->execute()
+    };
+    if ($@) {
+       $dbh->rollback;
+       die;
+    }
 
     my $data_hash = {};
     my $head = [];

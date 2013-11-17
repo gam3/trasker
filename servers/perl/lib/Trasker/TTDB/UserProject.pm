@@ -301,14 +301,15 @@ sub get_time
     my $dbh = get_dbh();
 
     my $sth = $dbh->prepare(<<SQL) or die $dbh->err_str();
-select project_id,
+select ts.project_id,
   SUM(
-     coalesce(end_time, $now) - case when start_time >= 'today' then start_time else 'today' end
+     coalesce(te.start_time, $now) - case when ts.start_time >= 'today' then ts.start_time else 'today' end
   )
-  from timeslice
- where date(coalesce(end_time, 'today')) = 'today'
-   and user_id = ?
- group by project_id
+  from timeslice ts
+   left join timeslice te on ts.end_id = te.id
+ where date(coalesce(te.start_time, 'today')) = 'today'
+   and ts.user_id = ?
+ group by ts.project_id
 SQL
 
     $sth->execute($self->user->id);

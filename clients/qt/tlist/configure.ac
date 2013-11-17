@@ -2,9 +2,11 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.61)
-AC_INIT(tlist, [0.0.1], [gam3@gam3.com])
+AC_INIT(tlist, [0.0.10], [gam3@gam3.net])
 AC_CONFIG_SRCDIR([mainwindow.h])
 AC_CONFIG_HEADER([config.h])
+
+# AM_INIT_AUTOMAKE
 
 # Checks for programs.
 AC_PROG_CC
@@ -12,6 +14,8 @@ AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_RANLIB
 AC_PROG_CXX
+
+AC_PROG_MAKE_SET
 
 ggl_host_type=linux
 
@@ -72,7 +76,6 @@ if test "x$MOC" = "x"; then
   has_qtscript=no
 fi
 
-
 # Checks for header files.
 AC_PATH_X
 
@@ -85,5 +88,6 @@ AC_C_INLINE
 AC_FUNC_ERROR_AT_LINE
 AC_HEADER_STDC
 
-AC_CONFIG_FILES([Makefile tlist.ggo])
+AC_CONFIG_FILES([Makefile tlist.ggo tlist.man])
+
 AC_OUTPUT

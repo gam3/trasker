@@ -367,33 +367,20 @@ sub get_time
     my $dbh = get_dbh();
 
     my $sth;
-    if (0) {
+    {
 	$sth = $dbh->prepare(<<SQL) or die 'bob';
-select project_id,
-  SEC_TO_TIME(
-   SUM(
-    TIME_TO_SEC(
-     timediff(now(), if(start_time >= date(now()), start_time, concat(date(now()), ' 00:00:00')))
-    )
-   )
-  )
-  from timeslice
- where addtime(start_time, timediff(ifnull(end_time, now()), start_time)) >= date(now())
- group by project_id
-SQL
-    } else {
-	$sth = $dbh->prepare(<<SQL) or die 'bob';
-select project_id,
+select ts.project_id,
        sum(
-         case when end_time is null then
-           now() - case when date(start_time) = 'today' then start_time else 'today' end
+         case when te.start_time is null then
+           now() - case when date(ts.start_time) = 'today' then ts.start_time else 'today' end
          else
-           end_time - case when date(start_time) = 'today' then start_time else 'today' end
+           te.start_time - case when date(ts.start_time) = 'today' then ts.start_time else 'today' end
          end
        ) as time
-  from timeslice
-  where date(end_time) = date(now()) or end_time is null
- group by project_id
+  from timeslice ts
+   left join timeslice te on ts.end_id = te.id
+  where date(te.start_time) = date(now()) or ts.end_id is null
+ group by ts.project_id
 SQL
     }
 

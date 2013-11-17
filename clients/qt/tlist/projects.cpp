@@ -148,9 +148,9 @@ ProjectsTree::ProjectsTree(TTCP *ttcp, QWidget *parent)
     addAutoSelW = new AddAuto(ttcp, this);
     connect(ttcp, SIGNAL(accept_select(const QString &)), addAutoSelW, SLOT(autoDone(const QString &)));
     errorWin = new ErrorWindow(this);
-//    timeEditWin = new TimeEdit(ttcp, this);
+    timeEditWin = new TimeEdit(ttcp, this);
     
-//    connect(timeEditAction, SIGNAL(triggered()), timeEditWin, SLOT(myShow()));
+    connect(timeEditAction, SIGNAL(triggered()), timeEditWin, SLOT(myShow()));
 //    timeEditWin->myShow();
 }
 
@@ -728,6 +728,10 @@ void ProjectsTree::p_prop()
 
 void ProjectsTree::timeEdit()
 {
+//    timeEditWin = new TimeEdit(ttcp, this);
+    
+//    connect(timeEditAction, SIGNAL(triggered()), timeEditWin, SLOT(myShow()));
+    timeEditWin->myShow();
 }
 
 Project *ProjectsTree::getProject(int projId) {

@@ -183,25 +183,27 @@ sub times
 
     if ($p{date}) {
 	$date_clause = <<EOP;
-and (start_time < ? and (end_time >= ? or end_time is NULL))
+and (ts.start_time < ? and (te.start_time >= ? or te.start_time is NULL))
 EOP
         push(@args, ($p{date} + 1)->mysql);
         push(@args, ($p{date} + 0)->mysql);
     }
     my $sth = $dbh->prepare(<<SQL);
-select timeslice.id,
+select ts.id,
        users.name as user_name,
        project.id as project_id,
        project.name as project_name,
-       start_time,
-       end_time,
-       auto_id,
-       host,
+       ts.start_time,
+       te.start_time as end_time,
+       ts.auto_id,
+       ts.host,
        'eof'
-  from timeslice, project, users
- where users.id = timeslice.user_id
-   and project.id = project_id
-   and users.id = ?
+  from timeslice ts
+       join project on project.id = ts.project_id
+       join users on users.id = ts.user_id
+  left join timeslice te on te.id = ts.end_id
+ where 
+   users.id = ?
    $date_clause
  order by start_time
  limit 100
@@ -256,7 +258,7 @@ sub current_project
 
     my $dbh = get_dbh;
     my $sth = $dbh->prepare(<<SQL);
-select project_id from timeslice where elapsed is NULL and user_id = ?;
+select project_id from timeslice where end_id is NULL and user_id = ?;
 SQL
 
     $sth->execute($user_id);
@@ -452,14 +454,9 @@ SQL
         $now = q[datetime('now')];
     }
 
-    my $stha = $dbh->prepare(<<SQL) or die;
-update timeslice
-   set elapsed = $now - start_time, end_time = $now
- where id = ?
-SQL
     my $sthi = $dbh->prepare(<<SQL);
 insert into timeslice (user_id, project_id, temporary, auto_id, start_time, host)
-               SELECT user_id, project_id, 'revert', auto_id, $now, host FROM timeslice where id = ?
+                SELECT user_id, project_id, 'revert',  auto_id, $now,       host FROM timeslice where id = ?
 SQL
 
     $sth->execute($user_id);
@@ -472,7 +469,6 @@ SQL
 
         if ($flag eq $p{type} and defined $rid and $rid > 0) {
             eval {
-                $stha->execute($id);
                 $sthi->execute($rid);
             };
             if ($@) {
@@ -738,29 +734,16 @@ sub day
     }
 
     my $sth;
-
     $sth = $dbh->prepare(<<SQL);
 select
        sum(1)
-  from timeslice
+  from timeslice ts
+   left join timeslise te on ts.end_id = te.id
   where start_time < date(?) + 1
-    and coalesce(end_time, datetime('now')) >= date(?)
+    and coalesce(te.start_time, datetime('now')) >= date(?)
     and user_id = ?
     $project_id_clause
 SQL
-#    my $sth = $dbh->prepare(<<SQL);
-#select
-#       sum(
-#           coalesce(
-#           case when date(end_time) >= date(?) + interval '1 day' then date(?) + interval '1 day' else end_time end,
-#           now())  -
-#           case when date(start_time) < date(?) then date(?) else start_time end) as time
-#  from timeslice
-#  where start_time < date(?) + interval '1 day'
-#    and coalesce(end_time, now()) >= date(?)
-#    and user_id = ?
-#    $project_id_clause
-#SQL
 
     $sth->execute(
         $start->mysql,
@@ -811,12 +794,13 @@ sub days
 select
        sum(
            coalesce(
-           case when date(end_time) >= date(?) + interval '1 day' then date(?) + interval '1 day' else end_time end,
+           case when date(ts.start_time) >= date(?) + interval '1 day' then date(?) + interval '1 day' else te.start_time end,
            now())  -
-           case when date(start_time) < date(?) then date(?) else start_time end) as time
-  from timeslice
-  where start_time < date(?) + interval '1 day'
-    and coalesce(end_time, now()) >= date(?)
+           case when date(ts.start_time) < date(?) then date(?) else ts.start_time end) as time
+  from timeslice ts
+   left join timeslice te on te.id = ts.end_id
+  where ts.start_time < date(?) + interval '1 day'
+    and coalesce(te.start_time, now()) >= date(?)
     and user_id = ?
     $project_id_clause
 SQL
@@ -901,23 +885,27 @@ sub get_timeslices_for_day
 
     if ($p{date}) {
 	$date_clause = <<EOP;
-and (start_time < ? and (end_time >= ? or end_time is NULL))
+and (start_time < ? and (te.start_time >= ? or start_time is NULL))
 EOP
         push(@args, ($p{date} + 1)->mysql);
         push(@args, ($p{date} + 0)->mysql);
     }
     my $sth = $dbh->prepare(<<SQL);
-select a.id, a.user_id, a.project_id, a.start_time, b.start_time as end_time, a.temporary, a.auto_id, a.revert_to, a.host, coalesce(b.start_time - a.start_time, now() - a.start_time) as elapsed, a.end_id
-  from timeslice a 
-  left join timeslice b
-    on a.user_id = b.user_id
-   and b.id = a.end_id
- where a.user_id = ?
-   and (a.start_time < ? and (b.start_time >= ? or a.end_id is NULL))
- order by a.start_time
+select ts.id, ts.user_id, ts.project_id, ts.start_time, te.start_time as end_time, ts.temporary, ts.auto_id, ts.revert_to, ts.host, coalesce(te.start_time - ts.start_time, now() - ts.start_time) as elapsed, ts.end_id
+  from timeslice ts 
+  left join timeslice te on ts.user_id = te.user_id and te.id = ts.end_id
+ where ts.user_id = ?
+   and (ts.start_time < ? and (te.start_time >= ? or ts.end_id is NULL))
+ order by ts.start_time
  limit 10000
 SQL
-    $sth->execute($self->id, @args);
+    eval {
+      $sth->execute($self->id, @args);
+    };
+    if ($@) {
+      $dbh->rollback();
+      die;
+    }
 
     my @data;
 
@@ -961,40 +949,47 @@ sub timesplit
     my $sth_id = $dbh->prepare(qq/select currval('timeslice_id_seq')/);
 
     my $sth_s = $dbh->prepare(<<SQL);
-select *
-  from timeslice
- where id = ?
-   and user_id = ?
+select ts.id,
+       ts.start_time,
+       te.start_time as end_time,
+       ts.end_id,
+       ts.temporary,
+       ts.host,
+       coalesce(te.start_time, now()) - ts.start_time as elapsed,
+       ts.user_id,
+       ts.auto_id,
+       ts.revert_to,
+       ts.project_id
+  from timeslice ts 
+    join timeslice te on ts.end_id = te.id
+ where ts.id = ?
+   and ts.user_id = ?
    for update;
 SQL
 
     my $sthi = $dbh->prepare(<<SQL);
 insert into timeslice
-       (user_id, project_id, temporary, start_time, end_time, auto_id, revert_to, host, elapsed, end_id)
- select user_id, project_id, temporary, end_time,   end_time, auto_id, revert_to, host, end_time - end_time, end_id
+       (user_id, project_id, temporary, start_time, auto_id, revert_to, host, end_id)
+ select user_id, project_id, 'split', start_time, auto_id, revert_to, host, id
      from timeslice where id = ?
 SQL
 
     my $sth_st = $dbh->prepare(<<SQL);
 update timeslice
-   set start_time = ?,
-       elapsed = end_time - ?
+   set start_time = ?
  where id = ?
 SQL
 
     my $sth_et = $dbh->prepare(<<SQL);
 update timeslice
-   set end_time = ?,
-       temporary = 'split',
-       elapsed = ? - start_time,
-       end_id = ?
- where id = ?
+   set end_id = ?
+ where end_id = ? and id != ?
 SQL
     my @timeslices = ($curid);
     eval {
 	$sth_s->execute($curid, $self->id);		# Lock the timeslice being split
 
-	die "Timeslice not found" unless $sth_s->rows;
+	die "Timeslice not found " . $curid . " " . $self->id unless $sth_s->rows;
 
 	my $data = $sth_s->fetchrow_hashref();
 
@@ -1007,8 +1002,6 @@ SQL
 	my @splittimes = sort({ $b cmp $a } @times);
 
 	foreach my $splittime (@splittimes) {
-	    warn $splittime;
-
 	    if ($splittime ge $orig->end_time or $splittime le $orig->start_time) {
 		die "Time out of range " . $splittime->mysql();
 	    }
@@ -1018,13 +1011,13 @@ SQL
 
 	    $sth_id->execute();
 
-	    my $id = $sth_id->fetchrow();
+	    my $id = $sth_id->fetchrow();   # the new_id of the inserted entry
 
 	    push @timeslices, $id;
 
 	    my $t = $splittime->mysql;
-	    $sth_et->execute($t, $t, $id, $curid);  # update the old timeslice
-	    $sth_st->execute($t, $t, $id);
+	    $sth_et->execute($id, $curid, $id);  # update the old timeslice
+	    $sth_st->execute($t, $curid);
 	}
 	$dbh->commit;
     };

@@ -1,10 +1,10 @@
 .\" -*- nroff -*-
 .\"
 .\" Author: G. Allen Morris III <gam3@gam3.net>
-.\" Copyright (c) 2001-2010 G. Allen Morris III <gam3@gam3.net>, Fort Bragg, California, USA
+.\" Copyright (c) 2001-2013 G. Allen Morris III <gam3@gam3.net>, Fort Bragg, California, USA
 .\"                    All rights reserved
 .\"
-.Dd tlist 1 "January 2011" "trasker version 0.01"
+.Dd tlist 1 "September 2013" "trasker version @PACKAGE_VERSION@"
 .Dt TLIST 1
 .Os
 .Sh NAME

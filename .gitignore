@@ -45,16 +45,12 @@ clients/perl/MYMETA.yml
 clients/qt/tlist/COPYING
 clients/qt/tlist/auto_model.h
 clients/qt/tlist/pics/active-clock.gif
-clients/qt/tlist/projectlist.cpp
-clients/qt/tlist/projectlist.h
 clients/qt/tlist/qrc_tlist.cpp
 clients/qt/tlist/tlist.pro.user
 clients/qt/tlist/x
 clients/tlist/COPYING
 clients/tlist/auto_model.h
 clients/tlist/pics/active-clock.gif
-clients/tlist/projectlist.cpp
-clients/tlist/projectlist.h
 clients/tlist/qrc_tlist.cpp
 clients/tlist/tlist.pro.user
 clients/tlist/x

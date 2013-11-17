@@ -3,7 +3,7 @@
 
 AC_INIT([trasker-X11],[@VERSION@],[trasker-bugs@gam3.net])
 AC_PREREQ(2.59)
-AC_COPYRIGHT([Copyright (c) 2011 G. Allen Morris III])
+AC_COPYRIGHT([Copyright (c) 2013 G. Allen Morris III])
 AC_CANONICAL_TARGET
 
 AM_INIT_AUTOMAKE

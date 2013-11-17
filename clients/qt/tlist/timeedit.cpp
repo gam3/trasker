@@ -145,7 +145,7 @@ void TimeEdit::timesliceSplitTime(int timeslice_id)
 # include <QX11Info>
 
 namespace x11 {
-void wmMessage(Window win, long type, long l0, long l1, long l2, long l3, long l4);
+    void wmMessage(Window win, long type, long l0, long l1, long l2, long l3, long l4);
 }
 #endif
 // slot
@@ -190,7 +190,7 @@ void TimeEdit::myShow()
 void TimeEdit::hourly()
 {
     qWarning() << "timeedit hourly: " << QTime::currentTime().toString("h:mm:ss");
-    //FIX this fails if we are in a different timezone
+    //FIXME this fails if we are in a different timezone
     dateEdit->setMaximumDate(QDate::currentDate());
 }
 

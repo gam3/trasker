@@ -93,18 +93,31 @@ sub get
 
     if ($p{user_id}) {
          push(@args, $p{user_id});
-         $extra .= ' and user_id = ?';
+         $extra .= ' and ts.user_id = ?';
     }
 
     my $sth = $dbh->prepare(<<SQL);
-select *
-  from timeslice
- where id = ? $extra
+select ts.id,
+       ts.start_time,
+       te.start_time as end_time,
+       ts.end_id,
+       ts.temporary,
+       ts.host,
+       coalesce(te.start_time, now()) - ts.start_time as elapsed,
+       ts.user_id,
+       ts.auto_id,
+       ts.revert_to,
+       ts.project_id
+  from timeslice ts
+   left join timeslice te on ts.end_id = te.id
+ where ts.id = ? $extra
 SQL
 
     $sth->execute(@args);
 
     my $data = $sth->fetchrow_hashref();
+use Data::Dumper;
+print Dumper $data;
 
     return $class->new(%$data);
 }
@@ -220,38 +233,29 @@ sub change_time
     my $new_time = $p{new_time};
     my $user_id = $self->user_id;
 
-    my $stp = $dbh->prepare(<<'SQL');
-update timeslice
-   set end_time = ?,
-       elapsed = end_time - start_time
- where end_time = ? and ? > start_time and user_id = ?
-SQL
     my $stc = $dbh->prepare(<<'SQL');
 update timeslice
-   set start_time = ?,
-       elapsed = end_time - start_time
- where start_time = ?  and ? < end_time and user_id = ?
-SQL
-    my $sti = $dbh->prepare(<<'SQL');
-select * from timeslice
- where (end_time = ? or start_time = ?) and user_id = ?
+   set start_time = ?
+ where start_time = ? and user_id = ?
 SQL
     eval {
-	$stc->execute($new_time->mysql, $old_time->mysql, $new_time->mysql, $user_id);
-	$stp->execute($new_time->mysql, $old_time->mysql, $new_time->mysql, $user_id);
+	$stc->execute($new_time->mysql, $old_time->mysql, $user_id);
     }; if ($@) {
 	$dbh->rollback;
 	die "could not update";
     } else {
 	$dbh->commit;
-	$sti->execute($new_time->mysql, $new_time->mysql, $user_id);
-        while (my $row = $sti->fetchrow_hashref()) {
-	    push @ot, $class->new(%$row);
+        my $ts = Trasker::TTDB::TimeSlice->get(id => $self->id);
+	push @ot, $ts;
+        my $sti = $dbh->prepare(<<'SQL');
+select id from timeslice where (end_id = ?)
+SQL
+	$sti->execute($self->id);
+        if ($sti->rows == 1) {
+          my $row = $sti->fetchrow_hashref();
+          my $ts = Trasker::TTDB::TimeSlice->get(id => $row->{'id'});
+	  push @ot, $ts;
 	}
-    }
-    unless ($stc->rows) {
-	$dbh->rollback;
-	die "timeslice not updated.";
     }
     return @ot;
 }

@@ -1,3 +1,15 @@
+trasker (0.0.10) unstable; urgency=low
+
+  * Restore Edit window
+
+ -- G. Allen Morris III <gam3@gam3.net>  Sat, 28 Sep 2013 15:36:44 -0700
+
+trasker (0.0.9) unstable; urgency=low
+
+  * Misc. updates
+
+ -- G. Allen Morris III <gam3@gam3.net>  Wed, 27 Feb 2013 08:19:36 -0800
+
 trasker (0.0.8) unstable; urgency=low
 
   * Time editor splits times.

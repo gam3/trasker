@@ -53,25 +53,26 @@ sub get
     
     if ($p{date}) {
 	$date_clause = <<EOP;
-and start_time < ? and end_time >= ?
+and ts.start_time < ? and te.start_time >= ?
 EOP
         push(@args, ($p{date} + 1)->mysql);
         push(@args, ($p{date} + 0)->mysql);
     }
 
     my $sth = $dbh->prepare(<<SQL);
-select timeslice.id,
+select ts.id,
        users.name as user_name,
        project.id as project_id,
        project.name as project_name,
-       start_time,
-       end_time,
-       'eof'
-  from timeslice, project, users
- where users.id = timeslice.user_id
-   and project.id = project_id
+       ts.start_time,
+       te.start_time as end_time
+  from timeslice ts
+   join project on project.id = ts.project_id
+   join users on users.id = ts.user_id
+   left join timeslice te on te.id = ts.end_id
+ where 1 = 1
    $date_clause
- order by start_time
+ order by ts.start_time
  limit 100
 SQL
 

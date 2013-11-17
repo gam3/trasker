@@ -26,7 +26,7 @@ our $database = '/tmp/test_trasker';
 our $host = '';
 our $user = '';
 our $password = '';
-our $db = 'sqlite';
+our $db = 'sqlite3';
 
 use Params::Validate qw( validate );
 
@@ -114,7 +114,6 @@ sub _set_stis
     if ($@) {
 warn $@;
     }
-warn "bob $package";
     $sti = {
 	user_create => $dbh->prepare(<<SQL),
 insert into users (name, fullname) values (?, ?)
@@ -137,9 +136,7 @@ values (      ?,          ?,         ?,      now(),       ?,         ?,    ?)
 SQL
 	timeslice_finish => $dbh->prepare(<<SQL),
 update timeslice
-   set elapsed = now() - start_time,
-       end_time = now(),
-       end_id = ?
+   set end_id = ?
  where id = ?
 SQL
     };

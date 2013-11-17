@@ -14,7 +14,7 @@ my $builder = Module::Build->new(
     requires => {
         'perl'          => '5.6.0',
     },
-    script_files => [ 'scripts/traskerd' ],
+    script_files => [ 'script/traskerd' ],
     build_requires => {
 	'Getopt::Long' => 0,
 	'Pod::Usage' => 0,
